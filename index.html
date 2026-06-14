@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetterProtokoll BLE</title>
+    <link id="favicon" rel="icon" type="image/webp" href="">
+    <link id="apple-touch-icon" rel="apple-touch-icon" href="">
+    
+    <style>
+        /* CSS-Variablen im Material Design 3 (Android) Farbschema */
+        :root {
+            --md-color-primary: #006a6a;
+            --md-color-on-primary: #ffffff;
+            --md-color-primary-container: #d2e4e4;
+            --md-color-on-primary-container: #002020;
+            --md-color-surface: #f4fbfb;
+            --md-color-surface-container: #edf5f5;
+            --md-color-background: #f7f9f9;
+            --md-color-on-surface: #191c1c;
+            --md-color-on-surface-variant: #000000;
+            --md-color-outline: #6f7979;
+            --md-color-outline-variant: #bec8c8;
+            --md-color-error: #ba1a1a;
+            --md-color-error-container: #ffdad6;
+            --md-color-on-error-container: #410002;
+            
+            --md-color-success: #22c55e;
+            --md-color-success-hover: #16a34a;
+            
+            --md-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+            --md-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --md-color-primary: #80d3d3;
+                --md-color-on-primary: #003737;
+                --md-color-primary-container: #004f4f;
+                --md-color-on-primary-container: #d2e4e4;
+                --md-color-surface: #1e2626;
+                --md-color-surface-container: #191c1c;
+                --md-color-background: #0e1414;
+                --md-color-on-surface: #e0e3e3;
+                --md-color-on-surface-variant: #ffffff;
+                --md-color-outline: #899393;
+                --md-color-outline-variant: #3f4949;
+                --md-color-error: #ffb4ab;
+                --md-color-error-container: #93000a;
+                --md-color-on-error-container: #ffdad6;
+                
+                --md-color-success: #4ade80;
+                --md-color-success-hover: #22c55e;
+                
+                --md-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.3), 0px 1px 2px 0px rgba(0, 0, 0, 0.2);
+                --md-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.3), 0px 1px 2px 0px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            text-align: center; 
+            background: var(--md-color-background); 
+            padding: 30px 16px; 
+            margin: 0; 
+            color: var(--md-color-on-surface);
+            transition: background-color 0.3s ease;
+        }
+
+        .card { 
+            background: var(--md-color-surface); 
+            padding: 24px; 
+            border-radius: 28px; 
+            box-shadow: var(--md-elevation-1); 
+            max-width: 500px; 
+            width: 100%; 
+            margin: auto; 
+            box-sizing: border-box; 
+            text-align: left;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .title-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 16px; 
+            margin-top: 0; 
+            margin-bottom: 24px; 
+        }
+
+        .title-container h2 { 
+            margin: 0; 
+            font-size: 22px; 
+            font-weight: 500;
+            color: var(--md-color-on-surface);
+        }
+
+        .title-logo { 
+            height: 2.2em; 
+            width: 2.2em; 
+            object-fit: cover; 
+            border-radius: 12px; 
+            display: block; 
+        }
+
+        label { 
+            display: block; 
+            text-align: left; 
+            font-weight: 600; 
+            font-size: 14px;
+            margin-top: 20px; 
+            margin-bottom: 8px;
+            color: var(--md-color-on-surface-variant);
+        }
+
+        input, select, textarea { 
+            width: 100%; 
+            padding: 16px; 
+            margin: 0 0 16px 0; 
+            font-size: 16px; 
+            border-radius: 12px; 
+            border: 1px solid var(--md-color-outline); 
+            background: transparent; 
+            color: var(--md-color-on-surface);
+            box-sizing: border-box; 
+            font-family: inherit; 
+            transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+        }
+
+        input:not(.slide-input):focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--md-color-primary);
+            border-width: 2px;
+            padding: 15px; 
+        }
+
+        textarea { 
+            resize: vertical; 
+            min-height: 180px; 
+            overflow-y: hidden; 
+            transition: height 0.1s ease; 
+            line-height: 1.5;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 14px 24px; 
+            font-size: 14px; 
+            font-weight: 500;
+            letter-spacing: 0.1px;
+            color: white; 
+            border: none; 
+            border-radius: 100px; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            box-sizing: border-box; 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: none;
+            transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s; 
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button.btn-disabled { 
+            background: var(--md-color-surface-container); 
+            color: var(--md-color-outline);
+            cursor: not-allowed; 
+        }
+
+        button.btn-device { 
+            background: var(--md-color-error); 
+            box-shadow: var(--md-elevation-1);
+        }
+        button.btn-device:hover { 
+            background: var(--md-color-error);
+            box-shadow: var(--md-elevation-2);
+        }
+        
+        button.btn-ki { 
+            background: var(--md-color-primary); 
+            box-shadow: var(--md-elevation-1);
+        }
+        button.btn-ki:hover { 
+            background: var(--md-color-primary);
+            box-shadow: var(--md-elevation-2);
+        }
+
+        button.btn-connect {
+            background: var(--md-color-primary);
+            margin-bottom: 16px;
+        }
+
+        #submit-btn {
+            font-weight: 800;
+        }
+
+        .slide-container { 
+            position: relative; 
+            background: var(--md-color-surface-container); 
+            border-radius: 100px; 
+            height: 0; 
+            opacity: 0;
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden; 
+            box-sizing: border-box;
+            border: 0 solid var(--md-color-outline-variant);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: height 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        opacity 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        margin 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+                        border-width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+                        background-color 0.15s ease,
+                        border-color 0.15s ease;
+        }
+
+        .slide-container.show {
+            height: 56px;
+            opacity: 1;
+            margin: 14px 0;
+            border-width: 1px;
+        }
+
+        .slide-text { 
+            position: absolute; 
+            width: 100%; 
+            text-align: center; 
+            font-size: 13px; 
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            pointer-events: none; 
+            transition: opacity 0.1s ease, transform 0.1s ease; 
+            color: var(--md-color-outline);
+            user-select: none;
+        }
+
+        .slide-input { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%; 
+            height: 100%; 
+            margin: 0; 
+            opacity: 1; 
+            cursor: pointer; 
+            -webkit-appearance: none; 
+            background: transparent; 
+            outline: none; 
+            padding: 0 4px;
+            box-sizing: border-box;
+            border: none !important;      
+            box-shadow: none !important;  
+        }
+
+        .slide-input:focus {
+            outline: none !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .slide-input::-webkit-slider-runnable-track {
+            background: transparent;
+            border: none;
+        }
+        .slide-input::-moz-range-track {
+            background: transparent;
+            border: none;
+        }
+
+        .slide-input::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            width: 48px; 
+            height: 48px; 
+            border-radius: 50%; 
+            background-color: var(--md-color-outline); 
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 24px;
+            cursor: pointer; 
+            box-shadow: var(--md-elevation-1);
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        background-color 0.2s ease, 
+                        box-shadow 0.2s ease;
+        }
+        .slide-input::-webkit-slider-thumb:hover {
+            box-shadow: var(--md-elevation-2);
+            background-color: var(--md-color-error);
+        }
+        .slide-input::-webkit-slider-thumb:active {
+            transform: scale(0.95);
+            background-color: var(--md-color-error);
+            box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0 0 0 10px rgba(186, 26, 26, 0.12);
+        }
+
+        .slide-input::-moz-range-thumb { 
+            width: 48px; 
+            height: 48px; 
+            border-radius: 50%; 
+            background-color: var(--md-color-outline); 
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 24px;
+            cursor: pointer; 
+            border: none;
+            box-shadow: var(--md-elevation-1);
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        background-color 0.2s ease, 
+                        box-shadow 0.2s ease;
+        }
+        .slide-input::-moz-range-thumb:hover {
+            box-shadow: var(--md-elevation-2);
+            background-color: var(--md-color-error);
+        }
+        .slide-input::-moz-range-thumb:active {
+            transform: scale(0.95);
+            background-color: var(--md-color-error);
+            box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0 0 0 10px rgba(186, 26, 26, 0.12);
+        }
+
+        .restore-container#gender-container {
+            border: 1px solid var(--md-color-outline);
+            background: transparent;
+            padding: 16px;
+            border-radius: 16px;
+        }
+        .segmented-control {
+            display: flex;
+            border: 1px solid var(--md-color-outline);
+            border-radius: 100px; 
+            margin-top: 8px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        .segmented-control input[type="radio"] {
+            display: none !important;
+        }
+        .segmented-control label {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            margin: 0;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--md-color-on-surface-variant);
+            text-transform: none;
+            letter-spacing: normal;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid var(--md-color-outline);
+        }
+        .segmented-control label:last-child {
+            border-right: none;
+        }
+        .segmented-control input[type="radio"]:checked + label {
+            background: var(--md-color-primary-container);
+            color: var(--md-color-on-primary-container);
+        }
+
+        .restore-container { 
+            text-align: left; 
+            background: var(--md-color-surface-container); 
+            border-radius: 16px; 
+            padding: 16px; 
+            margin: 16px 0; 
+            box-sizing: border-box; 
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .restore-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .restore-container input[type="checkbox"] { 
+            width: 20px; 
+            height: 20px;
+            margin: 0; 
+            vertical-align: middle; 
+            cursor: pointer; 
+            border-radius: 4px;
+            accent-color: var(--md-color-primary);
+        }
+        .restore-container label { 
+            display: inline-block; 
+            margin: 0; 
+            font-weight: 600; 
+            vertical-align: middle; 
+            cursor: pointer; 
+            font-size: 14px; 
+            text-transform: none;
+            color: var(--md-color-on-surface-variant);
+            letter-spacing: normal;
+        }
+        
+        button.secondary { 
+            background: transparent; 
+            color: var(--md-color-primary);
+            border: 1px solid var(--md-color-outline);
+            padding: 10px 16px; 
+            font-size: 14px; 
+            margin-top: 0;
+            border-radius: 100px;
+            width: 100%;
+        }
+        button.secondary:hover { 
+            background: rgba(0, 106, 106, 0.08); 
+        }
+        @media (prefers-color-scheme: dark) {
+            button.secondary:hover {
+                background: rgba(128, 211, 211, 0.08);
+            }
+        }
+        
+        .restore-container:has(#restore-check:checked) button.secondary, 
+        .restore-container:has(#restore-ki-check:checked) button.secondary { 
+            background: var(--md-color-success) !important; 
+            color: white !important;
+            border-color: transparent !important;
+        }
+        .restore-container:has(#restore-check:checked) button.secondary:hover, 
+        .restore-container:has(#restore-ki-check:checked) button.secondary:hover { 
+            background: var(--md-color-success-hover) !important;
+        }
+
+        #overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(14, 20, 20, 0.8); 
+            backdrop-filter: blur(4px);
+            z-index: 1000; 
+            justify-content: center; 
+            align-items: center; 
+            color: var(--md-color-on-surface); 
+            padding: 20px; 
+            box-sizing: border-box; 
+        }
+        .overlay-content { 
+            background: var(--md-color-surface); 
+            padding: 32px; 
+            border-radius: 28px; 
+            max-width: 400px; 
+            width: 100%; 
+            box-shadow: var(--md-elevation-2); 
+            box-sizing: border-box; 
+            border: 1px solid var(--md-color-outline-variant);
+        }
+        .spinner { 
+            border: 4px solid var(--md-color-outline-variant); 
+            width: 48px; 
+            height: 48px; 
+            border-radius: 50%; 
+            border-left-color: var(--md-color-primary); 
+            animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite; 
+            margin: 0 auto 24px auto; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 500px) {
+            body { padding: 12px 8px; }
+            .card { padding: 20px 16px; border-radius: 24px; }
+            .title-container h2 { font-size: 20px; }
+            input, select, textarea { padding: 12px; margin-bottom: 12px; }
+            textarea { min-height: 140px; }
+            button { padding: 12px; font-size: 14px; }
+            label { margin-top: 12px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="title-container">
+            <img id="header-logo" class="title-logo" src="" alt="RetterProtokoll Logo">
+            <h2>RetterProtokoll (BLE)</h2>
+        </div>
+
+        <!-- Bluetooth-Verbindungsknopf hinzugefügt -->
+        <button type="button" id="connect-ble-btn" class="btn-connect" onclick="connectBluetooth()">🔌 Mit Gerät verbinden</button>
+        
+        <form id="protokoll-form" method="POST" action="/" onsubmit="return handleFormSubmit(event)">
+            <label for="vorlage-select">1. Vorlage wählen:</label>
+            <select id="vorlage-select" onchange="vorlageLaden()">
+                <option value="leer">Lade Vorlagen...</option>
+            </select>
+
+            <label for="ki-select">1b. KI-Unterstützung wählen (optional):</label>
+            <select id="ki-select">
+                <option value="keine" selected>Keine KI (Text direkt senden)</option>
+                <option value="chatgpt_korrektur">ChatGPT: Text korrigieren</option>
+                <option value="chatgpt_abcde">ChatGPT: ABCDE</option>
+                <option value="chatgpt_transportverzicht">ChatGPT: Transportverzicht</option>
+            </select>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; margin-bottom: 6px;">
+                <label for="freitext" style="margin-top: 0; display: inline-block;">2. Text bearbeiten:</label>
+                <button type="button" id="clear-btn" class="secondary" style="margin-top: 0; width: auto; padding: 6px 16px; font-size: 13px; border-radius: 100px;" onclick="zeigeLoeschSlider()">🗑️ Leeren</button>
+            </div>
+            
+            <textarea name="t" id="freitext" placeholder="Wähle eine Vorlage oder tippe hier freien Text..." autocomplete="off"></textarea>
+
+            <div id="loesch-slider-container" class="slide-container">
+                <span class="slide-text">Zum Löschen schieben</span>
+                <input type="range" id="delete-slider" class="slide-input" min="0" max="100" value="0" oninput="handleSliderInput(this)" onchange="handleSliderChange(this)">
+            </div>
+ 
+            <fieldset id="gender-container" class="restore-container" style="display: none; border: 1px solid var(--md-color-outline); padding: 16px;">
+                <legend style="font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--md-color-on-surface-variant); padding: 0 4px; margin-left: 5px;">Geschlecht</legend>
+                <div class="segmented-control">
+                    <input type="radio" id="gender-m" name="gender" value="m">
+                    <label for="gender-m">♂️ männlich</label>
+                    
+                    <input type="radio" id="gender-w" name="gender" value="w">
+                    <label for="gender-w">♀️ weiblich</label>
+
+                    <input type="radio" id="gender-d" name="gender" value="d">
+                    <label for="gender-d">⚧️ divers</label>
+                </div>
+            </fieldset>
+
+            <button type="submit" id="submit-btn" class="btn-disabled" disabled>3. Text senden</button>
+
+            <!-- Ausblenden oder optional behalten, falls das BLE-Gegenstück die Geschwindigkeit auswertet -->
+            <label for="speed-select" style="display:none;">Geschwindigkeit:</label>
+            <select name="s" id="speed-select" style="display:none;">
+                <option value="standard" selected>Standard </option>
+            </select>
+            
+            <div class="restore-container">
+                <div class="restore-row">
+                    <input type="checkbox" id="restore-check">
+                    <label for="restore-check">Letzten gesendeten Text laden</label>
+                </div>
+                <button type="button" class="secondary" onclick="anwendenLetzterText()">In Textfeld einfügen</button>
+            </div>
+
+            <div class="restore-container">
+                <div class="restore-row">
+                    <input type="checkbox" id="restore-ki-check">
+                    <label for="restore-ki-check">Letzten KI-Text laden</label>
+                </div>
+                <button type="button" class="secondary" onclick="anwendenLetzterKiText()">In Textfeld einfügen</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="overlay">
+        <div class="overlay-content">
+            <div id="overlay-loading" style="text-align: center;">
+                <div class="spinner"></div>
+                <h3 style="margin: 15px 0; color: var(--md-color-primary);">✍️ Sende Daten über BLE...</h3>
+                <p id="countdown-text" style="color: var(--md-color-primary); font-weight: bold; font-size: 18px; margin: 10px 0;">Bitte warten...</p>
+                <p style="color: var(--md-color-on-surface-variant); font-size: 14px;">Bitte trennen Sie die Verbindung nicht.</p>
+            </div>
+            <div id="overlay-success" style="text-align: center; display: none;">
+                <span style="font-size: 60px;">✅</span>
+                <h3 style="margin: 15px 0;">Text erfolgreich übermittelt!</h3>
+                <button type="button" onclick="resetForm()" style="background: var(--md-color-primary); max-width: 280px; margin: 20px auto 0 auto;">Nächster Text</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dieser spezielle Script-Tag dient als Container für Ihre templates.json -->
+    <script id="templates-data" type="application/json">{
+    "vorlagen": {
+        "metamizol_m": "Der Patient wurde ausdrücklich und detailliert über das seltene, nicht dosisabhängige und potenziell lebensbedrohliche Risiko einer Agranulozytose durch Metamizol aufgeklärt. Hierbei handelt es sich um eine akute, schwere Zerstörung der weißen Blutkörperchen (Granulozyten) im Knochenmark, was zu einem plötzlichen, lebensgefährlichen Zusammenbruch der körpereigenen Immunabwehr führt.\n\nEr wurde darüber informiert, dass diese Blutbildveränderung jederzeit während der Therapie sowie auch kurz nach deren Beendigung auftreten kann, selbst wenn das Medikament in der Vergangenheit bereits komplikationslos vertragen wurde.\n\nEs erfolgte die explizite Aufklärung über die typischen Frühsymptome: plötzliches Fieber, Schüttelfrost, schwere Halsschmerzen sowie schmerzhafte Schleimhautveränderungen (insbesondere im Mund-, Nasen-, Rachen-, Genital- oder Analbereich). Der Patient wurde darauf hingewiesen, dass diese Symptome bei einer Fiebersenkung oder einer gleichzeitigen Antibiotikaeinnahme verschleiert werden und unbemerkt bleiben können.\n\nDer Patient wurde angewiesen, bei Verdacht die Anwendung sofort abzubrechen, sich unverzüglich ärztlich vorzustellen, zwingend auf die Metamizol-Einnahme hinzuweisen und ein Notfall-Differenzialblutbild zu fordern. Es wurde zudem über weitere Nebenwirkungen, insbesondere das Risiko eines relevanten Blutdruckabfalls (Hypotonie), Tachykardien sowie mögliche allergische Reaktionen (bis hin zur Anaphylaxie) aufgeklärt. Der Patient hat die Warnhinweise und Verhaltensanweisungen vollständig verstanden und akzeptiert.",
+        "metamizol_w": "Die Patientin wurde ausdrücklich und detailliert über das seltene, nicht dosisabhängige und potenziell lebensbedrohliche Risiko einer Agranulozytose durch Metamizol aufgeklärt. Hierbei handelt es sich um eine akute, schwere Destruktion der Granulozyten im Knochenmark, die zu einem plötzlichen, lebensgefährlichen Zusammenbruch der körpereigenen Immunabwehr führt.\n\nDie Patientin wurde darüber informiert, dass diese Blutbildveränderung jederzeit während der Therapie sowie kurz nach deren Beendigung auftreten kann, selbst wenn das Medikament in der Vergangenheit bereits komplikationslos vertragen wurde.\n\nEs erfolgte die explizite Aufklärung über die typischen Frühsymptome: plötzliches Fieber, Schüttelfrost, schwere Halsschmerzen sowie schmerzhafte Schleimhautveränderungen (insbesondere im Mund-, Nasen-, Rachen-, Genital- oder Analbereich). Die Patientin wurde darauf hingewiesen, dass diese Symptome durch eine gleichzeitige Fiebersenkung oder Antibiotikaeinnahme verschleiert werden und somit unbemerkt bleiben können.\n\nDie Patientin wurde angewiesen, bei Verdacht die Anwendung sofort abzubrechen, sich unverzüglich ärztlich vorzustellen, zwingend auf die Metamizol-Einnahme hinzuweisen und ein Notfall-Differenzialblutbild zu fordern. Die Warnhinweise und Verhaltensanweisungen wurden verstanden und akzeptiert.  Es wurde zudem über weitere Nebenwirkungen, insbesondere das Risiko eines relevanten Blutdruckabfalls (Hypotonie), Tachykardien sowie mögliche allergische Reaktionen (bis hin zur Anaphylaxie) aufgeklärt. Eine Schwangerschaft wurde anamnestisch ausgeschlossen.",
+        "mitfahrt_w": "Die Patientin verbleibt auf eigenen ausdrücklichen Wunsch vor Ort und verweigert den angebotenen Transport in eine geeignete Klinik. Über die medizinischen Risiken, mögliche Folgeschäden sowie die potenzielle Lebensgefahr (letale Konsequenz) durch die Transportverweigerung wurde die Patientin umfassend, verständlich und eindringlich aufgeklärt. Die Patientin zeigte sich vollständig einsichtig, lehnte die Mitfahrt jedoch weiterhin konsequent ab.\n\nZum Zeitpunkt der Aufklärung und des Verlassens der Einsatzstelle war die Patientin wach, voll orientiert (ZOSP, GCS 15) und frei von erkennbaren Einschränkungen der Urteilsfähigkeit (keine Hinweise auf Intoxikation, kognitive Defizite oder psychische Ausnahmezustände). Hinweise auf Eigen- oder Fremdgefährdung lagen nicht vor.\n\nDie Patientin wurde angewiesen, sich zum nächstmöglichen Zeitpunkt bei ihrem Hausarzt vorzustellen. Bei einer Verschlechterung des Zustands oder erneuten Beschwerden wurde an den Hausarzt (außerhalb der Sprechzeiten: Kassenärztlicher Notdienst, Tel.: 116117) verwiesen. Bei akuten Notfallsymptomen (z. B. Bewusstseinsveränderung, akuter Atemnot, starken Schmerzen) ist unverzüglich der Rettungsdienst über den Notruf 112 zu alarmieren.\n\nDie Verweigerung wurde von der Patientin auf dem Protokoll per Unterschrift bestätigt. Eine Kopie des Protokolls wurde ausgehändigt.",
+        "mitfahrt_m": "Der Patient verbleibt auf eigenen ausdrücklichen Wunsch vor Ort und verweigert den angebotenen Transport in eine geeignete Klinik. Über die medizinischen Risiken, mögliche Folgeschäden sowie die potenzielle Lebensgefahr (letale Konsequenz) durch die Transportverweigerung wurde der Patient umfassend, verständlich und eindringlich aufgeklärt. Der Patient zeigte sich vollständig einsichtig, lehnte die Mitfahrt jedoch weiterhin konsequent ab.\n\nZum Zeitpunkt der Aufklärung und des Verlassens der Einsatzstelle war der Patient wach, voll orientiert (ZOSP, GCS 15) und frei von erkennbaren Einschränkungen der Urteilsfähigkeit (keine Hinweise auf Intoxikation, kognitive Defizite oder psychische Ausnahmezustände). Hinweise auf Eigen- oder Fremdgefährdung lagen nicht vor.\n\nDer Patient wurde angewiesen, sich zum nächstmöglichen Zeitpunkt bei seinem Hausarzt vorzustellen. Bei einer Verschlechterung des Zustands oder erneuten Beschwerden wurde an den Hausarzt (außerhalb der Sprechzeiten: Kassenärztlicher Notdienst, Tel.: 116117) verwiesen. Bei akuten Notfallsymptomen (z. B. Bewusstseinsveränderung, akuter Atemnot, starken Schmerzen) ist unverzüglich der Rettungsdienst über den Notruf 112 zu alarmieren.\n\nDie Verweigerung wurde von dem Patienten auf dem Protokoll per Unterschrift bestätigt. Eine Kopie des Protokolls wurde ausgehändigt.",
+        "hilfe_w": "Die Patientin verbleibt vor Ort. Ein Transport in die Klinik wurde ihr mehrmals angeboten. Die Patientin wurde angewiesen, sich zum nächstmöglichen Zeitpunkt beim Hausarzt vorzustellen und das Ereignis zu schildern.\n\nBei einer Verschlechterung oder erneuten Beschwerden soll die Patientin mit ihrem Hausarzt oder ihrer Hausärztin (außerhalb der Praxiszeiten: Kassenärztlicher Notdienst, Tel.: 116117) Kontakt aufnehmen. Bei einer akuten Verschlechterung (z. B. Bewusstseinsveränderung, akute Atemnot, starken Schmerzen) soll erneut der Rettungsdienst über den Notruf 112 verständigt werden.\n\nDie Patientin erhält eine Kopie des Protokolls. Beim Verlassen der Einsatzstelle ist die Patientin zeitlich, örtlich, situativ und zur Person (ZOSP) orientiert, der GCS beträgt 15.",
+        "hilfe_m": "Der Patient verbleibt vor Ort. Ein Transport in die Klinik wurde ihm mehrmals angeboten. Der Patient wurde angewiesen, sich zum nächstmöglichen Zeitpunkt beim Hausarzt vorzustellen und das Ereignis zu schildern.\n\nBei Verschlechterung oder erneuten Beschwerden soll der Patient mit seinem Hausarzt oder seiner Hausärztin (außerhalb der Praxiszeiten: Kassenärztlicher Notdienst, Tel.: 116117) Kontakt aufnehmen. Bei akuter Verschlechterung (z. B. Bewusstseinsveränderung, akute Atemnot, starken Schmerzen) soll erneut der Rettungsdienst über den Notruf 112 verständigt werden.\n\nDer Patient erhält eine Kopie des Protokolls. Beim Verlassen der Einsatzstelle Pat. GCS 15, ZOSP orientiert.",
+        "abcde": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO2 im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.",
+        "abcdesampler": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO2 im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.\nS (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit:   / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen, Impfstatus Tetanus aktuell",
+        "sampler": "S (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit:   / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen / Impfstatus Tetanus aktuell\n\nOPQRST \nO (Onset): \nP (Provocation): \nQ (Quality): \nR (Region): \nS (Severity):  / 10\nT (Time): "
+    },
+    "prompts": {
+        "chatgpt_korrektur": "Korrigiere und optimiere den folgenden Text für ein Rettungsdienstprotokoll. Achte auf eine fachlich korrekte, präzise und professionelle Formulierung sowie auf Rechtschreibung, Grammatik und Zeichensetzung. Erhalte den medizinischen Inhalt unverändert und verwende eine sachliche, dokumentationsgerechte Sprache. Gib ausschließlich den fertig überarbeiteten Text aus, ohne zusätzliche Erklärungen, Kommentare oder Formatierungen.\n\n",
+        "chatgpt_transportverzicht": "Du bist ein erfahrener, fachlich exzellenter Notfallsanitäter im deutschen Rettungsdienst. Deine Aufgabe ist es, für ein digitales Rettungsdienstprotokoll eine rechtssichere, lückenlose und präzise ärztliche/rettungsdienstliche Aufklärung zu formulieren. \n\nDie Aufklärung dient der Absicherung bei einem Transportverzicht, einer Verweigerung oder einer Aufklärung gegen ärztlichen/rettungsdienstlichen Rat (Revers). Sie muss unmissverständlich aufzeigen, dass der Patient die Tragweite seiner Entscheidung vollumfänglich verstanden hat.\n\nHalte dich strikt an folgende Struktur und Kriterien:\n1. Klinisches Zustandsbild & Dringlichkeit: Erkläre in klaren Worten die potenzielle Schwere des Krankheitsbildes und warum eine klinische Abklärung (Krankenhaus) zwingend erforderlich ist.\n2. Spezifische Risiken & Komplikationen: Nenne die konkreten, medizinischen Risiken, die bei Nichtbehandlung oder Nichttransport drohen (angepasst an das Leitsymptom).\n3. Letalitätshinweis (Bis zum Tod): Es muss explizit, unbeschönigt und rechtssicher formuliert werden, dass die Verweigerung von Diagnostik/Transport zu bleibenden Schäden, schwerster Invalidität oder dem Tod des Patienten führen kann.\n4. Urteilsfähigkeit & Aufklärungsbereitschaft: Bestätige in der Formulierung defensiv, dass der Patient bei vollem Bewusstsein, orientiert, nachvollziehbar urteilsfähig und frei von Zwang handelt, die Risiken versteht und dennoch ablehnt.\n5. Jederzeitige Wiederrufbarkeit: Füge den Hinweis an, dass der Rettungsdienst bei einer Verschlechterung oder einem Umdenken jederzeit erneut gerufen werden kann.\n\nFormuliere den Text als Fließtext, der direkt so in das Freitextfeld des Protokolls Aufklärung kopiert werden kann. Nutze eine professionelle, medizinisch-juristische Diktion. Beschreibe nur medizinisch plausible Risiken und Komplikationen in Bezug auf das angegebene Leitsymptom bzw. die Verdachtsdiagnose.\nDie Formulierungen müssen geeignet sein, einer nachträglichen fachlichen, juristischen oder gerichtlichen Prüfung standzuhalten.Verwende professionelle medizinische und juristische Fachsprache, die zugleich für den Patienten verständlich dokumentiert ist.\n\nAusgabe: Gib ausschließlich den fertigen Dokumentationstext aus, ohne Einleitung, Überschrift oder zusätzliche Erläuterungen.\n\nBitte generiere die Aufklärung basierend auf folgendem Leitsymptom / folgender Verdachtsdiagnose:\n\n",
+        "chatgpt_abcde": "Rolle: Du bist ein erfahrener Notfallsanitäter und Dokumentations-Experte für den Rettungsdienst.\nAufgabe: Ich liefere dir gleich Stichpunkte zu einem Realeinsatz. Deine Aufgabe ist es, diese Informationen präzise in das unten stehende Template einzufügen.\nWICHTIGE FORMATIERUNGS-REGELN:\n1. Nutze NIEMALS Aufzählungszeichen (keine Spiegelstriche, Bindestriche, Punkte oder Zahlen).\n2. Nutze KEINE Fließtext-Absätze innerhalb der Blöcke.\n3. Nutze KEINE Leerzeilen. Trenne die Zeilen ausschließlich durch einen einfachen Zeilenumbruch (Shift+Enter).\n4. Der Text muss kompakt und stichwortartig-flüssig sein.\n5. Suche aus den bildern die aktuellen Medikamente mit dosi und die Diagnosen und Allergieen \nMEDIZINISCHE LOGIK & INHALT:\n- Sprache: Konsequent professioneller medizinischer Fachjargon, präzise und telegramstilartig verkürzt (z.B. \"Pat. wach, orientiert\", \"V.a. ACS\").\n- Normalwerte: Behalte qualitative Standard-Normalbefunde des Templates (z.B. \"Atemwege frei\", \"Pupillen isokor/lichtreagibel\") standardmäßig bei, AUßER meine Stichpunkte widersprechen dem explizit.\n- Medikamente: Korrigiere alle von mir genannten Arzneimittel eigenständig auf die korrekte pharmakologische Schreibweise (Wirkstoffname).\n- Messwerte: Trage Vitalwerte (RR, Puls, SpO2, BZ) NUR dann ein, wenn ich sie dir in den Stichpunkten liefere. Erfinde niemals Zahlenwerte.\n- OPQRST / SAMPLER: Wenn meine Stichpunkte zu diesen Schemata keine Angaben enthalten oder sie medizinisch keinen Sinn ergeben (z.B. bei schmerzlosen Zuständen oder Bewusstlosigkeit), lösche diese Zeilen/Kategorien komplett aus dem Protokoll.\nHier ist das Template, das du befüllen sollst:\nLeitsymptomatik: \nLage vor Ort:  \nA: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO₂ im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.\nS (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit:  / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen, Impfstatus Tetanus aktuell\nO (Onset): \nP (Provocation): \nQ (Quality): \nR (Region): \nS (Severity):  / 10\nT (Time):\nTherapie: \nTransport:Transport bei stabilen Vitalparametern ohne Komplikationen.\nHier sind meine Einsatzinfos: \n\n"
+    }
+}</script>
+
+    <script>
+        // BLE UUIDs für den Nordic UART Service (NUS)
+        const BLE_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+        const BLE_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // Rx am Gerät (Schreiben vom Client)
+
+        let bleDevice = null;
+        let rxCharacteristic = null;
+
+        let VORLAGEN = {};
+        let KI_PROMPTS = {};
+
+        const textarea = document.getElementById("freitext");
+        const submitBtn = document.getElementById("submit-btn");
+        const kiSelect = document.getElementById("ki-select");
+        const vorlageSelect = document.getElementById("vorlage-select");
+        const genderContainer = document.getElementById("gender-container");
+        const loeschSliderContainer = document.getElementById("loesch-slider-container");
+        const deleteSlider = document.getElementById("delete-slider");
+        const overlay = document.getElementById("overlay");
+        const loadingDiv = document.getElementById("overlay-loading");
+        const successDiv = document.getElementById("overlay-success");
+        const countdownEl = document.getElementById("countdown-text");
+        const speedSelect = document.getElementById("speed-select");
+        const restoreCheck = document.getElementById("restore-check");
+        const restoreKiCheck = document.getElementById("restore-ki-check");
+        const connectBleBtn = document.getElementById("connect-ble-btn");
+
+        let pollInterval = null;
+        let countdownInterval = null;
+
+        const OPTIONEN_NAMEN = {
+            "metamizol_w": "Aufklärung: Metamizol weiblich",
+            "metamizol_m": "Aufklärung: Metamizol männlich",
+            "mitfahrt_w": "Mitfahrt verweigert weiblich",
+            "mitfahrt_m": "Mitfahrt verweigert männlich",
+            "hilfe_w": "Hilfeleistung weiblich",
+            "hilfe_m": "Hilfeleistung männlich",
+            "abcde": "ABCDE",
+            "abcdesampler": "ABCDE SAMPLER",
+            "sampler": "SAMPLER / OPQRST"
+        };
+
+        // Bluetooth-Verbindungsaufbau
+        async function connectBluetooth() {
+            if (!navigator.bluetooth) {
+                alert("Web Bluetooth wird von diesem Browser nicht unterstützt. Bitte nutzen Sie z.B. Google Chrome oder Microsoft Edge.");
+                return;
+            }
+
+            try {
+                connectBleBtn.innerText = "⏳ Suche Gerät...";
+                bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [BLE_SERVICE_UUID] }]
+                });
+
+                connectBleBtn.innerText = "⏳ Verbinde...";
+                const server = await bleDevice.gatt.connect();
+
+                connectBleBtn.innerText = "⏳ Suche Service...";
+                const service = await server.getPrimaryService(BLE_SERVICE_UUID);
+
+                connectBleBtn.innerText = "⏳ Initialisiere...";
+                rxCharacteristic = await service.getCharacteristic(BLE_RX_UUID);
+
+                connectBleBtn.innerText = "🟢 Verbunden mit " + bleDevice.name;
+                connectBleBtn.style.background = "var(--md-color-success)";
+                
+                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+                updateSubmitButtonState();
+            } catch (error) {
+                console.error("Bluetooth Fehler: ", error);
+                connectBleBtn.innerText = "🔴 Verbindung fehlgeschlagen";
+                connectBleBtn.style.background = "var(--md-color-error)";
+                bleDevice = null;
+                rxCharacteristic = null;
+                updateSubmitButtonState();
+            }
+        }
+
+        function onDisconnected() {
+            connectBleBtn.innerText = "🔌 Mit Gerät verbinden";
+            connectBleBtn.style.background = "var(--md-color-primary)";
+            bleDevice = null;
+            rxCharacteristic = null;
+            updateSubmitButtonState();
+        }
+
+        // Funktion liest die eingebetteten Vorlagen und Prompts aus dem JSON-Container
+        async function ladeVorlagenUndPrompts() {
+            try {
+                const scriptTag = document.getElementById("templates-data");
+                let data = null;
+                
+                // Falls der Platzhalter noch existiert (Datei wurde noch nicht gemergt)
+                if (scriptTag && scriptTag.textContent.trim() && !scriptTag.textContent.includes("INSERT_JSON_HERE")) {
+                    data = JSON.parse(scriptTag.textContent);
+                }
+                
+                if (data) {
+                    VORLAGEN = data.vorlagen || {};
+                    KI_PROMPTS = data.prompts || {};
+                } else {
+                    // Standard-Fallback, falls die Datei standalone geöffnet wird
+                    VORLAGEN = {};
+                    KI_PROMPTS = {};
+                    console.log("Hinweis: Es wurden noch keine Vorlagen eingebettet. Bitte führen Sie das Merge-Skript aus.");
+                }
+                
+                befuelleDropdown();
+            } catch (err) {
+                console.error("Laden der Vorlagen fehlgeschlagen", err);
+                vorlageSelect.innerHTML = '<option value="leer">Fehler beim Laden</option>';
+            }
+        }
+
+        function befuelleDropdown() {
+            vorlageSelect.innerHTML = '<option value="leer">--- Bitte wählen ---</option>';
+            for (const key in VORLAGEN) {
+                if (VORLAGEN.hasOwnProperty(key)) {
+                    const option = document.createElement("option");
+                    option.value = key;
+                    option.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
+                    vorlageSelect.appendChild(option);
+                }
+            }
+        }
+
+        function formatiereKey(key) {
+            return key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        function zeigeLoeschSlider() {
+            const text = textarea.value.trim();
+            if (!text) {
+                alert("Das Textfeld ist bereits leer.");
+                return;
+            }
+            loeschSliderContainer.classList.toggle("show");
+            resetSliderStyles();
+        }
+
+        function resetSliderStyles() {
+            loeschSliderContainer.style.backgroundColor = "";
+            loeschSliderContainer.style.borderColor = "";
+            deleteSlider.value = 0;
+            const textSpan = document.querySelector(".slide-text");
+            if (textSpan) {
+                textSpan.style.opacity = 1;
+                textSpan.style.transform = "translateX(0)";
+            }
+        }
+
+        function handleSliderInput(slider) {
+            const textSpan = document.querySelector(".slide-text");
+            const val = slider.value;
+            if (textSpan) {
+                textSpan.style.opacity = (100 - val) / 100;
+                textSpan.style.transform = `translateX(-${val * 0.2}px)`;
+            }
+            loeschSliderContainer.style.backgroundColor = `color-mix(in srgb, var(--md-color-error-container) ${val}%, var(--md-color-surface-container))`;
+            loeschSliderContainer.style.borderColor = `color-mix(in srgb, var(--md-color-error) ${val}%, var(--md-color-outline-variant))`;
+        }
+
+        function handleSliderChange(slider) {
+            if (slider.value == 100) {
+                textarea.value = "";
+                localStorage.removeItem("aktueller_entwurf");
+                autoResize();
+                updateSubmitButtonState();
+                loeschSliderContainer.classList.remove("show");
+                setTimeout(resetSliderStyles, 300);
+            } else {
+                loeschSliderContainer.style.backgroundColor = "";
+                loeschSliderContainer.style.borderColor = "";
+                slider.value = 0;
+                const textSpan = document.querySelector(".slide-text");
+                if (textSpan) {
+                    textSpan.style.opacity = 1;
+                    textSpan.style.transform = "translateX(0)";
+                }
+            }
+        }
+
+        function inZwischenablageKopieren(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                const tempTextArea = document.createElement("textarea");
+                tempTextArea.value = text;
+                tempTextArea.style.position = "fixed"; 
+                document.body.appendChild(tempTextArea);
+                tempTextArea.focus();
+                tempTextArea.select();
+                try { document.execCommand("copy"); } catch (err) {}
+                document.body.removeChild(tempTextArea);
+                return Promise.resolve();
+            }
+        }
+
+        function updateSubmitButtonState() {
+            const text = textarea.value.trim();
+            const kiAuswahl = kiSelect.value;
+
+            genderContainer.style.display = (kiAuswahl !== "keine") ? "block" : "none";
+
+            if (text === "") {
+                submitBtn.disabled = true;
+                submitBtn.className = "btn-disabled";
+                submitBtn.innerText = "3. Text senden";
+            } else {
+                submitBtn.disabled = false;
+                if (kiAuswahl !== "keine") {
+                    submitBtn.className = "btn-ki";
+                    submitBtn.innerText = "3. An KI senden";
+                } else {
+                    if (rxCharacteristic) {
+                        submitBtn.className = "btn-device";
+                        submitBtn.innerText = "3. Über BLE senden";
+                    } else {
+                        submitBtn.className = "btn-disabled";
+                        submitBtn.innerText = "Bitte erst Bluetooth verbinden";
+                        submitBtn.disabled = true;
+                    }
+                }
+            }
+        }
+
+        function anwendenLetzterText() {
+            if (!restoreCheck.checked) {
+                alert("Bitte setzen Sie zuerst das Häkchen bei 'Letzten gesendeten Text laden'.");
+                return;
+            }
+            const gespeicherterText = localStorage.getItem("letzter_gesendeter_text");
+            if (gespeicherterText) {
+                textarea.value = gespeicherterText;
+                autoResize();
+                updateSubmitButtonState();
+                restoreCheck.checked = false;
+            } else {
+                alert("Kein zuvor gesendeter Text im Speicher gefunden.");
+            }
+        }
+
+        function anwendenLetzterKiText() {
+            if (!restoreKiCheck.checked) {
+                alert("Bitte setzen Sie zuerst das Häkchen bei 'Letzten KI-Text laden'.");
+                return;
+            }
+            const gespeicherterText = localStorage.getItem("letzter_ki_gesendeter_text");
+            if (gespeicherterText) {
+                textarea.value = gespeicherterText;
+                autoResize();
+                updateSubmitButtonState();
+                restoreKiCheck.checked = false;
+            } else {
+                alert("Kein zuvor an die KI gesendeter Text gefunden.");
+            }
+        }
+
+        let lastHeight = 0;
+        function autoResize() {
+            textarea.style.height = 'auto';
+            const newHeight = textarea.scrollHeight;
+            if (newHeight !== lastHeight) {
+                textarea.style.height = newHeight + 'px';
+                lastHeight = newHeight;
+            }
+        }
+
+        function vorlageLaden() {
+            const ausgewaehlterKey = vorlageSelect.value;
+            if (ausgewaehlterKey === "leer") return;
+
+            const aktuellerText = textarea.value.trim();
+            if (aktuellerText !== "" && aktuellerText !== VORLAGEN[ausgewaehlterKey]) {
+                const bestätigung = confirm("Achtung: Ihr aktueller Text im Bearbeitungsfeld wird überschrieben. Fortfahren?");
+                if (!bestätigung) {
+                    vorlageSelect.value = "leer"; 
+                    return;
+                }
+            }
+            textarea.value = VORLAGEN[ausgewaehlterKey] || "";
+            localStorage.setItem("aktueller_entwurf", textarea.value); 
+            autoResize();
+            updateSubmitButtonState();
+        }
+
+        function resetForm() {
+            textarea.value = "";
+            vorlageSelect.value = "leer";
+            kiSelect.value = "keine";
+            const activeRadio = document.querySelector('input[name="gender"]:checked');
+            if (activeRadio) activeRadio.checked = false;
+            loeschSliderContainer.classList.remove("show");
+            setTimeout(resetSliderStyles, 300);
+            localStorage.removeItem("aktueller_entwurf"); 
+            autoResize();
+            updateSubmitButtonState();
+            overlay.style.display = "none";
+            successDiv.style.display = "none";
+            loadingDiv.style.display = "block";
+            countdownEl.innerText = "Bitte warten...";
+        }
+
+        // Funktion zum Senden von Daten in kleinen Stücken über BLE (20 Byte Chunking)
+        async function sendBleData(text) {
+            const encoder = new TextEncoder();
+            const dataBytes = encoder.encode(text);
+            const chunkSize = 20; // NUS Standard MTU Payload-Limit
+            
+            for (let offset = 0; offset < dataBytes.length; offset += chunkSize) {
+                const chunk = dataBytes.slice(offset, offset + chunkSize);
+                // Schreibt den Block an die RX-Charakteristik des BLE-Peripherals
+                await rxCharacteristic.writeValueWithResponse(chunk);
+                
+                // Fortschrittsanzeige aktualisieren
+                const prozent = Math.round(((offset + chunk.length) / dataBytes.length) * 100);
+                countdownEl.innerText = `Übertrage: ${prozent}%`;
+            }
+        }
+
+        async function handleFormSubmit(event) {
+            if (event) event.preventDefault();
+            const kiAuswahl = kiSelect.value;
+            const text = textarea.value;
+
+            let genderInfo = "";
+            const selectedGender = document.querySelector('input[name="gender"]:checked');
+            if (selectedGender) {
+                if (selectedGender.value === 'm') genderInfo = "männlicher Patient\n";
+                else if (selectedGender.value === 'w') genderInfo = "weibliche Patientin\n";
+                else if (selectedGender.value === 'd') genderInfo = "diverser Patient\n";
+            }
+
+            // KI-Verzweigung (unverändert, nutzt die ChatGPT-URL-Lösung)
+            if (kiAuswahl !== "keine") {
+                if (!text.trim()) {
+                    alert("Bitte schreiben oder wählen Sie zuerst einen Text.");
+                    return false;
+                }
+
+                const basisPrompt = KI_PROMPTS[kiAuswahl] || "";
+                const promptString = basisPrompt + "\n\n" + genderInfo + text;
+
+                localStorage.setItem("letzter_ki_gesendeter_text", text);
+                inZwischenablageKopieren(promptString);
+
+                const encodedPrompt = encodeURIComponent(promptString);
+                const targetUrl = "https://chatgpt.com/?q=" + encodedPrompt;
+                const originalBg = submitBtn.style.background;
+                
+                submitBtn.innerText = "📋 Kopiert! Öffne ChatGPT...";
+                submitBtn.style.background = "var(--md-color-primary)"; 
+
+                setTimeout(() => {
+                    window.open(targetUrl, "_blank");
+                    kiSelect.value = "keine";
+                    const activeRadio = document.querySelector('input[name="gender"]:checked');
+                    if (activeRadio) activeRadio.checked = false;
+                    textarea.value = "";
+                    localStorage.removeItem("aktueller_entwurf");
+                    autoResize();
+                    updateSubmitButtonState();
+                    submitBtn.style.background = originalBg; 
+                }, 800);
+                return false; 
+            }
+
+            // Sicherstellen, dass BLE-Verbindung steht
+            if (!rxCharacteristic) {
+                alert("Bitte verbinden Sie zuerst das Bluetooth-Gerät.");
+                return false;
+            }
+
+            localStorage.setItem("letzter_gesendeter_text", text);
+
+            overlay.style.display = "flex";
+            loadingDiv.style.display = "block";
+            successDiv.style.display = "none";
+            countdownEl.innerText = "Übertragung startet...";
+
+            try {
+                // Sende Daten über Web Bluetooth NUS Service
+                await sendBleData(text);
+
+                // Erfolgsmeldung anzeigen
+                loadingDiv.style.display = "none";
+                successDiv.style.display = "block";
+                localStorage.removeItem("aktueller_entwurf");
+            } catch (error) {
+                console.error("Fehler beim Senden über BLE: ", error);
+                alert("Übertragungsfehler über Bluetooth: " + error.message);
+                overlay.style.display = "none";
+            }
+
+            return false;
+        }
+
+        textarea.addEventListener("input", () => {
+            autoResize();
+            updateSubmitButtonState();
+            localStorage.setItem("aktueller_entwurf", textarea.value);
+        });
+
+        kiSelect.addEventListener("change", updateSubmitButtonState);
+
+        function ladeLogo() {
+            const logoPath = "/logo.webp";
+            const favicon = document.getElementById("favicon");
+            if (favicon) favicon.href = logoPath;
+            const appleIcon = document.getElementById("apple-touch-icon");
+            if (appleIcon) appleIcon.href = logoPath;
+            const headerLogo = document.getElementById("header-logo");
+            if (headerLogo) headerLogo.src = logoPath;
+        }
+
+        window.addEventListener("DOMContentLoaded", async () => {
+            await ladeVorlagenUndPrompts();
+            const gespeicherterEntwurf = localStorage.getItem("aktueller_entwurf");
+            if (gespeicherterEntwurf) {
+                textarea.value = gespeicherterEntwurf;
+            }
+            autoResize();
+            updateSubmitButtonState();
+            ladeLogo(); 
+        });
+    </script>
+</body>
+</html>
