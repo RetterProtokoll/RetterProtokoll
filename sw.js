@@ -1,49 +1,49 @@
-// Erhöhe diese Versionsnummer (z.B. v1 zu v2), wenn du dein HTML aktualisierst!
-const CACHE_NAME = 'emergency-doc-cache-v1';
+// Cache-Version erhöht, um alte Offline-Fehler auf dem Smartphone zu löschen
+const CACHE_NAME = 'retter-protokoll-cache-v4';
 
-// Hier trägst du alle Dateien ein, die offline verfügbar sein müssen
+// Liste der Dateien im exakten Unterordner, die offline gespeichert werden
 const ASSETS_TO_CACHE = [
-  'index.html',
-  'manifest.json',
-  'sw.js',
-  'logo.webp'
-  // Falls du irgendwann eigene .css oder .js Dateien hast, trägst du sie einfach hier ein
+  '/RetterProtokoll/',
+  '/RetterProtokoll/index.html',
+  '/RetterProtokoll/manifest.json',
+  '/RetterProtokoll/sw.js',
+  '/RetterProtokoll/logo.png'
 ];
 
-// 1. App-Dateien beim ersten Laden im Handy speichern
+// 1. Dateien beim ersten Laden lokal sichern
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Dateien werden für den Offline-Modus gecached...');
+      console.log('RetterProtokoll: Sichere Anwendungsdaten für den Offline-Modus...');
       return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting()) // Erzwingt, dass der neue SW sofort aktiv wird
+    }).then(() => self.skipWaiting())
   );
 });
 
-// 2. Altes Cache-Material löschen, wenn die Versionsnummer erhöht wurde
+// 2. Alten Cache verwerfen, sobald sich die Version erhöht
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('Alten App-Cache gelöscht:', cache);
+            console.log('RetterProtokoll: Veralteten App-Cache gelöscht:', cache);
             return caches.delete(cache);
           }
         })
       );
-    }).then(() => self.clients.claim()) // Übernimmt sofort die Kontrolle über alle Seiten
+    }).then(() => self.clients.claim())
   );
 });
 
-// 3. Anfragen abfangen: Erst im lokalen Speicher nachsehen, sonst aus dem Internet laden
+// 3. Anfragen abfangen und blitzschnell lokal beantworten
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        return cachedResponse; // Datei existiert lokal, blitzschnell ausgeben
+        return cachedResponse; // Lokal gefunden!
       }
-      return fetch(event.request); // Nicht im Cache? Dann normal aus dem Web laden
+      return fetch(event.request); // Nicht im Cache, lade normal aus dem Netz
     })
   );
 });

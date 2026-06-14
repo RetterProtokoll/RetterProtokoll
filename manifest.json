@@ -1,14 +1,14 @@
 {
-  "name": "EmergencyDoc App",
-  "short_name": "EmergencyDoc",
-  "start_url": "index.html",
+  "name": "RetterProtokoll BLE App",
+  "short_name": "RetterProtokoll",
+  "start_url": "/RetterProtokoll/index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1a73e8",
+  "background_color": "#f7f9f9",
+  "theme_color": "#006a6a",
   "orientation": "any",
   "icons": [
     {
-      "src": "logo.webp",
+      "src": "/RetterProtokoll/logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }
