@@ -6,7 +6,7 @@ const ASSETS_TO_CACHE = [
   'index.html',
   'manifest.json',
   'sw.js',
-  'icon.png'
+  'logo.webp'
   // Falls du irgendwann eigene .css oder .js Dateien hast, trägst du sie einfach hier ein
 ];
 
