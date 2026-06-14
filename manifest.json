@@ -1,5 +1,5 @@
 {
-  "name": "RetterProtokoll BLE App",
+  "name": "RetterProtokoll App",
   "short_name": "RetterProtokoll",
   "start_url": "/RetterProtokoll/index.html",
   "display": "standalone",
