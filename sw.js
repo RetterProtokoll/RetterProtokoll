@@ -1,5 +1,5 @@
 // Cache-Version auf v5 erhöht für die Namensänderung
-const CACHE_NAME = 'retter-protokoll-cache-v5';
+const CACHE_NAME = 'retter-protokoll-cache-v6';
 
 const ASSETS_TO_CACHE = [
   '/RetterProtokoll/',
