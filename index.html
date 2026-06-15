@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RetterProtokoll</title>
+    <link id="favicon" rel="icon" type="image/webp" href="">
+    <link id="apple-touch-icon" rel="apple-touch-icon" href="">
     
-    <link rel="manifest" href="/RetterProtokoll/manifest.json">
-    <link id="favicon" rel="icon" type="image/png" href="/RetterProtokoll/logo.png">
-    <link id="apple-touch-icon" rel="apple-touch-icon" href="/RetterProtokoll/logo.png">
+    <!-- Tesseract OCR für Client-seitige Texterkennung -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     
     <style>
         /* CSS-Variablen im Material Design 3 (Android) Farbschema */
@@ -20,13 +21,14 @@
             --md-color-surface-container: #edf5f5;
             --md-color-background: #f7f9f9;
             --md-color-on-surface: #191c1c;
-            --md-color-on-surface-variant: #000000;
+            --md-color-on-surface-variant: #000000; /* Zuvor grau, jetzt schwarz */
             --md-color-outline: #6f7979;
             --md-color-outline-variant: #bec8c8;
             --md-color-error: #ba1a1a;
             --md-color-error-container: #ffdad6;
             --md-color-on-error-container: #410002;
             
+            /* Status-Farben für grüne Buttons */
             --md-color-success: #22c55e;
             --md-color-success-hover: #16a34a;
             
@@ -44,7 +46,7 @@
                 --md-color-surface-container: #191c1c;
                 --md-color-background: #0e1414;
                 --md-color-on-surface: #e0e3e3;
-                --md-color-on-surface-variant: #ffffff;
+                --md-color-on-surface-variant: #ffffff; /* Im Dark Mode weiß für optimalen Kontrast */
                 --md-color-outline: #899393;
                 --md-color-outline-variant: #3f4949;
                 --md-color-error: #ffb4ab;
@@ -72,7 +74,7 @@
         .card { 
             background: var(--md-color-surface); 
             padding: 24px; 
-            border-radius: 28px; 
+            border-radius: 28px; /* Extra Large Shape M3 */
             box-shadow: var(--md-elevation-1); 
             max-width: 500px; 
             width: 100%; 
@@ -82,6 +84,7 @@
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
+        /* Zentrierter Header */
         .title-container { 
             display: flex; 
             align-items: center; 
@@ -116,12 +119,13 @@
             color: var(--md-color-on-surface-variant);
         }
 
+        /* Material Outlined Form Felder */
         input, select, textarea { 
             width: 100%; 
             padding: 16px; 
             margin: 0 0 16px 0; 
             font-size: 16px; 
-            border-radius: 12px; 
+            border-radius: 12px; /* Large Shape M3 */
             border: 1px solid var(--md-color-outline); 
             background: transparent; 
             color: var(--md-color-on-surface);
@@ -130,11 +134,12 @@
             transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
         }
 
+        /* Schließe den Schieberegler explizit aus der globalen Fokus-Regel aus */
         input:not(.slide-input):focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--md-color-primary);
             border-width: 2px;
-            padding: 15px; 
+            padding: 15px; /* Korrektur für dickeren Border */
         }
 
         textarea { 
@@ -145,6 +150,7 @@
             line-height: 1.5;
         }
 
+        /* Material M3 Pill Buttons */
         button { 
             width: 100%; 
             padding: 14px 24px; 
@@ -153,7 +159,7 @@
             letter-spacing: 0.1px;
             color: white; 
             border: none; 
-            border-radius: 100px; 
+            border-radius: 100px; /* Pill Shape M3 */
             cursor: pointer; 
             margin-top: 10px; 
             box-sizing: border-box; 
@@ -193,15 +199,12 @@
             box-shadow: var(--md-elevation-2);
         }
 
-        button.btn-connect {
-            background: var(--md-color-primary);
-            margin-bottom: 16px;
-        }
-
+        /* Fetter Text auf dem Sende-Button */
         #submit-btn {
             font-weight: 800;
         }
 
+        /* Google Material Design 3 Swipe/Slider Container */
         .slide-container { 
             position: relative; 
             background: var(--md-color-surface-container); 
@@ -259,16 +262,18 @@
             outline: none; 
             padding: 0 4px;
             box-sizing: border-box;
-            border: none !important;      
-            box-shadow: none !important;  
+            border: none !important;      /* Verhindert Rahmen im Normalzustand */
+            box-shadow: none !important;  /* Verhindert Schatten im Normalzustand */
         }
 
+        /* Verhindert explizit das Hinzufügen von Fokus-Rahmen auf dem Slider */
         .slide-input:focus {
             outline: none !important;
             border: none !important;
             box-shadow: none !important;
         }
 
+        /* Verstecke Standard-Tracks der Browser */
         .slide-input::-webkit-slider-runnable-track {
             background: transparent;
             border: none;
@@ -278,6 +283,7 @@
             border: none;
         }
 
+        /* Webkit Thumb (Chrome, Safari, Edge) */
         .slide-input::-webkit-slider-thumb { 
             -webkit-appearance: none; 
             width: 48px; 
@@ -304,6 +310,7 @@
             box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0 0 0 10px rgba(186, 26, 26, 0.12);
         }
 
+        /* Firefox Thumb */
         .slide-input::-moz-range-thumb { 
             width: 48px; 
             height: 48px; 
@@ -330,6 +337,7 @@
             box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0 0 0 10px rgba(186, 26, 26, 0.12);
         }
 
+        /* Material Segmented Button (Geschlecht) */
         .restore-container#gender-container {
             border: 1px solid var(--md-color-outline);
             background: transparent;
@@ -339,7 +347,7 @@
         .segmented-control {
             display: flex;
             border: 1px solid var(--md-color-outline);
-            border-radius: 100px; 
+            border-radius: 100px; /* Pill Shape */
             margin-top: 8px;
             overflow: hidden;
             box-sizing: border-box;
@@ -373,6 +381,7 @@
             color: var(--md-color-on-primary-container);
         }
 
+        /* Material Card-ähnliche Helper */
         .restore-container { 
             text-align: left; 
             background: var(--md-color-surface-container); 
@@ -429,6 +438,7 @@
             }
         }
         
+        /* Buttons werden grün, wenn der Haken gesetzt ist */
         .restore-container:has(#restore-check:checked) button.secondary, 
         .restore-container:has(#restore-ki-check:checked) button.secondary { 
             background: var(--md-color-success) !important; 
@@ -440,6 +450,7 @@
             background: var(--md-color-success-hover) !important;
         }
 
+        /* Overlay im Material Design */
         #overlay { 
             display: none; 
             position: fixed; 
@@ -477,6 +488,28 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* Chips für erkannte Medikamente / Diagnosen */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            background: var(--md-color-primary-container);
+            color: var(--md-color-on-primary-container);
+            border: 1px solid var(--md-color-outline-variant);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .chip:hover {
+            background: var(--md-color-outline-variant);
+            color: var(--md-color-on-surface);
+        }
+        .chip:active {
+            transform: scale(0.95);
+        }
+
         @media (max-width: 500px) {
             body { padding: 12px 8px; }
             .card { padding: 20px 16px; border-radius: 24px; }
@@ -491,11 +524,9 @@
 <body>
     <div class="card">
         <div class="title-container">
-            <img id="header-logo" class="title-logo" src="/RetterProtokoll/logo.png" alt="RetterProtokoll Logo">
+            <img id="header-logo" class="title-logo" src="" alt="RetterProtokoll Logo">
             <h2>RetterProtokoll</h2>
         </div>
-
-        <button type="button" id="connect-ble-btn" class="btn-connect" onclick="connectBluetooth()">🔌 Mit Gerät verbinden</button>
         
         <form id="protokoll-form" method="POST" action="/" onsubmit="return handleFormSubmit(event)">
             <label for="vorlage-select">1. Vorlage wählen:</label>
@@ -507,9 +538,46 @@
             <select id="ki-select">
                 <option value="keine" selected>Keine KI (Text direkt senden)</option>
                 <option value="chatgpt_korrektur">ChatGPT: Text korrigieren</option>
-                <option value="chatgpt_transportverzicht">ChatGPT: Transportverzicht</option>
                 <option value="chatgpt_abcde">ChatGPT: ABCDE</option>
+                <option value="chatgpt_transportverzicht">ChatGPT: Transportverzicht</option>
             </select>
+
+            <!-- NEU: MediaPipe-artiger Diagnose & Medikamenten Scanner mit optimierter Vorverarbeitung -->
+            <div class="restore-container" style="margin-top: 0;">
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <label style="margin: 0; font-size: 14px;">📷 Medikamenten- & Diagnosen-Scanner:</label>
+                    <button type="button" class="secondary" style="width: auto; margin: 0; padding: 6px 14px;" onclick="toggleScanner()">Scanner öffnen</button>
+                </div>
+                
+                <div id="scanner-panel" style="display: none; margin-top: 12px; border-top: 1px solid var(--md-color-outline-variant); padding-top: 12px;">
+                    <div id="camera-container" style="position: relative; width: 100%; border-radius: 12px; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                        <video id="webcam" autoplay playsinline style="width: 100%; height: auto; max-height: 200px; object-fit: cover;"></video>
+                        <canvas id="scanner-hud" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" id="scan-btn" class="btn-ki" style="margin: 0; flex: 1;" onclick="captureAndProcess()">📷 Bild scannen</button>
+                            <button type="button" class="secondary" style="margin: 0; flex: 1;" onclick="document.getElementById('file-uploader').click()">📁 Bild hochladen</button>
+                        </div>
+                        <button type="button" class="secondary" style="margin: 0;" onclick="closeWebcam()">Kamera ausschalten</button>
+                    </div>
+
+                    <!-- Versteckter Datei-Uploader -->
+                    <input type="file" id="file-uploader" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
+
+                    <textarea id="paste-scanner" placeholder="Oder Text/Arztbrief kopieren & hier einfügen für automatische Extraktion..." style="min-height: 60px; font-size: 13px; padding: 10px; margin-bottom: 12px;"></textarea>
+                    
+                    <div id="scanner-status" style="font-size: 13px; color: var(--md-color-on-surface-variant); text-align: center; margin-bottom: 8px; display: none; font-weight: 500;"></div>
+                    
+                    <div id="recognition-results" style="display: none; background: var(--md-color-surface); border-radius: 12px; padding: 12px; border: 1px solid var(--md-color-outline-variant);">
+                        <div style="font-weight: 600; font-size: 13px; margin-bottom: 8px; color: var(--md-color-primary);">Erkannte Einträge (Anklicken zum Einfügen):</div>
+                        
+                        <div id="diagnoses-chips" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;"></div>
+                        <div id="meds-chips" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                    </div>
+                </div>
+            </div>
 
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; margin-bottom: 6px;">
                 <label for="freitext" style="margin-top: 0; display: inline-block;">2. Text bearbeiten:</label>
@@ -539,9 +607,13 @@
 
             <button type="submit" id="submit-btn" class="btn-disabled" disabled>3. Text senden</button>
 
-            <label for="speed-select" style="display:none;">Geschwindigkeit:</label>
-            <select name="s" id="speed-select" style="display:none;">
+            <label for="speed-select">Geschwindigkeit:</label>
+            <select name="s" id="speed-select">
                 <option value="standard" selected>Standard </option>
+                <option value="schnell">Schnell </option>
+                <option value="langsam">Langsam </option>
+                <option value="mensch">Mensch (Achtung Langsam)</option>
+                <option value="nida">NIDA (Achtung: Sehr langsam – nur im Notfall benutzen)</option>
             </select>
             
             <div class="restore-container">
@@ -566,45 +638,19 @@
         <div class="overlay-content">
             <div id="overlay-loading" style="text-align: center;">
                 <div class="spinner"></div>
-                <h3 style="margin: 15px 0; color: var(--md-color-primary);">✍️ Sende Daten über Bluetooth...</h3>
-                <p id="countdown-text" style="color: var(--md-color-primary); font-weight: bold; font-size: 18px; margin: 10px 0;">Bitte warten...</p>
-                <p style="color: var(--md-color-on-surface-variant); font-size: 14px;">Bitte trennen Sie die Verbindung nicht.</p>
+                <h3 style="margin: 15px 0; color: var(--md-color-primary);">✍️ RetterProtokoll tippt aktuell...</h3>
+                <p id="countdown-text" style="color: var(--md-color-primary); font-weight: bold; font-size: 18px; margin: 10px 0;">ca. -- Sekunden</p>
+                <p style="color: var(--md-color-on-surface-variant); font-size: 14px;">Bitte warten Sie, bis RetterProtokoll den Text fertig getippt hat.</p>
             </div>
             <div id="overlay-success" style="text-align: center; display: none;">
                 <span style="font-size: 60px;">✅</span>
-                <h3 style="margin: 15px 0;">Text erfolgreich übermittelt!</h3>
+                <h3 style="margin: 15px 0;">Text erfolgreich gesendet!</h3>
                 <button type="button" onclick="resetForm()" style="background: var(--md-color-primary); max-width: 280px; margin: 20px auto 0 auto;">Nächster Text</button>
             </div>
         </div>
     </div>
 
-    <script id="templates-data" type="application/json">{
-    "vorlagen": {
-        "metamizol_m": "Der Patient wurde ausdrücklich und detailliert über das seltene, nicht dosisabhängige und potenziell lebensbedrohliche Risiko einer Agranulozytose durch Metamizol aufgeklärt. Hierbei handelt es sich um eine akute, schwere Zerstörung der weißen Blutkörperchen (Granulozyten) im Knochenmark, was zu einem plötzlichen, lebensgefährlichen Zusammenbruch der körpereigenen Immunabwehr führt.\n\nEr wurde darüber informiert, dass diese Blutbildveränderung jederzeit während der Therapie sowie auch kurz nach deren Beendigung auftreten kann, selbst wenn das Medikament in der Vergangenheit bereits komplikationslos vertragen wurde.\n\nEs erfolgte die explizite Aufklärung über die typischen Frühsymptome: plötzliches Fieber, Schüttelfrost, schwere Halsschmerzen sowie schmerzhafte Schleimhautveränderungen (insbesondere im Mund-, Nasen-, Rachen-, Genital- oder Analbereich). Der Patient wurde darauf hingewiesen, dass diese Symptome bei einer Fiebersenkung oder einer gleichzeitigen Antibiotikaeinnahme verschleiert werden und unbemerkt bleiben können.\n\nDer Patient wurde angewiesen, bei Verdacht die Anwendung sofort abzubrechen, sich unverzüglich ärztlich vorzustellen, zwingend auf die Metamizol-Einnahme hinzuweisen und ein Notfall-Differenzialblutbild zu fordern. Es wurde zudem über weitere Nebenwirkungen, insbesondere das Risiko eines relevanten Blutdruckabfalls (Hypotonie), Tachykardien sowie mögliche allergische Reaktionen (bis hin zur Anaphylaxie) aufgeklärt. Der Patient hat die Warnhinweise und Verhaltensanweisungen vollständig verstanden und akzeptiert.",
-        "metamizol_w": "Die Patientin wurde ausdrücklich und detailliert über das seltene, nicht dosisabhängige und potenziell lebensbedrohliche Risiko einer Agranulozytose durch Metamizol aufgeklärt. Hierbei handelt es sich um eine akute, schwere Destruktion der Granulozyten im Knochenmark, die zu einem plötzlichen, lebensgefährlichen Zusammenbruch der körpereigenen Immunabwehr führt.\n\nDie Patientin wurde darüber informiert, dass diese Blutbildveränderung jederzeit während der Therapie sowie kurz nach deren Beendigung auftreten kann, selbst wenn das Medikament in der Vergangenheit bereits komplikationslos vertragen wurde.\n\nEs erfolgte die explizite Aufklärung über die typischen Frühsymptome: plötzliches Fieber, Schüttelfrost, schwere Halsschmerzen sowie schmerzhafte Schleimhautveränderungen (insbesondere im Mund-, Nasen-, Rachen-, Genital- oder Analbereich). Die Patientin wurde darauf hingewiesen, dass diese Symptome durch eine gleichzeitige Fiebersenkung oder Antibiotikaeinnahme verschleiert werden und somit unbemerkt bleiben können.\n\nDie Patientin wurde angewiesen, bei Verdacht die Anwendung sofort abzubrechen, sich unverzüglich ärztlich vorzustellen, zwingend auf die Metamizol-Einnahme hinzuweisen und ein Notfall-Differenzialblutbild zu fordern. Die Warnhinweise und Verhaltensanweisungen wurden verstanden und akzeptiert. Es wurde zudem über weitere Nebenwirkungen, insbesondere das Risiko eines relevanten Blutdruckabfalls (Hypotonie), Tachykardien sowie mögliche allergische Reaktionen (bis hin zur Anaphylaxie) aufgeklärt. Eine Schwangerschaft wurde anamnestisch ausgeschlossen.",
-        "mitfahrt_w": "Die Patientin verbleibt auf eigenen ausdrücklichen Wunsch vor Ort und verweigert den angebotenen Transport in eine geeignete Klinik. Über die medizinischen Risiken, mögliche Folgeschäden sowie die potenzielle Lebensgefahr (letale Konsequenz) durch die Transportverweigerung wurde die Patientin umfassend, verständlich und eindringlich aufgeklärt. Die Patientin zeigte sich vollständig einsichtig, lehnte die Mitfahrt jedoch weiterhin konsequent ab.\n\nZum Zeitpunkt der Aufklärung und des Verlassens der Einsatzstelle war die Patientin wach, voll orientiert (ZOSP, GCS 15) und frei von erkennbaren Einschränkungen der Urteilsfähigkeit (keine Hinweise auf Intoxikation, kognitive Defizite oder psychische Ausnahmezustände). Hinweise auf Eigen- oder Fremdgefährdung lagen nicht vor.\n\nDie Patientin wurde angewiesen, sich zum nächstmöglichen Zeitpunkt bei ihrem Hausarzt vorzustellen. Bei einer Verschlechterung des Zustands oder erneuten Beschwerden wurde an den Hausarzt (außerhalb der Sprechzeiten: Kassenärztlicher Notdienst, Tel.: 116117) verwiesen. Bei akuten Notfallsymptomen (z. B. Bewusstseinsveränderung, akuter Atemnot, starken Schmerzen) ist unverzüglich der Rettungsdienst über den Notruf 112 zu alarmieren.\n\nDie Verweigerung wurde von der Patientin auf dem Protokoll per Unterschrift bestätigt. Eine Kopie des Protokolls wurde ausgehändigt.",
-        "mitfahrt_m": "Der Patient verbleibt auf eigenen ausdrücklichen Wunsch vor Ort und verweigert den angebotenen Transport in eine geeignete Klinik. Über die medizinischen Risiken, mögliche Folgeschäden sowie die potenzielle Lebensgefahr (letale Konsequenz) durch die Transportverweigerung wurde der Patient umfassend, verständlich und eindringlich aufgeklärt. Der Patient zeigte sich vollständig einsichtig, lehnte die Mitfahrt jedoch weiterhin konsequent ab.\n\nZum Zeitpunkt der Aufklärung und des Verlassens der Einsatzstelle war der Patient wach, voll orientiert (ZOSP, GCS 15) und frei von erkennbaren Einschränkungen der Urteilsfähigkeit (keine Hinweise auf Intoxikation, kognitive Defizite oder psychische Ausnahmezustände). Hinweise auf Eigen- oder Fremdgefährdung lagen nicht vor.\n\nDer Patient wurde angewiesen, sich zum nächstmöglichen Zeitpunkt bei seinem Hausarzt vorzustellen. Bei einer Verschlechterung des Zustands oder erneuten Beschwerden wurde an den Hausarzt (außerhalb der Sprechzeiten: Kassenärztlicher Notdienst, Tel.: 116117) verwiesen. Bei akuten Notfallsymptomen (z. B. Bewusstseinsveränderung, akuter Atemnot, starken Schmerzen) ist unverzüglich der Rettungsdienst über den Notruf 112 zu alarmieren.\n\nDie Verweigerung wurde von dem Patienten auf dem Protokoll per Unterschrift bestätigt. Eine Kopie des Protokolls wurde ausgehändigt.",
-        "hilfe_w": "Die Patientin verbleibt vor Ort. Ein Transport in die Klinik wurde ihr mehrmals angeboten. Die Patientin wurde angewiesen, sich zum nächstmöglichen Zeitpunkt beim Hausarzt vorzustellen und das Ereignis zu schildern.\n\nBei einer Verschlechterung oder erneuten Beschwerden soll die Patientin mit ihrem Hausarzt oder ihrer Hausärztin (außerhalb der Praxiszeiten: Kassenärztlicher Notdienst, Tel.: 116117) Kontakt aufnehmen. Bei einer akuten Verschlechterung (z. B. Bewusstseinsveränderung, akute Atemnot, starken Schmerzen) soll erneut der Rettungsdienst über den Notruf 112 verständigt werden.\n\nDie Patientin erhält eine Kopie des Protokolls. Beim Verlassen der Einsatzstelle ist die Patientin zeitlich, örtlich, situativ und zur Person (ZOSP) orientiert, der GCS beträgt 15.",
-        "hilfe_m": "Der Patient verbleibt vor Ort. Ein Transport in die Klinik wurde ihm mehrmals angeboten. Der Patient wurde angewiesen, sich zum nächstmöglichen Zeitpunkt beim Hausarzt vorzustellen und das Ereignis zu schildern.\n\nBei Verschlechterung oder erneuten Beschwerden soll der Patient mit seinem Hausarzt oder seiner Hausärztin (außerhalb der Praxiszeiten: Kassenärztlicher Notdienst, Tel.: 116117) Kontakt aufnehmen. Bei akuter Verschlechterung (z. B. Bewusstseinsveränderung, akute Atemnot, starken Schmerzen) soll erneut der Rettungsdienst über den Notruf 112 verständigt werden.\n\nDer Patient erhält eine Kopie des Protokolls. Beim Verlassen der Einsatzstelle Pat. GCS 15, ZOSP orientiert.",
-        "abcde": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO2 im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.",
-        "abcdesampler": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO2 im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.\nS (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit: / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen, Impfstatus Tetanus aktuell",
-        "sampler": "S (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit: / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen / Impfstatus Tetanus aktuell\n\nOPQRST \nO (Onset): \nP (Provocation): \nQ (Quality): \nR (Region): \nS (Severity): / 10\nT (Time): "
-    },
-    "prompts": {
-        "chatgpt_korrektur": "Korrigiere und optimiere den folgenden Text für ein Rettungsdienstprotokoll. Achte auf eine fachlich korrekte, präzise und professionelle Formulierung sowie auf Rechtschreibung, Grammatik und Zeichensetzung. Erhalte den medizinischen Inhalt unverändert und verwende eine sachliche, dokumentationsgerechte Sprache. Gib ausschließlich den fertig überarbeiteten Text aus, ohne zusätzliche Erklärungen, Kommentare oder Formatierungen.\n\n",
-        "chatgpt_transportverzicht": "Du bist ein erfahrener, fachlich exzellenter Notfallsanitäter im deutschen Rettungsdienst. Deine Aufgabe ist es, für ein digitales Rettungsdienstprotokoll eine rechtssichere, lückenlose und präzise ärztliche/rettungsdienstliche Aufklärung zu formulieren. Die Aufklärung dient der Absicherung bei einem Transportverzicht, einer Verweigerung oder einer Aufklärung gegen ärztlichen/rettungsdienstlichen Rat (Revers). Sie muss unmissverständlich aufzeigen, dass der Patient die Tragweite seiner Entscheidung vollumfänglich verstanden hat.\n\nHalte dich strikt an folgende Struktur und Kriterien:\n1. Klinisches Zustandsbild & Dringlichkeit: Erkläre in klaren Worten die potenzielle Schwere des Krankheitsbildes und warum eine klinische Abklärung (Krankenhaus) zwingend erforderlich ist.\n2. Spezifische Risiken & Komplikationen: Nenne die konkreten, medizinischen Risiken, die bei Nichtbehandlung oder Nichttransport drohen (angepasst an das Leitsymptom).\n3. Letalitätshinweis (Bis zum Tod): Es muss explizit, unbeschönigt und rechtssicher formuliert werden, dass die Verweigerung von Diagnostik/Transport zu bleibenden Schäden, schwerster Invalidität oder dem Tod des Patienten führen kann.\n4. Urteilsfähigkeit & Aufklärungsbereitschaft: Bestätige in der Formulierung defensiv, dass der Patient bei vollem Bewusstsein, orientiert, nachvollziehbar urteilsfähig und frei von Zwang handelt, die Risiken versteht und dennoch ablehnt.\n5. Jederzeitige Wiederrufbarkeit: Füge den Hinweis an, dass der Rettungsdienst bei einer Verschlechterung oder einem Umdenken jederzeit erneut gerufen werden kann.\n\nFormuliere den Text als Fließtext, der direkt so in das Freitextfeld des Protokolls Aufklärung kopiert werden kann. Nutze eine professionelle, medizinisch-juristische Diktion. Beschreibe nur medizinisch plausible Risiken und Komplikationen in Bezug auf das angegebene Leitsymptom bzw. die Verdachtsdiagnose. Die Formulierungen müssen geeignet sein, einer nachträglichen fachlichen, juristischen oder gerichtlichen Prüfung standzuhalten. Verwende professionelle medizinische und juristische Fachsprache, die zugleich für den Patienten verständlich dokumentiert ist.\n\nAusgabe: Gib ausschließlich den fertigen Dokumentationstext aus, ohne Einleitung, Überschrift oder zusätzliche Erläuterungen.\n\nBitte generiere die Aufklärung basierend auf folgendem Leitsymptom / folgender Verdachtsdiagnose:\n\n",
-        "chatgpt_abcde": "Rolle: Du bist ein erfahrener Notfallsanitäter und Dokumentations-Experte für den Rettungsdienst.\nAufgabe: Ich liefere dir gleich Stichpunkte zu einem Realeinsatz. Deine Aufgabe ist es, diese Informationen präzise in das unten stehende Template einzufügen.\nWICHTIGE FORMATIERUNGS-REGELN:\n1. Nutze NIEMALS Aufzählungszeichen (keine Spiegelstriche, Bindestriche, Punkte oder Zahlen).\n2. Nutze KEINE Fließtext-Absätze innerhalb der Blöcke.\n3. Nutze KEINE Leerzeilen. Trenne die Zeilen ausschließlich durch einen einfachen Zeilenumbruch (Shift+Enter).\n4. Der Text muss kompakt und stichwortartig-flüssig sein.\n5. Suche aus den Bildern die aktuellen Medikamente mit Dosierung sowie Diagnosen und Allergien.\nMEDIZINISCHE LOGIK & INHALT:\n- Sprache: Konsequent professioneller medizinischer Fachjargon, präzise und telegramstilartig verkürzt (z.B. \"Pat. wach, orientiert\", \"V.a. ACS\").\n- Normalwerte: Behalte qualitative Standard-Normalbefunde des Templates (z.B. \"Atemwege frei\", \"Pupillen isokor/lichtreagibel\") standardmäßig bei, AUSSER meine Stichpunkte widersprechen dem explizit.\n- Medikamente: Korrigiere alle von mir genannten Arzneimittel eigenständig auf die korrekte pharmakologische Schreibweise (Wirkstoffname).\n- Messwerte: Trage Vitalwerte (RR, Puls, SpO2, BZ) NUR dann ein, wenn ich sie dir in den Stichpunkten liefere. Erfinde niemals Zahlenwerte.\n- OPQRST / SAMPLER: Wenn meine Stichpunkte zu diesen Schemata keine Angaben enthalten oder sie medizinisch keinen Sinn ergeben (z.B. bei schmerzlosen Zuständen oder Bewusstlosigkeit), lösche diese Zeilen/Kategorien komplett aus dem Protokoll.\n\nHier ist das Template, das du befüllen sollst:\nLeitsymptomatik: \nLage vor Ort: \nA: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO₂ im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.\nS (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit: / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen, Impfstatus Tetanus aktuell\nO (Onset): \nP (Provocation): \nQ (Quality): \nR (Region): \nS (Severity): / 10\nT (Time):\nTherapie: \nTransport: Transport bei stabilen Vitalparametern ohne Komplikationen.\n\nHier sind meine Einsatzinfos:\n\n"
-    }
-}</script>
-
     <script>
-        // Bluetooth UUIDs für den Nordic UART Service (NUS)
-        const BLE_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
-        const BLE_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
-
-        let bleDevice = null;
-        let rxCharacteristic = null;
-
         let VORLAGEN = {};
         let KI_PROMPTS = {};
 
@@ -619,9 +665,13 @@
         const loadingDiv = document.getElementById("overlay-loading");
         const successDiv = document.getElementById("overlay-success");
         const countdownEl = document.getElementById("countdown-text");
+        const speedSelect = document.getElementById("speed-select");
         const restoreCheck = document.getElementById("restore-check");
         const restoreKiCheck = document.getElementById("restore-ki-check");
-        const connectBleBtn = document.getElementById("connect-ble-btn");
+
+        // Scanner-spezifische Variablen
+        let stream = null;
+        let hudAnimationId = null;
 
         const OPTIONEN_NAMEN = {
             "metamizol_w": "Aufklärung: Metamizol weiblich",
@@ -635,77 +685,16 @@
             "sampler": "SAMPLER / OPQRST"
         };
 
-        // PWA Service Worker Registrierung
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/RetterProtokoll/sw.js')
-                .then(reg => console.log('Service Worker registriert für:', reg.scope))
-                .catch(err => console.error('Service Worker Fehler:', err));
-            });
-        }
-
-        // Bluetooth-Verbindungsaufbau
-        async function connectBluetooth() {
-            if (!navigator.bluetooth) {
-                alert("Web Bluetooth wird von diesem Browser nicht unterstützt. Bitte nutzen Sie z.B. Google Chrome oder Microsoft Edge.");
-                return;
-            }
-
-            try {
-                connectBleBtn.innerText = "⏳ Suche Gerät...";
-                bleDevice = await navigator.bluetooth.requestDevice({
-                    filters: [{ services: [BLE_SERVICE_UUID] }]
-                });
-
-                connectBleBtn.innerText = "⏳ Verbinde...";
-                const server = await bleDevice.gatt.connect();
-
-                connectBleBtn.innerText = "⏳ Suche Service...";
-                const service = await server.getPrimaryService(BLE_SERVICE_UUID);
-
-                connectBleBtn.innerText = "⏳ Initialisiere...";
-                rxCharacteristic = await service.getCharacteristic(BLE_RX_UUID);
-
-                connectBleBtn.innerText = "🟢 Verbunden mit " + bleDevice.name;
-                connectBleBtn.style.background = "var(--md-color-success)";
-                
-                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
-                updateSubmitButtonState();
-            } catch (error) {
-                console.error("Bluetooth Fehler: ", error);
-                connectBleBtn.innerText = "🔴 Verbindung fehlgeschlagen";
-                connectBleBtn.style.background = "var(--md-color-error)";
-                bleDevice = null;
-                rxCharacteristic = null;
-                updateSubmitButtonState();
-            }
-        }
-
-        function onDisconnected() {
-            connectBleBtn.innerText = "🔌 Mit Gerät verbinden";
-            connectBleBtn.style.background = "var(--md-color-primary)";
-            bleDevice = null;
-            rxCharacteristic = null;
-            updateSubmitButtonState();
-        }
-
         async function ladeVorlagenUndPrompts() {
             try {
-                const scriptTag = document.getElementById("templates-data");
-                let data = null;
-                
-                if (scriptTag && scriptTag.textContent.trim()) {
-                    data = JSON.parse(scriptTag.textContent);
-                }
-                
-                if (data) {
-                    VORLAGEN = data.vorlagen || {};
-                    KI_PROMPTS = data.prompts || {};
-                }
-                
+                const response = await fetch('/templates.json');
+                if (!response.ok) throw new Error();
+                const data = await response.json();
+                VORLAGEN = data.vorlagen || {};
+                KI_PROMPTS = data.prompts || {};
                 befuelleDropdown();
             } catch (err) {
-                console.error("Laden der Vorlagen fehlgeschlagen", err);
+                console.error("Laden fehlgeschlagen", err);
                 vorlageSelect.innerHTML = '<option value="leer">Fehler beim Laden</option>';
             }
         }
@@ -810,14 +799,8 @@
                     submitBtn.className = "btn-ki";
                     submitBtn.innerText = "3. An KI senden";
                 } else {
-                    if (rxCharacteristic) {
-                        submitBtn.className = "btn-device";
-                        submitBtn.innerText = "3. Über Bluetooth senden";
-                    } else {
-                        submitBtn.className = "btn-disabled";
-                        submitBtn.innerText = "Bitte erst Bluetooth verbinden";
-                        submitBtn.disabled = true;
-                    }
+                    submitBtn.className = "btn-device";
+                    submitBtn.innerText = "3. An Gerät senden";
                 }
             }
         }
@@ -854,6 +837,34 @@
             }
         }
 
+        function _berechneSchreibdauer(text, speed) {
+            if (!text) return 0;
+            const delays = {
+                "standard": { char: 0.008, enter: 0.05 },
+                "schnell": { char: 0.004, enter: 0.02 },
+                "langsam": { char: 0.016, enter: 0.10 },
+                "mensch": { char: 0.12, enter: 0.25 },
+                "nida": { char: 0.30, enter: 0.50 }
+            };
+            const gewaehlteDelays = delays[speed] || delays["standard"];
+            const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+            
+            let zeichenGesamt = 0;
+            lines.forEach(line => { zeichenGesamt += line.length; });
+
+            const hardwareLatenzProZeichen = 0.012; 
+            const tatsaechlichesCharDelay = gewaehlteDelays.char + hardwareLatenzProZeichen;
+            const tippDauer = zeichenGesamt * tatsaechlichesCharDelay;
+            
+            const hardwareLatenzProEnter = 0.02;
+            const tatsaechlichesEnterDelay = (2 * gewaehlteDelays.enter) + hardwareLatenzProEnter;
+            const zeilenwechsel = lines.length - 1;
+            const wechselDauer = zeilenwechsel > 0 ? zeilenwechsel * tatsaechlichesEnterDelay : 0;
+            
+            const startVerzoegerung = 1.2;
+            return (startVerzoegerung + tippDauer + wechselDauer) * 1000;
+        }
+
         let lastHeight = 0;
         function autoResize() {
             textarea.style.height = 'auto';
@@ -883,6 +894,8 @@
         }
 
         function resetForm() {
+            if (countdownInterval) clearInterval(countdownInterval);
+            if (pollInterval) clearInterval(pollInterval);
             textarea.value = "";
             vorlageSelect.value = "leer";
             kiSelect.value = "keine";
@@ -899,21 +912,7 @@
             countdownEl.innerText = "Bitte warten...";
         }
 
-        async function sendBleData(text) {
-            const encoder = new TextEncoder();
-            const dataBytes = encoder.encode(text);
-            const chunkSize = 20; 
-            
-            for (let offset = 0; offset < dataBytes.length; offset += chunkSize) {
-                const chunk = dataBytes.slice(offset, offset + chunkSize);
-                await rxCharacteristic.writeValueWithResponse(chunk);
-                
-                const prozent = Math.round(((offset + chunk.length) / dataBytes.length) * 100);
-                countdownEl.innerText = `Übertrage: ${prozent}%`;
-            }
-        }
-
-        async function handleFormSubmit(event) {
+        function handleFormSubmit(event) {
             if (event) event.preventDefault();
             const kiAuswahl = kiSelect.value;
             const text = textarea.value;
@@ -959,32 +958,465 @@
                 return false; 
             }
 
-            if (!rxCharacteristic) {
-                alert("Bitte verbinden Sie zuerst das Bluetooth-Gerät.");
-                return false;
-            }
+            if (countdownInterval) clearInterval(countdownInterval);
+            if (pollInterval) clearInterval(pollInterval);
 
+            const speed = speedSelect.value;
             localStorage.setItem("letzter_gesendeter_text", text);
+
+            const schreibDauerMs = _berechneSchreibdauer(text, speed);
+            let verbleibendeSekunden = Math.ceil(schreibDauerMs / 1000);
 
             overlay.style.display = "flex";
             loadingDiv.style.display = "block";
             successDiv.style.display = "none";
-            countdownEl.innerText = "Übertragung startet...";
+            countdownEl.innerText = `ca. ${verbleibendeSekunden} Sekunden`;
 
-            try {
-                await sendBleData(text);
-                loadingDiv.style.display = "none";
-                successDiv.style.display = "block";
-                localStorage.removeItem("aktueller_entwurf");
-            } catch (error) {
-                console.error("Fehler beim Senden: ", error);
-                alert("Übertragungsfehler über Bluetooth: " + error.message);
-                overlay.style.display = "none";
-            }
+            const urlEncodedData = new URLSearchParams();
+            urlEncodedData.append("t", text);
+            urlEncodedData.append("s", speed);
+
+            fetch("/", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: urlEncodedData.toString()
+            }).catch(error => { console.error("Übertragungsfehler:", error); });
+
+            countdownInterval = setInterval(() => {
+                verbleibendeSekunden--;
+                if (verbleibendeSekunden > 0) {
+                    countdownEl.innerText = `ca. ${verbleibendeSekunden} Sekunden`;
+                } else {
+                    countdownEl.innerText = "Wird abgeschlossen...";
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+
+            const startAbfrageVerzoegerung = Math.max(1000, schreibDauerMs * 0.85);
+
+            setTimeout(() => {
+                pollInterval = setInterval(() => {
+                    fetch("/status")
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === "idle") {
+                            clearInterval(pollInterval);
+                            if (countdownInterval) clearInterval(countdownInterval);
+                            loadingDiv.style.display = "none";
+                            successDiv.style.display = "block";
+                            localStorage.removeItem("aktueller_entwurf"); 
+                        }
+                    })
+                    .catch(error => { console.log("Polling verzögert...", error); });
+                }, 1000);
+            }, startAbfrageVerzoegerung);
 
             return false;
         }
 
+        // ==========================================
+        // OPTIMIERTE SCANN-FUNKTIONEN (LIVE & UPLOAD)
+        // ==========================================
+
+        function toggleScanner() {
+            const panel = document.getElementById("scanner-panel");
+            const btn = event.currentTarget;
+            if (panel.style.display === "none") {
+                panel.style.display = "block";
+                btn.innerText = "Scanner ausblenden";
+                initWebcam();
+            } else {
+                panel.style.display = "none";
+                btn.innerText = "Scanner öffnen";
+                closeWebcam();
+            }
+        }
+
+        async function initWebcam() {
+            const video = document.getElementById("webcam");
+            const status = document.getElementById("scanner-status");
+            status.style.display = "none";
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" },
+                    audio: false
+                });
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                    starteHudOverlay();
+                };
+            } catch (err) {
+                console.error("Kamerafehler:", err);
+                status.style.display = "block";
+                status.innerText = "Kamerazugriff nicht möglich. Nutzen Sie den Foto-Upload oder das manuelle Textfeld.";
+            }
+        }
+
+        function closeWebcam() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            const video = document.getElementById("webcam");
+            if (video) video.srcObject = null;
+            if (hudAnimationId) cancelAnimationFrame(hudAnimationId);
+        }
+
+        function starteHudOverlay() {
+            const canvas = document.getElementById("scanner-hud");
+            const ctx = canvas.getContext("2d");
+            
+            function zeichneOverlay(timestamp) {
+                if (!stream) return;
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Halbdunkle Maske
+                ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+                const rectW = canvas.width * 0.85;
+                const rectH = canvas.height * 0.7;
+                const rectX = (canvas.width - rectW) / 2;
+                const rectY = (canvas.height - rectH) / 2;
+                
+                ctx.beginPath();
+                ctx.rect(0, 0, canvas.width, canvas.height);
+                ctx.rect(rectX, rectY, rectW, rectH);
+                ctx.fill("evenodd");
+                
+                // Scanning-Linie mit Bewegung
+                const pulse = Math.sin(timestamp / 200) * 0.5 + 0.5;
+                const lineY = rectY + 4 + pulse * (rectH - 8);
+                ctx.strokeStyle = "rgba(34, 197, 94, 0.8)";
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(rectX + 10, lineY);
+                ctx.lineTo(rectX + rectW - 10, lineY);
+                ctx.stroke();
+
+                // Gruene Tracking-Ecken (MediaPipe-Stil)
+                ctx.strokeStyle = "#22c55e";
+                ctx.lineWidth = 4;
+                const cornerLength = 22;
+                
+                // Oben Links
+                ctx.beginPath();
+                ctx.moveTo(rectX, rectY + cornerLength);
+                ctx.lineTo(rectX, rectY);
+                ctx.lineTo(rectX + cornerLength, rectY);
+                ctx.stroke();
+                
+                // Oben Rechts
+                ctx.beginPath();
+                ctx.moveTo(rectX + rectW - cornerLength, rectY);
+                ctx.lineTo(rectX + rectW);
+                ctx.lineTo(rectX + rectW, rectY + cornerLength);
+                ctx.stroke();
+                
+                // Unten Links
+                ctx.beginPath();
+                ctx.moveTo(rectX, rectY + rectH - cornerLength);
+                ctx.lineTo(rectX, rectY + rectH);
+                ctx.lineTo(rectX + cornerLength, rectY + rectH);
+                ctx.stroke();
+                
+                // Unten Rechts
+                ctx.beginPath();
+                ctx.moveTo(rectX + rectW - cornerLength, rectY + rectH);
+                ctx.lineTo(rectX + rectW, rectY + rectH);
+                ctx.lineTo(rectX + rectW, rectY + rectH - cornerLength);
+                ctx.stroke();
+                
+                hudAnimationId = requestAnimationFrame(zeichneOverlay);
+            }
+            hudAnimationId = requestAnimationFrame(zeichneOverlay);
+        }
+
+        // OPTIMIERUNG 1 & 2: Ausschnitt-Fokussierung & Bildvorverarbeitung (Graustufen + Kontrasterhöhung)
+        async function captureAndProcess() {
+            const video = document.getElementById("webcam");
+            const canvasHUD = document.getElementById("scanner-hud");
+            const status = document.getElementById("scanner-status");
+            if (!stream) {
+                alert("Bitte aktivieren Sie die Kamera.");
+                return;
+            }
+
+            status.style.display = "block";
+            status.innerText = "⏳ Extrahiere Bilddaten...";
+
+            // Berechne Bounding-Box im Quellvideo anhand des HUDs
+            const rectW = canvasHUD.width * 0.85;
+            const rectH = canvasHUD.height * 0.7;
+            const rectX = (canvasHUD.width - rectW) / 2;
+            const rectY = (canvasHUD.height - rectH) / 2;
+
+            const scaleX = video.videoWidth / canvasHUD.clientWidth;
+            const scaleY = video.videoHeight / canvasHUD.clientHeight;
+
+            const cropX = rectX * scaleX;
+            const cropY = rectY * scaleY;
+            const cropW = rectW * scaleX;
+            const cropH = rectH * scaleY;
+
+            const snapCanvas = document.createElement("canvas");
+            snapCanvas.width = cropW;
+            snapCanvas.height = cropH;
+            const ctx = snapCanvas.getContext("2d");
+            
+            // Nur den fokussierten Bildausschnitt zeichnen
+            ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+            // Bilddaten vorverarbeiten (Kontrast anheben und Graustufen erzwingen)
+            const imgData = ctx.getImageData(0, 0, snapCanvas.width, snapCanvas.height);
+            const data = imgData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                // Helligkeit berechnen (Luminanz-Formel)
+                let v = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                
+                // Kontrastextraktion zur sauberen Kantenbildung für Tesseract
+                v = (v - 128) * 1.8 + 128;
+                v = v < 0 ? 0 : (v > 255 ? 255 : v);
+                
+                data[i] = v;     
+                data[i + 1] = v; 
+                data[i + 2] = v; 
+            }
+            ctx.putImageData(imgData, 0, 0);
+            
+            try {
+                status.innerText = "🤖 Analysiere fokussiertes Bild (OCR)...";
+                const result = await Tesseract.recognize(
+                    snapCanvas,
+                    'deu',
+                    { logger: m => console.log(m.status) }
+                );
+                
+                analysiereTextUndBefuelleChips(result.data.text);
+            } catch (err) {
+                console.error("OCR fehlgeschlagen", err);
+                status.innerText = "❌ Fehler bei der Live-Erkennung.";
+            }
+        }
+
+        // Foto-Upload verarbeiten
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const status = document.getElementById("scanner-status");
+            status.style.display = "block";
+            status.innerText = "⏳ Bild wird geladen...";
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = async function() {
+                    try {
+                        status.innerText = "🤖 Analysiere hochgeladenes Foto (OCR)...";
+                        const result = await Tesseract.recognize(
+                            img,
+                            'deu',
+                            { logger: m => console.log(m.status) }
+                        );
+                        analysiereTextUndBefuelleChips(result.data.text);
+                    } catch (err) {
+                        console.error("OCR-Upload fehlgeschlagen", err);
+                        status.innerText = "❌ Fehler bei der Foto-Analyse.";
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function analysiereTextUndBefuelleChips(text) {
+            const status = document.getElementById("scanner-status");
+            const resultsDiv = document.getElementById("recognition-results");
+            const diagContainer = document.getElementById("diagnoses-chips");
+            const medsContainer = document.getElementById("meds-chips");
+            
+            diagContainer.innerHTML = "";
+            medsContainer.innerHTML = "";
+            
+            const extrahiert = extrahiereMedizinischeDaten(text);
+            
+            if (extrahiert.diagnosen.length === 0 && extrahiert.medikamente.length === 0) {
+                status.innerText = "Keine passenden medizinischen Fachbegriffe erkannt.";
+                resultsDiv.style.display = "none";
+                return;
+            }
+            
+            status.innerText = "Analyse abgeschlossen!";
+            resultsDiv.style.display = "block";
+            
+            // Diagnosen rendern
+            extrahiert.diagnosen.forEach(diag => {
+                const chip = document.createElement("div");
+                chip.className = "chip";
+                chip.innerHTML = `🧬 ${diag}`;
+                chip.onclick = () => fuegeTextEin(`Diagnose: ${diag}\n`);
+                diagContainer.appendChild(chip);
+            });
+            
+            // Medikamente rendern
+            extrahiert.medikamente.forEach(med => {
+                const chip = document.createElement("div");
+                chip.className = "chip";
+                const anzeige = med.dosis ? `${med.name} ${med.dosis}` : med.name;
+                chip.innerHTML = `💊 ${anzeige}`;
+                chip.onclick = () => fuegeTextEin(`Medikation: ${anzeige}\n`);
+                medsContainer.appendChild(chip);
+            });
+        }
+
+        // OPTIMIERUNG 3 & 4: Levenshtein-Distanz für fehlertolerantes Fuzzy-Matching & Normalisierung
+        function levenshtein(a, b) {
+            const tmp = [];
+            for (let i = 0; i <= a.length; i++) { tmp[i] = [i]; }
+            for (let j = 0; j <= b.length; j++) { tmp[0][j] = j; }
+            for (let i = 1; i <= a.length; i++) {
+                for (let j = 1; j <= b.length; j++) {
+                    tmp[i][j] = Math.min(
+                        tmp[i - 1][j] + 1,
+                        tmp[i][j - 1] + 1,
+                        tmp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+                    );
+                }
+            }
+            return tmp[a.length][b.length];
+        }
+
+        function extrahiereMedizinischeDaten(rawText) {
+            // Normalisierung der OCR-Fehler (z.B. Ersetzen von Sonderzeichen)
+            const textCleaned = rawText.replace(/[|\[\]\(\)\{\}]/g, " ");
+            
+            const diagnosenListe = [
+                "Arterielle Hypertonie", "Hypertonie", "Diabetes mellitus", "Diabetes", "Vorhofflimmern", "VHF", "KHK", 
+                "Koronare Herzkrankheit", "Herzinsuffizienz", "Apoplex", "Schlaganfall", "COPD", "Asthma bronchiale", 
+                "Asthma", "Niereninsuffizienz", "Hypothyreose", "Hyperthyreose", "Depression", "Demenz", "Gicht", 
+                "Arthrose", "Osteoporose", "PAVK", "Gastritis", "Parkinson", "Epilepsie", "Multiple Sklerose", "MS", 
+                "Adipositas", "Hypercholesterinämie", "Dyslipidämie", "Schlafapnoe", "OSAS", "Vorhofflattern"
+            ];
+            
+            const medikamenteListe = [
+                "Ibuprofen", "Ramipril", "Aspirin", "ASS", "Pantoprazol", "Metoprolol", "Bisoprolol", "Amlodipin", 
+                "Simvastatin", "Atorvastatin", "L-Thyroxin", "Novaminsulfon", "Metamizol", "Torasemid", "Furosemid", 
+                "Spironolacton", "Allopurinol", "Marcumar", "Xarelto", "Eliquis", "Lixiana", "Metformin", "Jardiance", 
+                "Forxiga", "Januvia", "Spiolto", "Foster", "Salbutamol", "Viani", "Symbicort", "Omeprazol", "Esomeprazol", 
+                "Tamsulosin", "Finasterid", "Decortin", "Prednisolon", "Amoxicillin", "Cefuroxim", "Ciprofloxacin", 
+                "Doxycyclin", "Clindamycin", "Vomex", "Dimenhydrinat", "MCP", "Metoclopramid", "Morphin", "Fentanyl", 
+                "Oxycodon", "Tilidin", "Tramadol", "Novalgin", "Paracetamol", "Diclofenac"
+            ];
+
+            const gefundeneDiagnosen = [];
+            const gefundeneMedikamente = [];
+            
+            // Worte zur Analyse in Token zerlegen
+            const woerter = textCleaned.split(/[\s,;\n]+/);
+
+            // 1. Suche nach Diagnosen (Wortgruppen & Einzelbegriffe)
+            diagnosenListe.forEach(diag => {
+                const regex = new RegExp(`\\b${diag}\\b`, "i");
+                if (regex.test(textCleaned)) {
+                    gefundeneDiagnosen.push(diag);
+                } else {
+                    // Fuzzy-Match für mehrteilige Diagnosen per Worthäufigkeit
+                    const diagTeile = diag.split(" ");
+                    if (diagTeile.length > 1) {
+                        let matches = 0;
+                        diagTeile.forEach(teil => {
+                            if (teil.length > 3 && woerter.some(w => levenshtein(w.toLowerCase(), teil.toLowerCase()) <= 1)) {
+                                matches++;
+                            }
+                        });
+                        if (matches === diagTeile.length) {
+                            gefundeneDiagnosen.push(diag);
+                        }
+                    }
+                }
+            });
+
+            // 2. Suche nach Medikamenten (mit Fuzzy-Matching)
+            medikamenteListe.forEach(med => {
+                // Direkter Regex Match (schnell)
+                const regexDirect = new RegExp(`\\b(${med})\\b\\s*(\\d+(?:[.,]\\d+)?\\s*(?:mg|g|ml|µg|ug|IE|E|mmol))?`, "i");
+                const match = textCleaned.match(regexDirect);
+                
+                if (match) {
+                    const name = match[1];
+                    const dosis = match[2] ? match[2].trim() : "";
+                    gefundeneMedikamente.push({ name: name, dosis: dosis });
+                } else {
+                    // Fuzzy-Match falls OCR Fehler im Wirkstoffnamen verursacht hat
+                    woerter.forEach((wort, index) => {
+                        if (wort.length >= 5 && levenshtein(wort.toLowerCase(), med.toLowerCase()) <= 1) {
+                            // Versuche die Dosis aus den nachfolgenden Wörtern zu extrahieren
+                            let dosis = "";
+                            const nachfolgend = woerter.slice(index + 1, index + 3).join(" ");
+                            const dosisMatch = nachfolgend.match(/^(\d+(?:[.,]\\d+)?\s*(?:mg|g|ml|µg|ug|IE|E|mmol))/i);
+                            if (dosisMatch) {
+                                dosis = dosisMatch[1];
+                            }
+                            // Duplikate vermeiden
+                            if (!gefundeneMedikamente.some(m => m.name.toLowerCase() === med.toLowerCase())) {
+                                gefundeneMedikamente.push({ name: med, dosis: dosis });
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Generisches Muster als Fallback für nicht gelistete Wirkstoffe (sucht nach Großbuchstabe + Dosiseinheit)
+            const generischesMuster = /\b([A-Z][a-zA-Z\-]{3,})\b\s+(\d+(?:[.,]\\d+)?\s*(?:mg|g|ml|µg|ug|IE))/g;
+            let genMatch;
+            while ((genMatch = generischesMuster.exec(textCleaned)) !== null) {
+                const name = genMatch[1];
+                const dosis = genMatch[2];
+                
+                const existiertMeds = gefundeneMedikamente.some(m => m.name.toLowerCase() === name.toLowerCase());
+                const existiertDiags = gefundeneDiagnosen.some(d => d.toLowerCase() === name.toLowerCase());
+                
+                if (!existiertMeds && !existiertDiags) {
+                    gefundeneMedikamente.push({ name: name, dosis: dosis });
+                }
+            }
+
+            return { 
+                diagnosen: [...new Set(gefundeneDiagnosen)], 
+                medikamente: gefundeneMedikamente 
+            };
+        }
+
+        function fuegeTextEin(textElement) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const textAlt = textarea.value;
+            
+            textarea.value = textAlt.substring(0, start) + textElement + textAlt.substring(end);
+            textarea.focus();
+            textarea.selectionStart = textarea.selectionEnd = start + textElement.length;
+            
+            autoResize();
+            updateSubmitButtonState();
+            localStorage.setItem("aktueller_entwurf", textarea.value);
+        }
+
+        // Event-Listener für das manuelle Analysefeld
+        document.getElementById("paste-scanner").addEventListener("input", (e) => {
+            const text = e.target.value;
+            if (text.trim().length > 3) {
+                analysiereTextUndBefuelleChips(text);
+            }
+        });
+
+        // Standard Event-Listener
         textarea.addEventListener("input", () => {
             autoResize();
             updateSubmitButtonState();
@@ -992,6 +1424,16 @@
         });
 
         kiSelect.addEventListener("change", updateSubmitButtonState);
+
+        function ladeLogo() {
+            const logoPath = "/logo.webp";
+            const favicon = document.getElementById("favicon");
+            if (favicon) favicon.href = logoPath;
+            const appleIcon = document.getElementById("apple-touch-icon");
+            if (appleIcon) appleIcon.href = logoPath;
+            const headerLogo = document.getElementById("header-logo");
+            if (headerLogo) headerLogo.src = logoPath;
+        }
 
         window.addEventListener("DOMContentLoaded", async () => {
             await ladeVorlagenUndPrompts();
@@ -1001,6 +1443,7 @@
             }
             autoResize();
             updateSubmitButtonState();
+            ladeLogo(); 
         });
     </script>
 </body>
