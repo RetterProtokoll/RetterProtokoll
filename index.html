@@ -495,31 +495,7 @@
             <h2>RetterProtokoll</h2>
         </div>
 
-        <label for="modus-select">Übertragungsmodus:</label>
-        <select id="modus-select" onchange="switchModus()">
-            <option value="ble" selected>Bluetooth (BLE)</option>
-            <option value="network">Netzwerk (IP / POST)</option>
-        </select>
-
-        <!-- Container für Bluetooth-Modus -->
-        <div id="ble-container">
-            <button type="button" id="connect-ble-btn" class="btn-connect" onclick="connectBluetooth()">🔌 Mit Gerät verbinden</button>
-        </div>
-        
-        <!-- Container für Netzwerk/POST-Modus -->
-        <div id="network-container" style="display: none;">
-            <label for="ip-input">IP-Adresse / Empfänger-URL:</label>
-            <input type="text" id="ip-input" placeholder="z. B. http://192.168.4.1" value="/">
-
-            <label for="speed-select">Geschwindigkeit:</label>
-            <select name="s" id="speed-select">
-                <option value="standard" selected>Standard</option>
-                <option value="schnell">Schnell</option>
-                <option value="langsam">Langsam</option>
-                <option value="mensch">Mensch (Achtung Langsam)</option>
-                <option value="nida">NIDA (Achtung: Sehr langsam – nur im Notfall benutzen)</option>
-            </select>
-        </div>
+        <button type="button" id="connect-ble-btn" class="btn-connect" onclick="connectBluetooth()">🔌 Mit Gerät verbinden</button>
         
         <form id="protokoll-form" method="POST" action="/" onsubmit="return handleFormSubmit(event)">
             <label for="vorlage-select">1. Vorlage wählen:</label>
@@ -562,6 +538,11 @@
             </fieldset>
 
             <button type="submit" id="submit-btn" class="btn-disabled" disabled>3. Text senden</button>
+
+            <label for="speed-select" style="display:none;">Geschwindigkeit:</label>
+            <select name="s" id="speed-select" style="display:none;">
+                <option value="standard" selected>Standard </option>
+            </select>
             
             <div class="restore-container">
                 <div class="restore-row">
@@ -585,8 +566,7 @@
         <div class="overlay-content">
             <div id="overlay-loading" style="text-align: center;">
                 <div class="spinner"></div>
-                <!-- ID wurde hier hinzugefügt, um JS-Fehler zu vermeiden -->
-                <h3 id="overlay-headline" style="margin: 15px 0; color: var(--md-color-primary);">✍️ Sende Daten...</h3>
+                <h3 style="margin: 15px 0; color: var(--md-color-primary);">✍️ Sende Daten über Bluetooth...</h3>
                 <p id="countdown-text" style="color: var(--md-color-primary); font-weight: bold; font-size: 18px; margin: 10px 0;">Bitte warten...</p>
                 <p style="color: var(--md-color-on-surface-variant); font-size: 14px;">Bitte trennen Sie die Verbindung nicht.</p>
             </div>
@@ -612,7 +592,7 @@
     },
     "prompts": {
         "chatgpt_korrektur": "Korrigiere und optimiere den folgenden Text für ein Rettungsdienstprotokoll. Achte auf eine fachlich korrekte, präzise und professionelle Formulierung sowie auf Rechtschreibung, Grammatik und Zeichensetzung. Erhalte den medizinischen Inhalt unverändert und verwende eine sachliche, dokumentationsgerechte Sprache. Gib ausschließlich den fertig überarbeiteten Text aus, ohne zusätzliche Erklärungen, Kommentare oder Formatierungen.\n\n",
-        "chatgpt_transportverzicht": "Du bist ein erfahrener, fachlich exzellenter Notfallsanitäter im deutschen Rettungsdienst. Deine Aufgabe ist es, für ein digitales Rettungsdienstprotokoll eine rechtssichere, lückenlose und präzise ärztliche/rettungsdienstliche Aufklärung zu formularisieren. Die Aufklärung dient der Absicherung bei einem Transportverzicht, einer Verweigerung oder einer Aufklärung gegen ärztlichen/rettungsdienstlichen Rat (Revers). Sie muss unmissverständlich aufzeigen, dass der Patient die Tragweite seiner Entscheidung vollumfänglich verstanden hat.\n\nHalte dich strikt an folgende Struktur und Kriterien:\n1. Klinisches Zustandsbild & Dringlichkeit: Erkläre in klaren Worten die potenzielle Schwere des Krankheitsbildes und warum eine klinische Abklärung (Krankenhaus) zwingend erforderlich ist.\n2. Spezifische Risiken & Komplikationen: Nenne die konkreten, medizinischen Risiken, die bei Nichtbehandlung oder Nichttransport drohen (angepasst an das Leitsymptom).\n3. Letalitätshinweis (Bis zum Tod): Es muss explizit, unbeschönigt und rechtssicher formuliert werden, dass die Verweigerung von Diagnostik/Transport zu bleibenden Schäden, schwerster Invalidität oder dem Tod des Patienten führen kann.\n4. Urteilsfähigkeit & Aufklärungsbereitschaft: Bestätige in der Formulierung defensiv, dass der Patient bei vollem Bewusstsein, orientiert, nachvollziehbar urteilsfähig und frei von Zwang handelt, die Risiken versteht und dennoch ablehnt.\n5. Jederzeitige Wiederrufbarkeit: Füge den Hinweis an, dass der Rettungsdienst bei einer Verschlechterung oder einem Umdenken jederzeit erneut gerufen werden kann.\n\nFormuliere den Text als Fließtext, der direkt so in das Freitextfeld des Protokolls Aufklärung kopiert werden kann. Nutze eine professionelle, medizinisch-juristische Diktion. Beschreibe nur medizinisch plausible Risiken und Komplikationen in Bezug auf das angegebene Leitsymptom bzw. die Verdachtsdiagnose. Die Formulierungen müssen geeignet sein, einer nachträglichen fachlichen, juristischen oder gerichtlichen Prüfung standzuhalten. Verwende professionelle medizinische und juristische Fachsprache, die zugleich für den Patienten verständlich dokumentiert ist.\n\nAusgabe: Gib ausschließlich den fertigen Dokumentationstext aus, ohne Einleitung, Überschrift oder zusätzliche Erläuterungen.\n\nBitte generiere die Aufklärung basierend auf folgendem Leitsymptom / folgender Verdachtsdiagnose:\n\n",
+        "chatgpt_transportverzicht": "Du bist ein erfahrener, fachlich exzellenter Notfallsanitäter im deutschen Rettungsdienst. Deine Aufgabe ist es, für ein digitales Rettungsdienstprotokoll eine rechtssichere, lückenlose und präzise ärztliche/rettungsdienstliche Aufklärung zu formulieren. Die Aufklärung dient der Absicherung bei einem Transportverzicht, einer Verweigerung oder einer Aufklärung gegen ärztlichen/rettungsdienstlichen Rat (Revers). Sie muss unmissverständlich aufzeigen, dass der Patient die Tragweite seiner Entscheidung vollumfänglich verstanden hat.\n\nHalte dich strikt an folgende Struktur und Kriterien:\n1. Klinisches Zustandsbild & Dringlichkeit: Erkläre in klaren Worten die potenzielle Schwere des Krankheitsbildes und warum eine klinische Abklärung (Krankenhaus) zwingend erforderlich ist.\n2. Spezifische Risiken & Komplikationen: Nenne die konkreten, medizinischen Risiken, die bei Nichtbehandlung oder Nichttransport drohen (angepasst an das Leitsymptom).\n3. Letalitätshinweis (Bis zum Tod): Es muss explizit, unbeschönigt und rechtssicher formuliert werden, dass die Verweigerung von Diagnostik/Transport zu bleibenden Schäden, schwerster Invalidität oder dem Tod des Patienten führen kann.\n4. Urteilsfähigkeit & Aufklärungsbereitschaft: Bestätige in der Formulierung defensiv, dass der Patient bei vollem Bewusstsein, orientiert, nachvollziehbar urteilsfähig und frei von Zwang handelt, die Risiken versteht und dennoch ablehnt.\n5. Jederzeitige Wiederrufbarkeit: Füge den Hinweis an, dass der Rettungsdienst bei einer Verschlechterung oder einem Umdenken jederzeit erneut gerufen werden kann.\n\nFormuliere den Text als Fließtext, der direkt so in das Freitextfeld des Protokolls Aufklärung kopiert werden kann. Nutze eine professionelle, medizinisch-juristische Diktion. Beschreibe nur medizinisch plausible Risiken und Komplikationen in Bezug auf das angegebene Leitsymptom bzw. die Verdachtsdiagnose. Die Formulierungen müssen geeignet sein, einer nachträglichen fachlichen, juristischen oder gerichtlichen Prüfung standzuhalten. Verwende professionelle medizinische und juristische Fachsprache, die zugleich für den Patienten verständlich dokumentiert ist.\n\nAusgabe: Gib ausschließlich den fertigen Dokumentationstext aus, ohne Einleitung, Überschrift oder zusätzliche Erläuterungen.\n\nBitte generiere die Aufklärung basierend auf folgendem Leitsymptom / folgender Verdachtsdiagnose:\n\n",
         "chatgpt_abcde": "Rolle: Du bist ein erfahrener Notfallsanitäter und Dokumentations-Experte für den Rettungsdienst.\nAufgabe: Ich liefere dir gleich Stichpunkte zu einem Realeinsatz. Deine Aufgabe ist es, diese Informationen präzise in das unten stehende Template einzufügen.\nWICHTIGE FORMATIERUNGS-REGELN:\n1. Nutze NIEMALS Aufzählungszeichen (keine Spiegelstriche, Bindestriche, Punkte oder Zahlen).\n2. Nutze KEINE Fließtext-Absätze innerhalb der Blöcke.\n3. Nutze KEINE Leerzeilen. Trenne die Zeilen ausschließlich durch einen einfachen Zeilenumbruch (Shift+Enter).\n4. Der Text muss kompakt und stichwortartig-flüssig sein.\n5. Suche aus den Bildern die aktuellen Medikamente mit Dosierung sowie Diagnosen und Allergien.\nMEDIZINISCHE LOGIK & INHALT:\n- Sprache: Konsequent professioneller medizinischer Fachjargon, präzise und telegramstilartig verkürzt (z.B. \"Pat. wach, orientiert\", \"V.a. ACS\").\n- Normalwerte: Behalte qualitative Standard-Normalbefunde des Templates (z.B. \"Atemwege frei\", \"Pupillen isokor/lichtreagibel\") standardmäßig bei, AUSSER meine Stichpunkte widersprechen dem explizit.\n- Medikamente: Korrigiere alle von mir genannten Arzneimittel eigenständig auf die korrekte pharmakologische Schreibweise (Wirkstoffname).\n- Messwerte: Trage Vitalwerte (RR, Puls, SpO2, BZ) NUR dann ein, wenn ich sie dir in den Stichpunkten liefere. Erfinde niemals Zahlenwerte.\n- OPQRST / SAMPLER: Wenn meine Stichpunkte zu diesen Schemata keine Angaben enthalten oder sie medizinisch keinen Sinn ergeben (z.B. bei schmerzlosen Zuständen oder Bewusstlosigkeit), lösche diese Zeilen/Kategorien komplett aus dem Protokoll.\n\nHier ist das Template, das du befüllen sollst:\nLeitsymptomatik: \nLage vor Ort: \nA: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO₂ im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.\nS (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit: / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen, Impfstatus Tetanus aktuell\nO (Onset): \nP (Provocation): \nQ (Quality): \nR (Region): \nS (Severity): / 10\nT (Time):\nTherapie: \nTransport: Transport bei stabilen Vitalparametern ohne Komplikationen.\n\nHier sind meine Einsatzinfos:\n\n"
     }
 }</script>
@@ -642,10 +622,6 @@
         const restoreCheck = document.getElementById("restore-check");
         const restoreKiCheck = document.getElementById("restore-ki-check");
         const connectBleBtn = document.getElementById("connect-ble-btn");
-        const speedSelect = document.getElementById("speed-select");
-
-        let pollInterval = null;
-        let countdownInterval = null;
 
         const OPTIONEN_NAMEN = {
             "metamizol_w": "Aufklärung: Metamizol weiblich",
@@ -666,22 +642,6 @@
                 .then(reg => console.log('Service Worker registriert für:', reg.scope))
                 .catch(err => console.error('Service Worker Fehler:', err));
             });
-        }
-
-        // Modus-Umschaltung
-        function switchModus() {
-            const modus = document.getElementById("modus-select").value;
-            const bleContainer = document.getElementById("ble-container");
-            const networkContainer = document.getElementById("network-container");
-
-            if (modus === "ble") {
-                bleContainer.style.display = "block";
-                networkContainer.style.display = "none";
-            } else {
-                bleContainer.style.display = "none";
-                networkContainer.style.display = "block";
-            }
-            updateSubmitButtonState();
         }
 
         // Bluetooth-Verbindungsaufbau
@@ -837,7 +797,6 @@
         function updateSubmitButtonState() {
             const text = textarea.value.trim();
             const kiAuswahl = kiSelect.value;
-            const modus = document.getElementById("modus-select").value;
 
             genderContainer.style.display = (kiAuswahl !== "keine") ? "block" : "none";
 
@@ -851,18 +810,13 @@
                     submitBtn.className = "btn-ki";
                     submitBtn.innerText = "3. An KI senden";
                 } else {
-                    if (modus === "ble") {
-                        if (rxCharacteristic) {
-                            submitBtn.className = "btn-device";
-                            submitBtn.innerText = "3. Über Bluetooth senden";
-                        } else {
-                            submitBtn.className = "btn-disabled";
-                            submitBtn.innerText = "Bitte erst Bluetooth verbinden";
-                            submitBtn.disabled = true;
-                        }
-                    } else {
+                    if (rxCharacteristic) {
                         submitBtn.className = "btn-device";
-                        submitBtn.innerText = "3. Über Netzwerk senden";
+                        submitBtn.innerText = "3. Über Bluetooth senden";
+                    } else {
+                        submitBtn.className = "btn-disabled";
+                        submitBtn.innerText = "Bitte erst Bluetooth verbinden";
+                        submitBtn.disabled = true;
                     }
                 }
             }
@@ -900,34 +854,6 @@
             }
         }
 
-        function _berechneSchreibdauer(text, speed) {
-            if (!text) return 0;
-            const delays = {
-                "standard": { char: 0.008, enter: 0.05 },
-                "schnell": { char: 0.004, enter: 0.02 },
-                "langsam": { char: 0.016, enter: 0.10 },
-                "mensch": { char: 0.12, enter: 0.25 },
-                "nida": { char: 0.30, enter: 0.50 }
-            };
-            const gewaehlteDelays = delays[speed] || delays["standard"];
-            const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
-            
-            let zeichenGesamt = 0;
-            lines.forEach(line => { zeichenGesamt += line.length; });
-
-            const hardwareLatenzProZeichen = 0.012; 
-            const tatsaechlichesCharDelay = gewaehlteDelays.char + hardwareLatenzProZeichen;
-            const tippDauer = zeichenGesamt * tatsaechlichesCharDelay;
-            
-            const hardwareLatenzProEnter = 0.02;
-            const tatsaechlichesEnterDelay = (2 * gewaehlteDelays.enter) + hardwareLatenzProEnter;
-            const zeilenwechsel = lines.length - 1;
-            const wechselDauer = zeilenwechsel > 0 ? zeilenwechsel * tatsaechlichesEnterDelay : 0;
-            
-            const startVerzoegerung = 1.2;
-            return (startVerzoegerung + tippDauer + wechselDauer) * 1000;
-        }
-
         let lastHeight = 0;
         function autoResize() {
             textarea.style.height = 'auto';
@@ -957,8 +883,6 @@
         }
 
         function resetForm() {
-            if (countdownInterval) clearInterval(countdownInterval);
-            if (pollInterval) clearInterval(pollInterval);
             textarea.value = "";
             vorlageSelect.value = "leer";
             kiSelect.value = "keine";
@@ -993,7 +917,6 @@
             if (event) event.preventDefault();
             const kiAuswahl = kiSelect.value;
             const text = textarea.value;
-            const modus = document.getElementById("modus-select").value;
 
             let genderInfo = "";
             const selectedGender = document.querySelector('input[name="gender"]:checked');
@@ -1036,98 +959,27 @@
                 return false; 
             }
 
-            if (countdownInterval) clearInterval(countdownInterval);
-            if (pollInterval) clearInterval(pollInterval);
+            if (!rxCharacteristic) {
+                alert("Bitte verbinden Sie zuerst das Bluetooth-Gerät.");
+                return false;
+            }
 
             localStorage.setItem("letzter_gesendeter_text", text);
 
-            if (modus === "ble") {
-                if (!rxCharacteristic) {
-                    alert("Bitte verbinden Sie zuerst das Bluetooth-Gerät.");
-                    return false;
-                }
+            overlay.style.display = "flex";
+            loadingDiv.style.display = "block";
+            successDiv.style.display = "none";
+            countdownEl.innerText = "Übertragung startet...";
 
-                document.getElementById("overlay-headline").innerText = "✍️ Sende Daten über Bluetooth...";
-                overlay.style.display = "flex";
-                loadingDiv.style.display = "block";
-                successDiv.style.display = "none";
-                countdownEl.innerText = "Übertragung startet...";
-
-                try {
-                    await sendBleData(text);
-                    loadingDiv.style.display = "none";
-                    successDiv.style.display = "block";
-                    localStorage.removeItem("aktueller_entwurf");
-                } catch (error) {
-                    console.error("Fehler beim Senden: ", error);
-                    alert("Übertragungsfehler über Bluetooth: " + error.message);
-                    overlay.style.display = "none";
-                }
-            } else {
-                const speed = speedSelect.value;
-                let ipInputVal = document.getElementById("ip-input").value.trim();
-                
-                if (ipInputVal === "") ipInputVal = "/";
-                
-                let postUrl = ipInputVal;
-                if (postUrl !== "/" && !postUrl.startsWith("http://") && !postUrl.startsWith("https://")) {
-                    postUrl = "http://" + postUrl;
-                }
-
-                let statusUrl = postUrl;
-                if (postUrl === "/") {
-                    statusUrl = "/status";
-                } else {
-                    statusUrl = postUrl.endsWith("/") ? postUrl + "status" : postUrl + "/status";
-                }
-
-                document.getElementById("overlay-headline").innerText = "✍️ RetterProtokoll tippt aktuell...";
-                const schreibDauerMs = _berechneSchreibdauer(text, speed);
-                let verbleibendeSekunden = Math.ceil(schreibDauerMs / 1000);
-
-                overlay.style.display = "flex";
-                loadingDiv.style.display = "block";
-                successDiv.style.display = "none";
-                countdownEl.innerText = `ca. ${verbleibendeSekunden} Sekunden`;
-
-                const urlEncodedData = new URLSearchParams();
-                urlEncodedData.append("t", text);
-                urlEncodedData.append("s", speed);
-
-                fetch(postUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: urlEncodedData.toString()
-                }).catch(error => { console.error("Übertragungsfehler:", error); });
-
-                countdownInterval = setInterval(() => {
-                    verbleibendeSekunden--;
-                    if (verbleibendeSekunden > 0) {
-                        countdownEl.innerText = `ca. ${verbleibendeSekunden} Sekunden`;
-                    } else {
-                        countdownEl.innerText = "Wird abgeschlossen...";
-                        clearInterval(countdownInterval);
-                    }
-                }, 1000);
-
-                const startAbfrageVerzoegerung = Math.max(1000, schreibDauerMs * 0.85);
-
-                setTimeout(() => {
-                    pollInterval = setInterval(() => {
-                        fetch(statusUrl)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.status === "idle") {
-                                clearInterval(pollInterval);
-                                if (countdownInterval) clearInterval(countdownInterval);
-                                loadingDiv.style.display = "none";
-                                successDiv.style.display = "block";
-                                localStorage.removeItem("aktueller_entwurf"); 
-                            }
-                        })
-                        .catch(error => { console.log("Polling verzögert...", error); });
-                    }, 1000);
-                }, startAbfrageVerzoegerung);
+            try {
+                await sendBleData(text);
+                loadingDiv.style.display = "none";
+                successDiv.style.display = "block";
+                localStorage.removeItem("aktueller_entwurf");
+            } catch (error) {
+                console.error("Fehler beim Senden: ", error);
+                alert("Übertragungsfehler über Bluetooth: " + error.message);
+                overlay.style.display = "none";
             }
 
             return false;
@@ -1148,7 +1000,7 @@
                 textarea.value = gespeicherterEntwurf;
             }
             autoResize();
-            switchModus();
+            updateSubmitButtonState();
         });
     </script>
 </body>
