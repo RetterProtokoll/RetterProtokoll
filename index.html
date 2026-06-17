@@ -562,17 +562,19 @@
         </form>
     </div>
 
+    <!-- Overlay mit Stopp-Möglichkeit -->
     <div id="overlay">
         <div class="overlay-content">
             <div id="overlay-loading" style="text-align: center;">
                 <div class="spinner"></div>
-                <h3 style="margin: 15px 0; color: var(--md-color-primary);">✍️ Sende Daten über Bluetooth...</h3>
+                <h3 style="margin: 15px 0; color: var(--md-color-primary);">✍️ Daten werden verarbeitet...</h3>
                 <p id="countdown-text" style="color: var(--md-color-primary); font-weight: bold; font-size: 18px; margin: 10px 0;">Bitte warten...</p>
-                <p style="color: var(--md-color-on-surface-variant); font-size: 14px;">Bitte trennen Sie die Verbindung nicht.</p>
+                <p style="color: var(--md-color-on-surface-variant); font-size: 14px; margin-bottom: 20px;">Bitte trennen Sie die Verbindung nicht.</p>
+                <button type="button" id="stop-ble-btn" class="btn-device" style="background: var(--md-color-error); margin: 10px auto 0 auto; max-width: 200px;" onclick="sendeStopSignal()">🛑 Schreiben abbrechen</button>
             </div>
             <div id="overlay-success" style="text-align: center; display: none;">
                 <span style="font-size: 60px;">✅</span>
-                <h3 style="margin: 15px 0;">Text erfolgreich übermittelt!</h3>
+                <h3 style="margin: 15px 0;">Text erfolgreich übermittelt und geschrieben!</h3>
                 <button type="button" onclick="resetForm()" style="background: var(--md-color-primary); max-width: 280px; margin: 20px auto 0 auto;">Nächster Text</button>
             </div>
         </div>
@@ -587,7 +589,7 @@
         "hilfe_w": "Die Patientin verbleibt vor Ort. Ein Transport in die Klinik wurde ihr mehrmals angeboten. Die Patientin wurde angewiesen, sich zum nächstmöglichen Zeitpunkt beim Hausarzt vorzustellen und das Ereignis zu schildern.\n\nBei einer Verschlechterung oder erneuten Beschwerden soll die Patientin mit ihrem Hausarzt oder ihrer Hausärztin (außerhalb der Praxiszeiten: Kassenärztlicher Notdienst, Tel.: 116117) Kontakt aufnehmen. Bei einer akuten Verschlechterung (z. B. Bewusstseinsveränderung, akute Atemnot, starken Schmerzen) soll erneut der Rettungsdienst über den Notruf 112 verständigt werden.\n\nDie Patientin erhält eine Kopie des Protokolls. Beim Verlassen der Einsatzstelle ist die Patientin zeitlich, örtlich, situativ und zur Person (ZOSP) orientiert, der GCS beträgt 15.",
         "hilfe_m": "Der Patient verbleibt vor Ort. Ein Transport in die Klinik wurde ihm mehrmals angeboten. Der Patient wurde angewiesen, sich zum nächstmöglichen Zeitpunkt beim Hausarzt vorzustellen und das Ereignis zu schildern.\n\nBei Verschlechterung oder erneuten Beschwerden soll der Patient mit seinem Hausarzt oder seiner Hausärztin (außerhalb der Praxiszeiten: Kassenärztlicher Notdienst, Tel.: 116117) Kontakt aufnehmen. Bei akuter Verschlechterung (z. B. Bewusstseinsveränderung, akute Atemnot, starken Schmerzen) soll erneut der Rettungsdienst über den Notruf 112 verständigt werden.\n\nDer Patient erhält eine Kopie des Protokolls. Beim Verlassen der Einsatzstelle Pat. GCS 15, ZOSP orientiert.",
         "abcde": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO2 im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.",
-        "abcdesampler": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO2 im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.\nS (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit: / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen, Impfstatus Tetanus aktuell",
+        "abcdesampler": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO2 im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.\nS (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankeungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit: / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen, Impfstatus Tetanus aktuell",
         "sampler": "S (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit: / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen / Impfstatus Tetanus aktuell\n\nOPQRST \nO (Onset): \nP (Provocation): \nQ (Quality): \nR (Region): \nS (Severity): / 10\nT (Time): "
     },
     "prompts": {
@@ -601,9 +603,11 @@
         // Bluetooth UUIDs für den Nordic UART Service (NUS)
         const BLE_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
         const BLE_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+        const BLE_TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 
         let bleDevice = null;
         let rxCharacteristic = null;
+        let txCharacteristic = null;
 
         let VORLAGEN = {};
         let KI_PROMPTS = {};
@@ -663,8 +667,16 @@
                 connectBleBtn.innerText = "⏳ Suche Service...";
                 const service = await server.getPrimaryService(BLE_SERVICE_UUID);
 
-                connectBleBtn.innerText = "⏳ Initialisiere...";
+                connectBleBtn.innerText = "⏳ Initialisiere RX...";
                 rxCharacteristic = await service.getCharacteristic(BLE_RX_UUID);
+
+                connectBleBtn.innerText = "⏳ Initialisiere TX...";
+                txCharacteristic = await service.getCharacteristic(BLE_TX_UUID);
+
+                // Notifications abonnieren
+                connectBleBtn.innerText = "⏳ Aktiviere Empfang...";
+                await txCharacteristic.startNotifications();
+                txCharacteristic.addEventListener('characteristicvaluechanged', handleBleNotification);
 
                 connectBleBtn.innerText = "🟢 Verbunden mit " + bleDevice.name;
                 connectBleBtn.style.background = "var(--md-color-success)";
@@ -677,6 +689,7 @@
                 connectBleBtn.style.background = "var(--md-color-error)";
                 bleDevice = null;
                 rxCharacteristic = null;
+                txCharacteristic = null;
                 updateSubmitButtonState();
             }
         }
@@ -686,7 +699,42 @@
             connectBleBtn.style.background = "var(--md-color-primary)";
             bleDevice = null;
             rxCharacteristic = null;
+            txCharacteristic = null;
             updateSubmitButtonState();
+        }
+
+        // Rückmeldungen des ESP32 verarbeiten
+        function handleBleNotification(event) {
+            const decoder = new TextDecoder();
+            const value = decoder.decode(event.target.value).trim();
+            console.log("ESP32 Rückmeldung empfangen:", value);
+
+            if (value === "DONE") {
+                loadingDiv.style.display = "none";
+                successDiv.style.display = "block";
+                localStorage.removeItem("aktueller_entwurf");
+            } 
+            else if (value === "STOPPED") {
+                alert("Der Tippvorgang wurde erfolgreich abgebrochen.");
+                resetForm();
+            } 
+            else if (value === "BUSY") {
+                alert("Das Gerät ist aktuell beschäftigt. Bitte warten Sie, bis der Tippvorgang beendet ist.");
+                resetForm();
+            }
+        }
+
+        // STOP-Signal senden
+        async function sendeStopSignal() {
+            if (!rxCharacteristic) return;
+            try {
+                countdownEl.innerText = "Abbruchsignal wird gesendet...";
+                const encoder = new TextEncoder();
+                await rxCharacteristic.writeValueWithResponse(encoder.encode("STOP"));
+            } catch (error) {
+                console.error("Fehler beim Senden des STOP-Signals:", error);
+                alert("Abbruch konnte nicht gesendet werden.");
+            }
         }
 
         async function ladeVorlagenUndPrompts() {
@@ -900,9 +948,10 @@
         }
 
         async function sendBleData(text) {
+            const fullText = text + "\x04"; // End-of-Transmission (EOT)
             const encoder = new TextEncoder();
-            const dataBytes = encoder.encode(text);
-            const chunkSize = 20; 
+            const dataBytes = encoder.encode(fullText);
+            const chunkSize = 128; 
             
             for (let offset = 0; offset < dataBytes.length; offset += chunkSize) {
                 const chunk = dataBytes.slice(offset, offset + chunkSize);
@@ -973,9 +1022,8 @@
 
             try {
                 await sendBleData(text);
-                loadingDiv.style.display = "none";
-                successDiv.style.display = "block";
-                localStorage.removeItem("aktueller_entwurf");
+                // Der Erfolg wird jetzt erst angezeigt, wenn die "DONE"-Benachrichtigung vom ESP32 empfangen wird.
+                countdownEl.innerText = "Text übertragen. Gerät schreibt...";
             } catch (error) {
                 console.error("Fehler beim Senden: ", error);
                 alert("Übertragungsfehler über Bluetooth: " + error.message);
