@@ -1,5 +1,5 @@
 // Cache-Version – bei Änderungen an HTML/JS einfach erhöhen (z.B. v6)
-const CACHE_NAME = 'retter-protokoll-cache-v8';
+const CACHE_NAME = 'retter-protokoll-cache-v9';
 
 // WICHTIG: 'sw.js' wurde hier entfernt! Ein Service Worker darf sich nicht selbst cachen.
 const ASSETS_TO_CACHE = [
