@@ -732,12 +732,49 @@
 
         // PWA Service Worker Registrierung
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/RetterProtokoll/sw.js')
-                .then(reg => console.log('Service Worker registriert für:', reg.scope))
-                .catch(err => console.error('Service Worker Fehler:', err));
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/RetterProtokoll/sw.js', { updateViaCache: 'none' })
+        .then(reg => {
+            console.log('Service Worker registriert für:', reg.scope);
+
+            // Prüfen, ob bereits ein Update im Hintergrund wartet
+            if (reg.waiting) {
+                zeigeUpdateBanner(reg.waiting);
+            }
+
+            // Auf zukünftige Updates im laufenden Betrieb prüfen
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        zeigeUpdateBanner(newWorker);
+                    }
+                });
             });
+        })
+        .catch(err => console.error('Service Worker Fehler:', err));
+    });
+
+    // Variable, um mehrfaches Neuladen beim Aktivieren zu verhindern
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
         }
+    });
+}
+
+function zeigeUpdateBanner(worker) {
+    const banner = document.getElementById('update-banner');
+    const btn = document.getElementById('update-btn');
+    if (!banner || !btn) return;
+
+    banner.style.display = 'block';
+    btn.onclick = () => {
+        worker.postMessage({ action: 'skipWaiting' });
+    };
+}
 
         // Bluetooth-Verbindungsaufbau
         async function connectBluetooth() {
