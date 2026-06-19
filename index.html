@@ -194,8 +194,22 @@
         }
 
         button.btn-connect {
-            background: var(--md-color-primary);
-            margin-bottom: 16px;
+            background: #dc2626; /* Standard rot im nicht-verbundenen Zustand */
+            color: white;
+            margin-top: 0;
+            margin-bottom: 0;
+            width: auto;
+            padding: 6px 14px;
+            font-size: 13px;
+            border-radius: 100px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: background-color 0.2s;
+        }
+        button.btn-connect:hover {
+            background: #b91c1c;
         }
 
         #submit-btn {
@@ -330,7 +344,7 @@
             box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0 0 0 10px rgba(186, 26, 26, 0.12);
         }
 
-        .restore-container#gender-container {
+        .restore-container#gender-container, .restore-container#provider-container {
             border: 1px solid var(--md-color-outline);
             background: transparent;
             padding: 16px;
@@ -477,6 +491,39 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* Raster-Layout für Vorlagen ohne Scrollbalken */
+        .scroll-container {
+            display: flex;
+            flex-wrap: wrap; /* Zeilenumbruch erlauben */
+            gap: 8px;
+            padding: 4px 0 12px 0;
+            margin-bottom: 8px;
+        }
+        
+        button.scroll-btn {
+            flex: 1 1 calc(33.333% - 8px); /* Standardmäßig 3 Spalten */
+            width: auto !important;
+            margin-top: 0 !important;
+            padding: 8px 12px;
+            font-size: 12px;
+            border-radius: 100px;
+            background: var(--md-color-surface-container);
+            color: var(--md-color-on-surface);
+            border: 1px solid var(--md-color-outline-variant);
+            box-shadow: none;
+            transition: background-color 0.2s, border-color 0.2s;
+            white-space: nowrap;
+            text-align: center;
+        }
+        button.scroll-btn:hover {
+            background: var(--md-color-primary-container);
+            color: var(--md-color-on-primary-container);
+            border-color: var(--md-color-primary);
+        }
+        button.scroll-btn:active {
+            transform: scale(0.95);
+        }
+
         @media (max-width: 500px) {
             body { padding: 12px 8px; }
             .card { padding: 20px 16px; border-radius: 24px; }
@@ -485,6 +532,13 @@
             textarea { min-height: 140px; }
             button { padding: 12px; font-size: 14px; }
             label { margin-top: 12px; font-size: 13px; }
+            
+            /* Auf Smartphones in 2 Spalten aufteilen */
+            button.scroll-btn {
+                flex: 1 1 calc(50% - 8px);
+                font-size: 11px;
+                padding: 6px 10px;
+            }
         }
     </style>
 </head>
@@ -494,34 +548,64 @@
             <img id="header-logo" class="title-logo" src="/RetterProtokoll/logo.png" alt="RetterProtokoll Logo">
             <h2>RetterProtokoll</h2>
         </div>
-
-        <button type="button" id="connect-ble-btn" class="btn-connect" onclick="connectBluetooth()">🔌 Mit Gerät verbinden</button>
         
         <form id="protokoll-form" method="POST" action="/" onsubmit="return handleFormSubmit(event)">
-            <label for="vorlage-select">1. Vorlage wählen:</label>
-            <select id="vorlage-select" onchange="vorlageLaden()">
-                <option value="leer">Lade Vorlagen...</option>
-            </select>
-
-            <label for="ki-select">1b. KI-Unterstützung wählen (optional):</label>
-            <select id="ki-select">
-                <option value="keine" selected>Keine KI (Text direkt senden)</option>
-                <option value="chatgpt_korrektur">ChatGPT: Text korrigieren</option>
-                <option value="chatgpt_transportverzicht">ChatGPT: Transportverzicht</option>
-                <option value="chatgpt_abcde">ChatGPT: ABCDE</option>
-            </select>
-
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; margin-bottom: 6px;">
-                <label for="freitext" style="margin-top: 0; display: inline-block;">2. Text bearbeiten:</label>
-                <button type="button" id="clear-btn" class="secondary" style="margin-top: 0; width: auto; padding: 6px 16px; font-size: 13px; border-radius: 100px;" onclick="zeigeLoeschSlider()">🗑️ Leeren</button>
+            <label>Vorlagen:</label>
+            <div id="vorlage-scroll-container" class="scroll-container">
+                <span style="font-size: 14px; color: var(--md-color-outline); padding: 8px 0;">Lade Vorlagen...</span>
             </div>
-            
-            <textarea name="t" id="freitext" placeholder="Wähle eine Vorlage oder tippe hier freien Text..." autocomplete="off"></textarea>
 
+            <fieldset id="provider-container" class="restore-container" style="border: 1px solid var(--md-color-outline); padding: 16px; margin-top: 8px;">
+                <legend style="font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--md-color-on-surface-variant); padding: 0 4px; margin-left: 5px;">KI wählen (optional)</legend>
+                <div class="segmented-control">
+                    <input type="radio" id="provider-chatgpt" name="provider" value="chatgpt" checked>
+                    <label for="provider-chatgpt">ChatGPT</label>
+                    
+                    <input type="radio" id="provider-gemini" name="provider" value="gemini">
+                    <label for="provider-gemini">Gemini</label>
+                </div>
+            </fieldset>
+
+            <div id="chatgpt-dropdown-container">
+                <label for="ki-select">ChatGPT-Unterstützung wählen (optional):</label>
+                <select id="ki-select">
+                    <option value="keine" selected>Keine KI (Text direkt senden)</option>
+                    <option value="chatgpt_korrektur">ChatGPT: Text korrigieren</option>
+                    <option value="chatgpt_transportverzicht">ChatGPT: Transportverzicht</option>
+                    <option value="chatgpt_abcde">ChatGPT: ABCDE</option>
+                </select>
+            </div>
+
+            <div id="gemini-dropdown-container" style="display: none;">
+                <label for="gemini-select">Gemini-Unterstützung wählen (optional):</label>
+                <select id="gemini-select">
+                    <option value="keine" selected>Keine KI (Text direkt senden)</option>
+                    <option value="chatgpt_korrektur">Gemini: Text korrigieren</option>
+                    <option value="chatgpt_transportverzicht">Gemini: Transportverzicht</option>
+                    <option value="chatgpt_abcde">Gemini: ABCDE</option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                <label for="freitext" style="margin-top: 0; margin-bottom: 0; flex: 1 1 auto; min-width: 100px;">Text bearbeiten:</label>
+                <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0; flex-wrap: nowrap;">
+                    <!-- Bluetooth verbinden Button -->
+                    <button type="button" id="connect-ble-btn" class="btn-connect" onclick="connectBluetooth()">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 -960 960 960" width="1.4em" fill="currentColor" style="vertical-align:middle; margin-right:4px; display:inline-block;"><path d="M440-80v-304L256-200l-56-56 224-224-224-224 56-56 184 184v-304h40l228 228-172 172 172 172L480-80h-40Zm80-496 76-76-76-74v150Zm0 342 76-74-76-76v150Z"/></svg>
+                        <span id="connect-text">Verbinden</span>
+                    </button>
+                    <!-- Leeren Button -->
+                    <button type="button" id="clear-btn" class="secondary" style="margin-top: 0; width: auto; padding: 6px 16px; font-size: 13px; border-radius: 100px;" onclick="zeigeLoeschSlider()">🗑️ Löschen</button>
+                </div>
+            </div>
+
+            <!-- Lösch-Slider -->
             <div id="loesch-slider-container" class="slide-container">
                 <span class="slide-text">Zum Löschen schieben</span>
                 <input type="range" id="delete-slider" class="slide-input" min="0" max="100" value="0" oninput="handleSliderInput(this)" onchange="handleSliderChange(this)">
             </div>
+            
+            <textarea name="t" id="freitext" placeholder="Wähle eine Vorlage oder tippe hier freien Text..." autocomplete="off"></textarea>
  
             <fieldset id="gender-container" class="restore-container" style="display: none; border: 1px solid var(--md-color-outline); padding: 16px;">
                 <legend style="font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--md-color-on-surface-variant); padding: 0 4px; margin-left: 5px;">Geschlecht</legend>
@@ -589,7 +673,7 @@
         "hilfe_w": "Die Patientin verbleibt vor Ort. Ein Transport in die Klinik wurde ihr mehrmals angeboten. Die Patientin wurde angewiesen, sich zum nächstmöglichen Zeitpunkt beim Hausarzt vorzustellen und das Ereignis zu schildern.\n\nBei einer Verschlechterung oder erneuten Beschwerden soll die Patientin mit ihrem Hausarzt oder ihrer Hausärztin (außerhalb der Praxiszeiten: Kassenärztlicher Notdienst, Tel.: 116117) Kontakt aufnehmen. Bei einer akuten Verschlechterung (z. B. Bewusstseinsveränderung, akute Atemnot, starken Schmerzen) soll erneut der Rettungsdienst über den Notruf 112 verständigt werden.\n\nDie Patientin erhält eine Kopie des Protokolls. Beim Verlassen der Einsatzstelle ist die Patientin zeitlich, örtlich, situativ und zur Person (ZOSP) orientiert, der GCS beträgt 15.",
         "hilfe_m": "Der Patient verbleibt vor Ort. Ein Transport in die Klinik wurde ihm mehrmals angeboten. Der Patient wurde angewiesen, sich zum nächstmöglichen Zeitpunkt beim Hausarzt vorzustellen und das Ereignis zu schildern.\n\nBei Verschlechterung oder erneuten Beschwerden soll der Patient mit seinem Hausarzt oder seiner Hausärztin (außerhalb der Praxiszeiten: Kassenärztlicher Notdienst, Tel.: 116117) Kontakt aufnehmen. Bei akuter Verschlechterung (z. B. Bewusstseinsveränderung, akute Atemnot, starken Schmerzen) soll erneut der Rettungsdienst über den Notruf 112 verständigt werden.\n\nDer Patient erhält eine Kopie des Protokolls. Beim Verlassen der Einsatzstelle Pat. GCS 15, ZOSP orientiert.",
         "abcde": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO2 im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.",
-        "abcdesampler": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO2 im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.\nS (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankeungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit: / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen, Impfstatus Tetanus aktuell",
+        "abcdesampler": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss.\nB: Eupnoe, Thoraxexkursion symmetrisch. SpO2 im Normbereich unter Raumluft. Auskultatorisch beidseits regelrechtes Atemgeräusch, keine pathologischen Nebengeräusche.\nC: Keine kritischen Blutungen. Kreislauf stabil. Periphere Pulse beidseits seitengleich tastbar. Herzfrequenz normofrequent, Rhythmus regelmäßig. RR im Normbereich, Rekapillarisierungszeit < 2 s. Haut warm, trocken, rosig. EKG: Sinusrhythmus. Keine Ödeme, keine JVS.\nD: GCS 15, 4-fach orientiert. Pupillen isokor, beidseits prompt lichtreagibel. FAST 4D negativ. BZ normwertig. pDMS an allen Extremitäten intakt. Keine fokal-neurologischen Defizite, kein Schwindel, keine Cephalea, keine Diplopie.\nE: Normotherm. Bodycheck o.B., keine Traumazeichen, Hämatome oder Infektionszeichen.\nS (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit: / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen, Impfstatus Tetanus aktuell",
         "sampler": "S (Symptome): Aktuell beschwerdefrei \nA (Allergien): Keine bekannt \nM (Medikamente): Keine Dauermedikation \nP (Patientengeschichte): Keine relevanten Vorerkrankungen\nL (Letzte): Letzte Mahlzeit/Flüssigkeit: / Letzte Miktion/Stuhlgang: unauffällig\nE (Ereignis): Beschwerden begannen: \nR (Risiko): Nichtraucher, keine Drogen / Impfstatus Tetanus aktuell\n\nOPQRST \nO (Onset): \nP (Provocation): \nQ (Quality): \nR (Region): \nS (Severity): / 10\nT (Time): "
     },
     "prompts": {
@@ -615,7 +699,8 @@
         const textarea = document.getElementById("freitext");
         const submitBtn = document.getElementById("submit-btn");
         const kiSelect = document.getElementById("ki-select");
-        const vorlageSelect = document.getElementById("vorlage-select");
+        const geminiSelect = document.getElementById("gemini-select");
+        const vorlageScrollContainer = document.getElementById("vorlage-scroll-container");
         const genderContainer = document.getElementById("gender-container");
         const loeschSliderContainer = document.getElementById("loesch-slider-container");
         const deleteSlider = document.getElementById("delete-slider");
@@ -628,16 +713,18 @@
         const connectBleBtn = document.getElementById("connect-ble-btn");
 
         const OPTIONEN_NAMEN = {
-            "metamizol_w": "Aufklärung: Metamizol weiblich",
-            "metamizol_m": "Aufklärung: Metamizol männlich",
-            "mitfahrt_w": "Mitfahrt verweigert weiblich",
-            "mitfahrt_m": "Mitfahrt verweigert männlich",
-            "hilfe_w": "Hilfeleistung weiblich",
-            "hilfe_m": "Hilfeleistung männlich",
+            "metamizol_w": "Metamizol ♀️",
+            "metamizol_m": "Metamizol ♂️",
+            "mitfahrt_w": "Transportverzicht ♀️",
+            "mitfahrt_m": "Transportverzicht ♂️",
+            "hilfe_w": "Hilfeleistung ♀️",
+            "hilfe_m": "Hilfeleistung ♂️",
             "abcde": "ABCDE",
             "abcdesampler": "ABCDE SAMPLER",
             "sampler": "SAMPLER / OPQRST"
         };
+
+        const BT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 -960 960 960" width="1.4em" fill="currentColor" style="vertical-align:middle; margin-right:4px; display:inline-block;"><path d="M440-80v-304L256-200l-56-56 224-224-224-224 56-56 184 184v-304h40l228 228-172 172 172 172L480-80h-40Zm80-496 76-76-76-74v150Zm0 342 76-74-76-76v150Z"/></svg>`;
 
         // PWA Service Worker Registrierung
         if ('serviceWorker' in navigator) {
@@ -656,37 +743,38 @@
             }
 
             try {
-                connectBleBtn.innerText = "⏳ Suche Gerät...";
+                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Suche...";
                 bleDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ services: [BLE_SERVICE_UUID] }]
                 });
 
-                connectBleBtn.innerText = "⏳ Verbinde...";
+                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Verbinde...";
                 const server = await bleDevice.gatt.connect();
 
-                connectBleBtn.innerText = "⏳ Suche Service...";
+                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Service...";
                 const service = await server.getPrimaryService(BLE_SERVICE_UUID);
 
-                connectBleBtn.innerText = "⏳ Initialisiere RX...";
+                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ RX...";
                 rxCharacteristic = await service.getCharacteristic(BLE_RX_UUID);
 
-                connectBleBtn.innerText = "⏳ Initialisiere TX...";
+                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ TX...";
                 txCharacteristic = await service.getCharacteristic(BLE_TX_UUID);
 
                 // Notifications abonnieren
-                connectBleBtn.innerText = "⏳ Aktiviere Empfang...";
+                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Empfang...";
                 await txCharacteristic.startNotifications();
                 txCharacteristic.addEventListener('characteristicvaluechanged', handleBleNotification);
 
-                connectBleBtn.innerText = "🟢 Verbunden mit " + bleDevice.name;
-                connectBleBtn.style.background = "var(--md-color-success)";
+                // Erfolgreich verbunden: Blaues Design (#2563eb)
+                connectBleBtn.innerHTML = BT_ICON_SVG + " " + (bleDevice.name ? bleDevice.name.substring(0, 10) : "Verbunden");
+                connectBleBtn.style.background = "#2563eb";
                 
                 bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
                 updateSubmitButtonState();
             } catch (error) {
                 console.error("Bluetooth Fehler: ", error);
-                connectBleBtn.innerText = "🔴 Verbindung fehlgeschlagen";
-                connectBleBtn.style.background = "var(--md-color-error)";
+                connectBleBtn.innerHTML = BT_ICON_SVG + " Fehler";
+                connectBleBtn.style.background = "#dc2626";
                 bleDevice = null;
                 rxCharacteristic = null;
                 txCharacteristic = null;
@@ -694,9 +782,10 @@
             }
         }
 
+        // Entkopplung: Zurück auf Rot (#dc2626)
         function onDisconnected() {
-            connectBleBtn.innerText = "🔌 Mit Gerät verbinden";
-            connectBleBtn.style.background = "var(--md-color-primary)";
+            connectBleBtn.innerHTML = BT_ICON_SVG + " Verbinden";
+            connectBleBtn.style.background = "#dc2626";
             bleDevice = null;
             rxCharacteristic = null;
             txCharacteristic = null;
@@ -751,23 +840,33 @@
                     KI_PROMPTS = data.prompts || {};
                 }
                 
-                befuelleDropdown();
+                befuelleVorlagenButtons();
             } catch (err) {
                 console.error("Laden der Vorlagen fehlgeschlagen", err);
-                vorlageSelect.innerHTML = '<option value="leer">Fehler beim Laden</option>';
+                vorlageScrollContainer.innerHTML = '<span style="color: var(--md-color-error)">Fehler beim Laden</span>';
             }
         }
 
-        function befuelleDropdown() {
-            vorlageSelect.innerHTML = '<option value="leer">--- Bitte wählen ---</option>';
-            for (const key in VORLAGEN) {
-                if (VORLAGEN.hasOwnProperty(key)) {
-                    const option = document.createElement("option");
-                    option.value = key;
-                    option.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
-                    vorlageSelect.appendChild(option);
-                }
-            }
+        function befuelleVorlagenButtons() {
+            vorlageScrollContainer.innerHTML = '';
+            
+            // Vorlagen nach Geschlecht gruppieren und sortieren
+            const keys = Object.keys(VORLAGEN);
+            const femaleKeys = keys.filter(key => key.endsWith('_w'));
+            const maleKeys = keys.filter(key => key.endsWith('_m'));
+            const neutralKeys = keys.filter(key => !key.endsWith('_w') && !key.endsWith('_m'));
+            
+            // Erst weiblich, dann männlich, dann neutral zusammenführen
+            const sortedKeys = [...femaleKeys, ...maleKeys, ...neutralKeys];
+
+            sortedKeys.forEach(key => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "scroll-btn";
+                btn.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
+                btn.onclick = () => vorlageEinfuegen(key);
+                vorlageScrollContainer.appendChild(btn);
+            });
         }
 
         function formatiereKey(key) {
@@ -844,7 +943,9 @@
 
         function updateSubmitButtonState() {
             const text = textarea.value.trim();
-            const kiAuswahl = kiSelect.value;
+            const selectedProvider = document.querySelector('input[name="provider"]:checked').value;
+            const activeSelect = (selectedProvider === 'chatgpt') ? kiSelect : geminiSelect;
+            const kiAuswahl = activeSelect.value;
 
             genderContainer.style.display = (kiAuswahl !== "keine") ? "block" : "none";
 
@@ -912,19 +1013,17 @@
             }
         }
 
-        function vorlageLaden() {
-            const ausgewaehlterKey = vorlageSelect.value;
-            if (ausgewaehlterKey === "leer") return;
+        // Fügt Text ein, auch mehrfach untereinander
+        function vorlageEinfuegen(key) {
+            const textEinfuegen = VORLAGEN[key];
+            if (!textEinfuegen) return;
 
             const aktuellerText = textarea.value.trim();
-            if (aktuellerText !== "" && aktuellerText !== VORLAGEN[ausgewaehlterKey]) {
-                const bestätigung = confirm("Achtung: Ihr aktueller Text im Bearbeitungsfeld wird überschrieben. Fortfahren?");
-                if (!bestätigung) {
-                    vorlageSelect.value = "leer"; 
-                    return;
-                }
+            if (aktuellerText === "") {
+                textarea.value = textEinfuegen;
+            } else {
+                textarea.value = aktuellerText + "\n\n" + textEinfuegen;
             }
-            textarea.value = VORLAGEN[ausgewaehlterKey] || "";
             localStorage.setItem("aktueller_entwurf", textarea.value); 
             autoResize();
             updateSubmitButtonState();
@@ -932,8 +1031,19 @@
 
         function resetForm() {
             textarea.value = "";
-            vorlageSelect.value = "leer";
             kiSelect.value = "keine";
+            geminiSelect.value = "keine";
+
+            const savedProvider = localStorage.getItem("saved_provider") || "chatgpt";
+            document.getElementById(`provider-${savedProvider}`).checked = true;
+            if (savedProvider === 'chatgpt') {
+                document.getElementById("chatgpt-dropdown-container").style.display = "block";
+                document.getElementById("gemini-dropdown-container").style.display = "none";
+            } else {
+                document.getElementById("chatgpt-dropdown-container").style.display = "none";
+                document.getElementById("gemini-dropdown-container").style.display = "block";
+            }
+
             const activeRadio = document.querySelector('input[name="gender"]:checked');
             if (activeRadio) activeRadio.checked = false;
             loeschSliderContainer.classList.remove("show");
@@ -964,7 +1074,9 @@
 
         async function handleFormSubmit(event) {
             if (event) event.preventDefault();
-            const kiAuswahl = kiSelect.value;
+            const selectedProvider = document.querySelector('input[name="provider"]:checked').value;
+            const activeSelect = (selectedProvider === 'chatgpt') ? kiSelect : geminiSelect;
+            const kiAuswahl = activeSelect.value;
             const text = textarea.value;
 
             let genderInfo = "";
@@ -982,21 +1094,29 @@
                 }
 
                 const basisPrompt = KI_PROMPTS[kiAuswahl] || "";
-                const promptString = basisPrompt + "\n\n" + genderInfo + text;
+                const promptString = basisPrompt + genderInfo + text;
 
                 localStorage.setItem("letzter_ki_gesendeter_text", text);
                 inZwischenablageKopieren(promptString);
 
-                const encodedPrompt = encodeURIComponent(promptString);
-                const targetUrl = "https://chatgpt.com/?q=" + encodedPrompt;
+                let targetUrl = "";
+                if (selectedProvider === 'chatgpt') {
+                    const encodedPrompt = encodeURIComponent(promptString);
+                    targetUrl = "https://chatgpt.com/?q=" + encodedPrompt;
+                    submitBtn.innerText = "📋 Kopiert! Öffne ChatGPT...";
+                } else {
+                    targetUrl = "https://gemini.google.com/";
+                    submitBtn.innerText = "📋 Kopiert! Öffne Gemini...";
+                }
+
                 const originalBg = submitBtn.style.background;
-                
-                submitBtn.innerText = "📋 Kopiert! Öffne ChatGPT...";
                 submitBtn.style.background = "var(--md-color-primary)"; 
 
                 setTimeout(() => {
                     window.open(targetUrl, "_blank");
                     kiSelect.value = "keine";
+                    geminiSelect.value = "keine";
+                    
                     const activeRadio = document.querySelector('input[name="gender"]:checked');
                     if (activeRadio) activeRadio.checked = false;
                     textarea.value = "";
@@ -1022,7 +1142,6 @@
 
             try {
                 await sendBleData(text);
-                // Der Erfolg wird jetzt erst angezeigt, wenn die "DONE"-Benachrichtigung vom ESP32 empfangen wird.
                 countdownEl.innerText = "Text übertragen. Gerät schreibt...";
             } catch (error) {
                 console.error("Fehler beim Senden: ", error);
@@ -1040,13 +1159,54 @@
         });
 
         kiSelect.addEventListener("change", updateSubmitButtonState);
+        geminiSelect.addEventListener("change", updateSubmitButtonState);
+
+        // Toggle für KI-Anbieter
+        const providerRadios = document.querySelectorAll('input[name="provider"]');
+        providerRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const val = e.target.value;
+                localStorage.setItem("saved_provider", val);
+                if (val === 'chatgpt') {
+                    document.getElementById("chatgpt-dropdown-container").style.display = "block";
+                    document.getElementById("gemini-dropdown-container").style.display = "none";
+                    geminiSelect.value = "keine";
+                } else {
+                    document.getElementById("chatgpt-dropdown-container").style.display = "none";
+                    document.getElementById("gemini-dropdown-container").style.display = "block";
+                    kiSelect.value = "keine";
+                }
+                updateSubmitButtonState();
+            });
+        });
 
         window.addEventListener("DOMContentLoaded", async () => {
             await ladeVorlagenUndPrompts();
+            
+            // Gespeicherten Entwurf laden
             const gespeicherterEntwurf = localStorage.getItem("aktueller_entwurf");
             if (gespeicherterEntwurf) {
                 textarea.value = gespeicherterEntwurf;
             }
+
+            // Letzten ausgewählten KI-Anbieter laden
+            const savedProvider = localStorage.getItem("saved_provider");
+            if (savedProvider) {
+                const radio = document.getElementById(`provider-${savedProvider}`);
+                if (radio) {
+                    radio.checked = true;
+                    if (savedProvider === 'chatgpt') {
+                        document.getElementById("chatgpt-dropdown-container").style.display = "block";
+                        document.getElementById("gemini-dropdown-container").style.display = "none";
+                    } else {
+                        document.getElementById("chatgpt-dropdown-container").style.display = "none";
+                        document.getElementById("gemini-dropdown-container").style.display = "block";
+                    }
+                }
+            }
+
+            // Dropdowns werden beim Neuladen bewusst auf Standard ("keine") gelassen.
+
             autoResize();
             updateSubmitButtonState();
         });
