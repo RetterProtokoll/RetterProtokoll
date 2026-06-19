@@ -1,23 +1,25 @@
-// Cache-Version auf v5 erhöht für die Namensänderung
-const CACHE_NAME = 'retter-protokoll-cache-v7';
+// Cache-Version – bei Änderungen an HTML/JS einfach erhöhen (z.B. v6)
+const CACHE_NAME = 'retter-protokoll-cache-v6';
 
+// WICHTIG: 'sw.js' wurde hier entfernt! Ein Service Worker darf sich nicht selbst cachen.
 const ASSETS_TO_CACHE = [
   '/RetterProtokoll/',
   '/RetterProtokoll/index.html',
   '/RetterProtokoll/manifest.json',
-  '/RetterProtokoll/sw.js',
   '/RetterProtokoll/logo.png'
 ];
 
+// Install-Event: Holt die neuen Assets in den Cache
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('RetterProtokoll: Sichere Anwendungsdaten für den Offline-Modus...');
       return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+    }).then(() => self.skipWaiting()) // Erzwingt, dass der neue SW sofort aktiv wird
   );
 });
 
+// Activate-Event: Räumt alten Cache auf
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -29,17 +31,35 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => self.clients.claim()) // Übernimmt sofort die Kontrolle über alle offenen Tabs
   );
 });
 
+// Fetch-Event: Stale-While-Revalidate Strategie
+// Lädt blitzschnell aus dem Cache, aktualisiert ihn aber im Hintergrund, wenn Netz da ist.
 self.addEventListener('fetch', (event) => {
+  // Nur GET-Anfragen cachen (wichtig, falls du später POST-Requests o.ä. nutzt)
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request);
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.match(event.request).then((cachedResponse) => {
+        
+        // Starte den Netzwerk-Request im Hintergrund
+        const fetchPromise = fetch(event.request).then((networkResponse) => {
+          // Wenn die Antwort gültig ist, spiegle sie in den Cache
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            cache.put(event.request, networkResponse.clone());
+          }
+          return networkResponse;
+        }).catch(() => {
+          // Offline-Fall: Fehler abfangen, wenn kein Netz da ist
+          console.log('RetterProtokoll: Offline-Modus aktiv für:', event.request.url);
+        });
+
+        // Gib die Cache-Antwort zurück, falls vorhanden, andernfalls warte aufs Netzwerk
+        return cachedResponse || fetchPromise;
+      });
     })
   );
 });
