@@ -1,4 +1,4 @@
-const CACHE_NAME = 'retter-protokoll-cache-v10';
+const CACHE_NAME = 'retter-protokoll-cache-v11';
 
 // 'templates.json' wurde hier hinzugefügt, um sie offline verfügbar zu machen
 const ASSETS_TO_CACHE = [
