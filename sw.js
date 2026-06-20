@@ -1,12 +1,12 @@
-// Cache-Version – bei Änderungen an HTML/JS einfach erhöhen (z.B. v6)
-const CACHE_NAME = 'retter-protokoll-cache-v9';
+const CACHE_NAME = 'retter-protokoll-cache-v10';
 
-// WICHTIG: 'sw.js' wurde hier entfernt! Ein Service Worker darf sich nicht selbst cachen.
+// 'templates.json' wurde hier hinzugefügt, um sie offline verfügbar zu machen
 const ASSETS_TO_CACHE = [
   '/RetterProtokoll/',
   '/RetterProtokoll/index.html',
   '/RetterProtokoll/manifest.json',
-  '/RetterProtokoll/logo.png'
+  '/RetterProtokoll/logo.png',
+  '/RetterProtokoll/templates.json'
 ];
 
 // Install-Event: Holt die neuen Assets in den Cache
@@ -36,9 +36,9 @@ self.addEventListener('activate', (event) => {
 });
 
 // Fetch-Event: Stale-While-Revalidate Strategie
-// Lädt blitzschnell aus dem Cache, aktualisiert ihn aber im Hintergrund, wenn Netz da ist.
+// Lädt schnell aus dem Cache, aktualisiert ihn aber im Hintergrund, wenn Netz vorhanden ist.
 self.addEventListener('fetch', (event) => {
-  // Nur GET-Anfragen cachen (wichtig, falls du später POST-Requests o.ä. nutzt)
+  // Nur GET-Anfragen cachen
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
@@ -47,7 +47,7 @@ self.addEventListener('fetch', (event) => {
         
         // Starte den Netzwerk-Request im Hintergrund
         const fetchPromise = fetch(event.request).then((networkResponse) => {
-          // Wenn die Antwort gültig ist, spiegle sie in den Cache
+          // Wenn die Antwort gültig ist, spiegelt sie sich im Cache
           if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             cache.put(event.request, networkResponse.clone());
           }
