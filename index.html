@@ -140,8 +140,8 @@
         textarea { 
             resize: vertical; 
             min-height: 180px; 
-            overflow-y: hidden; 
-            transition: height 0.1s ease; 
+            max-height: 350px;
+            overflow-y: auto; 
             line-height: 1.5;
         }
 
@@ -385,41 +385,71 @@
             color: var(--md-color-on-primary-container);
         }
 
-        .restore-container { 
-            text-align: left; 
-            background: var(--md-color-surface-container); 
-            border-radius: 16px; 
-            padding: 16px; 
-            margin: 16px 0; 
-            box-sizing: border-box; 
+        /* Dezenterer Bereich für den letzten Text */
+        .restore-subtle {
+            background: var(--md-color-surface-container);
+            border-radius: 16px;
+            padding: 12px;
+            margin: 16px 0;
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
-        .restore-row {
+        .restore-selector {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+        .restore-opt {
+            flex: 1;
             display: flex;
             align-items: center;
-            gap: 12px;
-        }
-        .restore-container input[type="checkbox"] { 
-            width: 20px; 
-            height: 20px;
-            margin: 0; 
-            vertical-align: middle; 
-            cursor: pointer; 
-            border-radius: 4px;
-            accent-color: var(--md-color-primary);
-        }
-        .restore-container label { 
-            display: inline-block; 
-            margin: 0; 
-            font-weight: 600; 
-            vertical-align: middle; 
-            cursor: pointer; 
-            font-size: 14px; 
-            text-transform: none;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            background: var(--md-color-surface);
+            border: 1px solid var(--md-color-outline-variant);
+            padding: 8px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 12px;
+            margin: 0 !important;
             color: var(--md-color-on-surface-variant);
-            letter-spacing: normal;
+            user-select: none;
+            transition: background-color 0.15s, border-color 0.15s;
+        }
+        .restore-opt:has(input:checked) {
+            background: var(--md-color-primary-container);
+            border-color: var(--md-color-primary);
+            color: var(--md-color-on-primary-container);
+        }
+        .restore-opt input[type="radio"] {
+            width: 16px !important;
+            height: 16px !important;
+            margin: 0 !important;
+            accent-color: var(--md-color-primary);
+            cursor: pointer;
+        }
+        button.btn-restore-subtle {
+            background: transparent;
+            color: var(--md-color-primary);
+            border: 1px solid var(--md-color-outline);
+            padding: 8px 16px;
+            font-size: 13px;
+            margin-top: 0;
+            border-radius: 100px;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button.btn-restore-subtle:hover {
+            background: rgba(0, 106, 106, 0.08);
+        }
+        @media (prefers-color-scheme: dark) {
+            button.btn-restore-subtle:hover {
+                background: rgba(128, 211, 211, 0.08);
+            }
         }
         
         button.secondary { 
@@ -440,17 +470,6 @@
                 background: rgba(128, 211, 211, 0.08);
             }
         }
-        
-        .restore-container:has(#restore-check:checked) button.secondary, 
-        .restore-container:has(#restore-ki-check:checked) button.secondary { 
-            background: var(--md-color-success) !important; 
-            color: white !important;
-            border-color: transparent !important;
-        }
-        .restore-container:has(#restore-check:checked) button.secondary:hover, 
-        .restore-container:has(#restore-ki-check:checked) button.secondary:hover { 
-            background: var(--md-color-success-hover) !important;
-        }
 
         #overlay { 
             display: none; 
@@ -467,7 +486,7 @@
             color: var(--md-color-on-surface); 
             padding: 20px; 
             box-sizing: border-box; 
-        }
+            }
         .overlay-content { 
             background: var(--md-color-surface); 
             padding: 32px; 
@@ -492,14 +511,14 @@
         /* Raster-Layout für Vorlagen ohne künstliche Streckung */
         .scroll-container {
             display: flex;
-            flex-wrap: wrap; /* Zeilenumbruch erlauben */
+            flex-wrap: wrap; 
             gap: 8px;
             padding: 4px 0 12px 0;
             margin-bottom: 8px;
         }
         
         button.scroll-btn {
-            flex: 0 0 auto; /* Keine künstliche Streckung auf volle Breite */
+            flex: 0 0 auto; 
             width: auto !important;
             margin-top: 0 !important;
             padding: 8px 16px;
@@ -522,6 +541,99 @@
             transform: scale(0.95);
         }
 
+        /* Messwerte-Container Styling */
+        .messwerte-box {
+            background: var(--md-color-surface-container);
+            border: 1px solid var(--md-color-outline-variant);
+            border-radius: 20px;
+            padding: 16px;
+            margin-top: 12px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+        
+        /* Flexbox für kompakte Eingabefelder nebeneinander */
+        .messwerte-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 8px;
+            justify-content: flex-start;
+        }
+        .messwerte-item {
+            display: flex;
+            flex-direction: column;
+            width: 76px; /* Passt perfekt für bis zu 4 Zeichen */
+            box-sizing: border-box;
+        }
+        .messwerte-item.narrow {
+            width: 66px; /* Kompakt für exakt 3 Zahlen (Sys/Dia) */
+        }
+        
+        .status-container {
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 4px; 
+            margin-bottom: 4px;
+        }
+        .status-container label {
+            margin-top: 0;
+            margin-bottom: 0;
+            font-size: 11px;
+            color: var(--md-color-on-surface-variant);
+            white-space: nowrap;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .status-indicator {
+            user-select: none;
+            cursor: pointer;
+            display: inline-block; /* Immer sichtbar */
+            font-size: 11px;
+            line-height: 1;
+        }
+
+        .messwerte-item input {
+            margin-bottom: 0;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        /* EKG Scrollbare Checkbox-Liste */
+        .ekg-checklist {
+            max-height: 160px;
+            overflow-y: auto;
+            border: 1px solid var(--md-color-outline);
+            border-radius: 12px;
+            padding: 10px;
+            background: var(--md-color-surface);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-sizing: border-box;
+        }
+        .ekg-item-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            user-select: none;
+            color: var(--md-color-on-surface);
+        }
+        .ekg-item-row input[type="checkbox"] {
+            width: 20px !important;
+            height: 20px !important;
+            margin: 0 !important;
+            accent-color: var(--md-color-primary);
+            cursor: pointer;
+        }
+
         @media (max-width: 500px) {
             body { padding: 12px 8px; }
             .card { padding: 20px 16px; border-radius: 24px; }
@@ -532,7 +644,7 @@
             label { margin-top: 12px; font-size: 13px; }
             
             button.scroll-btn {
-                flex: 0 0 auto; /* Auch auf Smartphones nur so groß wie nötig */
+                flex: 0 0 auto; 
                 font-size: 11px;
                 padding: 6px 12px;
             }
@@ -600,6 +712,77 @@
                 </div>
             </div>
 
+            <!-- Button zum Aufklappen der Messwerte -->
+            <button type="button" id="toggle-messwerte-btn" class="secondary" style="margin-top: 8px; margin-bottom: 8px;" onclick="toggleMesswerte()">📊 Messwerte eingeben</button>
+
+            <!-- Einklappbarer Messwerte-Bereich -->
+            <div id="messwerte-container" class="messwerte-box" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <span style="font-weight: 600; font-size: 14px; color: var(--md-color-on-surface-variant);">Messwerte erfassen:</span>
+                    <button type="button" class="secondary" style="width: auto; padding: 4px 12px; font-size: 12px; border-radius: 100px; margin: 0;" onclick="clearMesswerte()">🗑️ Leeren</button>
+                </div>
+                
+                <div class="messwerte-grid">
+                    <div class="messwerte-item narrow">
+                        <div class="status-container">
+                            <label for="mw-rr-sys">RR Sys</label>
+                            <span id="status-rr-sys" class="status-indicator" onclick="toggleStatus('rr-sys')">❓</span>
+                        </div>
+                        <input type="number" id="mw-rr-sys" placeholder="120" autocomplete="off" oninput="limitLength(this, 3); handleValueInput(this, 'status-rr-sys');">
+                    </div>
+                    <div class="messwerte-item narrow">
+                        <div class="status-container">
+                            <label for="mw-rr-dia">RR Dia</label>
+                            <span id="status-rr-dia" class="status-indicator" onclick="toggleStatus('rr-dia')">❓</span>
+                        </div>
+                        <input type="number" id="mw-rr-dia" placeholder="80" autocomplete="off" oninput="limitLength(this, 3); handleValueInput(this, 'status-rr-dia');">
+                    </div>
+                    <div class="messwerte-item">
+                        <div class="status-container">
+                            <label for="mw-hf">HF</label>
+                            <span id="status-hf" class="status-indicator" onclick="toggleStatus('hf')">❓</span>
+                        </div>
+                        <input type="number" id="mw-hf" placeholder="75" autocomplete="off" oninput="limitLength(this, 4); handleValueInput(this, 'status-hf');">
+                    </div>
+                    <div class="messwerte-item">
+                        <div class="status-container">
+                            <label for="mw-puls">Puls</label>
+                            <span id="status-puls" class="status-indicator" onclick="toggleStatus('puls')">❓</span>
+                        </div>
+                        <input type="number" id="mw-puls" placeholder="72" autocomplete="off" oninput="limitLength(this, 4); handleValueInput(this, 'status-puls');">
+                    </div>
+                    <div class="messwerte-item">
+                        <div class="status-container">
+                            <label for="mw-bz">BZ</label>
+                            <span id="status-bz" class="status-indicator" onclick="toggleStatus('bz')">❓</span>
+                        </div>
+                        <input type="text" id="mw-bz" placeholder="z.B. HI" autocomplete="off" oninput="limitLength(this, 5); handleValueInput(this, 'status-bz');">
+                    </div>
+                    <div class="messwerte-item">
+                        <div class="status-container">
+                            <label for="mw-af">AF</label>
+                            <span id="status-af" class="status-indicator" onclick="toggleStatus('af')">❓</span>
+                        </div>
+                        <input type="number" id="mw-af" placeholder="14" autocomplete="off" oninput="limitLength(this, 4); handleValueInput(this, 'status-af');">
+                    </div>
+                    <div class="messwerte-item">
+                        <div class="status-container">
+                            <label for="mw-temp">Temp (°C)</label>
+                            <span id="status-temp" class="status-indicator" onclick="toggleStatus('temp')">❓</span>
+                        </div>
+                        <input type="text" id="mw-temp" placeholder="36.5" autocomplete="off" oninput="limitLength(this, 5); handleValueInput(this, 'status-temp');">
+                    </div>
+                </div>
+                
+                <!-- Scrollbare Mehrfachauswahl für EKG Rhythmen -->
+                <div class="messwerte-item" style="margin-top: 14px; width: 100%;">
+                    <label style="margin-bottom: 6px; text-align: left;">EKG (Mehrfachauswahl möglich)</label>
+                    <div class="ekg-checklist" id="ekg-checklist-container">
+                        <!-- Wird dynamisch per JS befüllt -->
+                    </div>
+                </div>
+            </div>
+
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
                 <label for="freitext" style="margin-top: 0; margin-bottom: 0; flex: 1 1 auto; min-width: 100px;">Text bearbeiten:</label>
                 <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0; flex-wrap: nowrap;">
@@ -628,20 +811,19 @@
                 <option value="standard" selected>Standard </option>
             </select>
             
-            <div class="restore-container">
-                <div class="restore-row">
-                    <input type="checkbox" id="restore-check">
-                    <label for="restore-check">Letzten gesendeten Text laden</label>
+            <!-- Neuer, dezenterer Wiederherstellungs-Bereich -->
+            <div class="restore-subtle">
+                <div class="restore-selector">
+                    <label class="restore-opt" for="restore-source-bt">
+                        <input type="radio" id="restore-source-bt" name="restore-source" value="bt" checked>
+                        <span>Letzter Bluetooth-Text</span>
+                    </label>
+                    <label class="restore-opt" for="restore-source-ki">
+                        <input type="radio" id="restore-source-ki" name="restore-source" value="ki">
+                        <span>Letzter KI-Text</span>
+                    </label>
                 </div>
-                <button type="button" class="secondary" onclick="anwendenLetzterText()">In Textfeld einfügen</button>
-            </div>
-
-            <div class="restore-container">
-                <div class="restore-row">
-                    <input type="checkbox" id="restore-ki-check">
-                    <label for="restore-ki-check">Letzten KI-Text laden</label>
-                </div>
-                <button type="button" class="secondary" onclick="anwendenLetzterKiText()">In Textfeld einfügen</button>
+                <button type="button" class="btn-restore-subtle" onclick="anwendenAusgewaehltenText()">In Textfeld einfügen</button>
             </div>
         </form>
     </div>
@@ -688,8 +870,6 @@
         const loadingDiv = document.getElementById("overlay-loading");
         const successDiv = document.getElementById("overlay-success");
         const countdownEl = document.getElementById("countdown-text");
-        const restoreCheck = document.getElementById("restore-check");
-        const restoreKiCheck = document.getElementById("restore-ki-check");
         const connectBleBtn = document.getElementById("connect-ble-btn");
 
         const OPTIONEN_NAMEN = {
@@ -703,6 +883,27 @@
             "abcdesampler": "ABCDE SAMPLER",
             "sampler": "SAMPLER / OPQRST"
         };
+
+        const EKG_RYHTMEN = [
+            { id: "ekg-sr", label: "Sinusrhythmus (SR)" },
+            { id: "ekg-vhf", label: "Vorhofflimmern (VHF)" },
+            { id: "ekg-vhflat", label: "Vorhofflattern" },
+            { id: "ekg-svt", label: "Supraventrikuläre Tachykardie (SVT)" },
+            { id: "ekg-vt", label: "Ventrikuläre Tachykardie (VT)" },
+            { id: "ekg-kf", label: "Kammerflimmern (KF)" },
+            { id: "ekg-asystolie", label: "Asystolie" },
+            { id: "ekg-pea", label: "PEA (Pulslose elektrische Aktivität)" },
+            { id: "ekg-av1", label: "AV-Block I°" },
+            { id: "ekg-av2w", label: "AV-Block II° (Wenckebach)" },
+            { id: "ekg-av2m", label: "AV-Block II° (Mobitz)" },
+            { id: "ekg-av3", label: "AV-Block III°" },
+            { id: "ekg-lsb", label: "Linksschenkelblock (LSB / LBBB)" },
+            { id: "ekg-rsb", label: "Rechtsschenkelblock (RSB / RBBB)" },
+            { id: "ekg-stemi", label: "STEMI (Herzinfarkt)" },
+            { id: "ekg-ves", label: "Extrasystolen (VES)" },
+            { id: "ekg-brady", label: "Bradykardie" },
+            { id: "ekg-tachy", label: "Tachykardie" }
+        ];
 
         const BT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 -960 960 960" width="1.4em" fill="currentColor" style="vertical-align:middle; margin-right:4px; display:inline-block;"><path d="M440-80v-304L256-200l-56-56 224-224-224-224 56-56 184 184v-304h40l228 228-172 172 172 172L480-80h-40Zm80-496 76-76-76-74v150Zm0 342 76-74-76-76v150Z"/></svg>`;
 
@@ -812,6 +1013,7 @@
                 loadingDiv.style.display = "none";
                 successDiv.style.display = "block";
                 localStorage.removeItem("aktueller_entwurf");
+                clearMesswerte(); // Messwerte nach erfolgreichem Senden zurücksetzen
             } 
             else if (value === "STOPPED") {
                 alert("Der Tippvorgang wurde erfolgreich abgebrochen.");
@@ -865,9 +1067,6 @@
 
             const keys = Object.keys(VORLAGEN);
             
-            // Filtern:
-            // Wenn 'm' aktiv -> alles ausschließen, was auf '_w' endet.
-            // Wenn 'w' aktiv -> alles ausschließen, was auf '_m' endet.
             let filteredKeys = [];
             if (selectedGender === 'm') {
                 filteredKeys = keys.filter(key => !key.endsWith('_w'));
@@ -987,45 +1186,239 @@
             }
         }
 
-        function anwendenLetzterText() {
-            if (!restoreCheck.checked) {
-                alert("Bitte setzen Sie zuerst das Häkchen bei 'Letzten gesendeten Text laden'.");
-                return;
+        // Gemeinsame Funktion zum Einfügen des ausgewählten letzten Texts
+        function anwendenAusgewaehltenText() {
+            const selectedSource = document.querySelector('input[name="restore-source"]:checked').value;
+            let gespeicherterText = "";
+            
+            if (selectedSource === "bt") {
+                gespeicherterText = localStorage.getItem("letzter_gesendeter_text");
+            } else if (selectedSource === "ki") {
+                gespeicherterText = localStorage.getItem("letzter_ki_gesendeter_text");
             }
-            const gespeicherterText = localStorage.getItem("letzter_gesendeter_text");
+
             if (gespeicherterText) {
                 textarea.value = gespeicherterText;
+                localStorage.setItem("aktueller_entwurf", gespeicherterText);
                 autoResize();
                 updateSubmitButtonState();
-                restoreCheck.checked = false;
             } else {
-                alert("Kein zuvor gesendeter Text im Speicher gefunden.");
+                alert("Kein entsprechender Text im Speicher gefunden.");
             }
         }
 
-        function anwendenLetzterKiText() {
-            if (!restoreKiCheck.checked) {
-                alert("Bitte setzen Sie zuerst das Häkchen bei 'Letzten KI-Text laden'.");
-                return;
-            }
-            const gespeicherterText = localStorage.getItem("letzter_ki_gesendeter_text");
-            if (gespeicherterText) {
-                textarea.value = gespeicherterText;
-                autoResize();
-                updateSubmitButtonState();
-                restoreKiCheck.checked = false;
+        // Steuerung des Messwerte-Bereichs
+        function toggleMesswerte() {
+            const container = document.getElementById("messwerte-container");
+            const btn = document.getElementById("toggle-messwerte-btn");
+            if (container.style.display === "none") {
+                container.style.display = "block";
+                btn.innerText = "📊 Messwerte ausblenden";
             } else {
-                alert("Kein zuvor an die KI gesendeter Text gefunden.");
+                container.style.display = "none";
+                btn.innerText = "📊 Messwerte eingeben";
             }
+        }
+
+        function renderEkgChecklist() {
+            const container = document.getElementById("ekg-checklist-container");
+            container.innerHTML = "";
+            EKG_RYHTMEN.forEach(item => {
+                const label = document.createElement("label");
+                label.className = "ekg-item-row";
+                label.htmlFor = item.id;
+                
+                const cb = document.createElement("input");
+                cb.type = "checkbox";
+                cb.value = item.label;
+                cb.id = item.id;
+                cb.className = "ekg-checkbox";
+                
+                const span = document.createElement("span");
+                span.innerText = item.label;
+                
+                label.appendChild(cb);
+                label.appendChild(span);
+                container.appendChild(label);
+            });
+        }
+
+        function limitLength(el, max) {
+            if (el.value.length > max) {
+                el.value = el.value.slice(0, max);
+            }
+        }
+
+        // Steuert das Ein- und Ausblenden des Status-Hakens pro Feld
+        function handleValueInput(inputEl, statusId) {
+            const val = inputEl.value.trim();
+            const statusEl = document.getElementById(statusId);
+            if (val.length > 0) {
+                if (statusEl.innerText === "❓") {
+                    statusEl.innerText = "✅"; // Zu grünem Haken wechseln
+                    statusEl.title = "Gemessen";
+                }
+            } else {
+                if (statusEl.innerText === "✅") {
+                    statusEl.innerText = "❓"; // Zurück zu Fragezeichen
+                    statusEl.title = "Kein Eintrag";
+                }
+            }
+            updateSubmitButtonState();
+        }
+
+        // Wechselt zwischen Haken (gemessen), Fragezeichen (leer) und X (nicht gemessen)
+        function toggleStatus(id) {
+            const statusEl = document.getElementById(`status-${id}`);
+            const inputEl = document.getElementById(`mw-${id}`);
+            if (!statusEl || !inputEl) return;
+
+            const hasValue = inputEl.value.trim().length > 0;
+
+            if (statusEl.innerText === "✅" || statusEl.innerText === "❓") {
+                statusEl.innerText = "❌";
+                statusEl.title = "Nicht gemessen";
+            } else if (statusEl.innerText === "❌") {
+                if (hasValue) {
+                    statusEl.innerText = "✅";
+                    statusEl.title = "Gemessen";
+                } else {
+                    statusEl.innerText = "❓";
+                    statusEl.title = "Kein Eintrag";
+                }
+            }
+        }
+
+        function clearMesswerte() {
+            document.getElementById("mw-rr-sys").value = "";
+            document.getElementById("mw-rr-dia").value = "";
+            document.getElementById("mw-hf").value = "";
+            document.getElementById("mw-puls").value = "";
+            document.getElementById("mw-bz").value = "";
+            document.getElementById("mw-af").value = "";
+            document.getElementById("mw-temp").value = "";
+            
+            const checkboxes = document.querySelectorAll(".ekg-checkbox");
+            checkboxes.forEach(cb => cb.checked = false);
+
+            // Alle Statushaken wieder auf Fragezeichen zurücksetzen
+            const indicators = document.querySelectorAll(".status-indicator");
+            indicators.forEach(ind => {
+                ind.style.display = "inline-block";
+                ind.innerText = "❓";
+                ind.title = "Kein Eintrag";
+            });
+        }
+
+        function formatMesswerteFuerAusgabe() {
+            const sys = document.getElementById("mw-rr-sys").value.trim();
+            const dia = document.getElementById("mw-rr-dia").value.trim();
+            const hf = document.getElementById("mw-hf").value.trim();
+            const puls = document.getElementById("mw-puls").value.trim();
+            const bz = document.getElementById("mw-bz").value.trim();
+            const af = document.getElementById("mw-af").value.trim();
+            const temp = document.getElementById("mw-temp").value.trim();
+
+            let eintraege = [];
+
+            // Hilfsfunktion zur Ermittlung des Status (null = nicht ausgeben (❓), ✅, ❌)
+            const getStatusOf = (id) => {
+                const el = document.getElementById(`status-${id}`);
+                if (!el) return null;
+                const txt = el.innerText;
+                if (txt === "❓") return null; // Fragezeichen wird ignoriert
+                return txt;
+            };
+
+            // RR Formatierung
+            const sysStatus = getStatusOf("rr-sys");
+            const diaStatus = getStatusOf("rr-dia");
+
+            if (sysStatus !== null || diaStatus !== null) {
+                if (sysStatus === "❌" || diaStatus === "❌") {
+                    eintraege.push("RR nicht gemessen");
+                } else {
+                    const rrString = `${sys || '??'}/${dia || '??'}`;
+                    eintraege.push(`RR: ${rrString} mmHg`);
+                }
+            }
+
+            // HF
+            const hfStatus = getStatusOf("hf");
+            if (hfStatus !== null) {
+                if (hfStatus === "❌") eintraege.push("HF nicht gemessen");
+                else eintraege.push(`HF: ${hf}/min`);
+            }
+
+            // Puls
+            const pulsStatus = getStatusOf("puls");
+            if (pulsStatus !== null) {
+                if (pulsStatus === "❌") eintraege.push("Puls nicht gemessen");
+                else eintraege.push(`Puls: ${puls}/min`);
+            }
+
+            // BZ
+            const bzStatus = getStatusOf("bz");
+            if (bzStatus !== null) {
+                if (bzStatus === "❌") {
+                    eintraege.push("BZ nicht gemessen");
+                } else {
+                    let bzDisplay = bz;
+                    if (bz.toLowerCase() === "hi") bzDisplay = "HI";
+                    else if (bz.toLowerCase() === "low") bzDisplay = "LOW";
+                    eintraege.push(`BZ: ${bzDisplay} mg/dl`);
+                }
+            }
+
+            // AF
+            const afStatus = getStatusOf("af");
+            if (afStatus !== null) {
+                if (afStatus === "❌") eintraege.push("AF nicht gemessen");
+                else eintraege.push(`AF: ${af}/min`);
+            }
+
+            // Temp
+            const tempStatus = getStatusOf("temp");
+            if (tempStatus !== null) {
+                if (tempStatus === "❌") {
+                    eintraege.push("Temp nicht gemessen");
+                } else {
+                    let tempDisplay = temp;
+                    if (temp.toLowerCase() === "hi") tempDisplay = "HI";
+                    else if (temp.toLowerCase() === "low") tempDisplay = "LOW";
+                    eintraege.push(`Temp: ${tempDisplay} °C`);
+                }
+            }
+
+            // Auswertung der EKG Checkboxen
+            const ausgewaehlteEkg = [];
+            const checkboxes = document.querySelectorAll(".ekg-checkbox:checked");
+            checkboxes.forEach(cb => {
+                ausgewaehlteEkg.push(cb.value);
+            });
+
+            if (ausgewaehlteEkg.length > 0) {
+                eintraege.push(`EKG: ${ausgewaehlteEkg.join(", ")}`);
+            }
+
+            if (eintraege.length > 0) {
+                return "\n\nMesswerte: " + eintraege.join(" | ");
+            }
+            return "";
         }
 
         let lastHeight = 0;
         function autoResize() {
             textarea.style.height = 'auto';
+            const maxHeight = 350; // Maximale Höhe im CSS
             const newHeight = textarea.scrollHeight;
-            if (newHeight !== lastHeight) {
-                textarea.style.height = newHeight + 'px';
-                lastHeight = newHeight;
+            
+            if (newHeight > maxHeight) {
+                textarea.style.height = maxHeight + 'px';
+                textarea.style.overflowY = 'auto';
+            } else {
+                textarea.style.height = (newHeight > 180 ? newHeight : 180) + 'px';
+                textarea.style.overflowY = 'hidden';
             }
         }
 
@@ -1063,7 +1456,6 @@
                 document.getElementById("ki-label").innerText = "Gemini-Unterstützung wählen (optional):";
             }
 
-            // Standardmäßig auf männlich zurücksetzen und Vorlagen neu befüllen
             const maleRadio = document.getElementById("gender-m");
             if (maleRadio) maleRadio.checked = true;
             befuelleVorlagenButtons();
@@ -1071,6 +1463,7 @@
             loeschSliderContainer.classList.remove("show");
             setTimeout(resetSliderStyles, 300);
             localStorage.removeItem("aktueller_entwurf"); 
+            clearMesswerte();
             autoResize();
             updateSubmitButtonState();
             overlay.style.display = "none";
@@ -1099,25 +1492,21 @@
             const selectedProvider = document.querySelector('input[name="provider"]:checked').value;
             const activeSelect = (selectedProvider === 'chatgpt') ? kiSelect : geminiSelect;
             const kiAuswahl = activeSelect.value;
-            const text = textarea.value;
-
-            let genderInfo = "";
-            const selectedGender = document.querySelector('input[name="gender"]:checked');
-            if (selectedGender) {
-                if (selectedGender.value === 'm') genderInfo = "männlicher Patient\n";
-                else if (selectedGender.value === 'w') genderInfo = "weibliche Patientin\n";
-            }
+            
+            const basisText = textarea.value;
+            const messwerteText = formatMesswerteFuerAusgabe();
+            const textMitMesswerten = basisText + messwerteText;
 
             if (kiAuswahl !== "keine") {
-                if (!text.trim()) {
+                if (!basisText.trim()) {
                     alert("Bitte schreiben oder wählen Sie zuerst einen Text.");
                     return false;
                 }
 
                 const basisPrompt = KI_PROMPTS[kiAuswahl] || "";
-                const promptString = basisPrompt + genderInfo + text;
+                const promptString = basisPrompt + textMitMesswerten;
 
-                localStorage.setItem("letzter_ki_gesendeter_text", text);
+                localStorage.setItem("letzter_ki_gesendeter_text", basisText);
                 inZwischenablageKopieren(promptString);
 
                 let targetUrl = "";
@@ -1140,6 +1529,7 @@
                     
                     textarea.value = "";
                     localStorage.removeItem("aktueller_entwurf");
+                    clearMesswerte(); // Messwerte zurücksetzen
                     autoResize();
                     updateSubmitButtonState();
                     submitBtn.style.background = originalBg; 
@@ -1152,7 +1542,7 @@
                 return false;
             }
 
-            localStorage.setItem("letzter_gesendeter_text", text);
+            localStorage.setItem("letzter_gesendeter_text", basisText);
 
             overlay.style.display = "flex";
             loadingDiv.style.display = "block";
@@ -1160,7 +1550,7 @@
             countdownEl.innerText = "Übertragung startet...";
 
             try {
-                await sendBleData(text);
+                await sendBleData(textMitMesswerten);
                 countdownEl.innerText = "Text übertragen. Gerät schreibt...";
             } catch (error) {
                 console.error("Fehler beim Senden: ", error);
@@ -1180,7 +1570,6 @@
         kiSelect.addEventListener("change", updateSubmitButtonState);
         geminiSelect.addEventListener("change", updateSubmitButtonState);
 
-        // Event-Listener für Geschlechts-Radios zur dynamischen Filterung
         const genderRadios = document.querySelectorAll('input[name="gender"]');
         genderRadios.forEach(radio => {
             radio.addEventListener('change', () => {
@@ -1189,7 +1578,6 @@
             });
         });
 
-        // Toggle für KI-Anbieter
         const providerRadios = document.querySelectorAll('input[name="provider"]');
         providerRadios.forEach(radio => {
             radio.addEventListener('change', (e) => {
@@ -1212,15 +1600,14 @@
         });
 
         window.addEventListener("DOMContentLoaded", async () => {
+            renderEkgChecklist();
             await ladeVorlagenUndPrompts();
             
-            // Gespeicherten Entwurf laden
             const gespeicherterEntwurf = localStorage.getItem("aktueller_entwurf");
             if (gespeicherterEntwurf) {
                 textarea.value = gespeicherterEntwurf;
             }
 
-            // Letzten ausgewählten KI-Anbieter laden
             const savedProvider = localStorage.getItem("saved_provider");
             if (savedProvider) {
                 const radio = document.getElementById(`provider-${savedProvider}`);
