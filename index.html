@@ -1469,38 +1469,18 @@
             countdownEl.innerText = "Bitte warten...";
         }
 
-        // Berechnung einer einfachen XOR-Prüfsumme für die Fehlerprüfung
-        function calculateChecksum(str) {
-            let checksum = 0;
-            for (let i = 0; i < str.length; i++) {
-                checksum ^= str.charCodeAt(i);
-            }
-            return checksum;
-        }
-
-        // Senden der Segmente mit robustem Datenrahmen-Protokoll
+        // Bluetooth-Sende-Funktion ohne künstlichen Delay und ohne zusätzliche Steuerzeichen (wie in der Referenzversion)
         async function sendBleData(text) {
             const fullText = text + "\x04"; // End-of-Transmission (EOT)
-            const chunkSize = 100; // Maximale Segmentgröße (ausreichend Platz für Header lassen)
-            const chunks = [];
+            const encoder = new TextEncoder();
+            const dataBytes = encoder.encode(fullText);
+            const chunkSize = 128; 
             
-            for (let i = 0; i < fullText.length; i += chunkSize) {
-                chunks.push(fullText.slice(i, i + chunkSize));
-            }
-
-            const total = chunks.length;
-            for (let idx = 0; idx < total; idx++) {
-                const payload = chunks[idx];
-                const checksum = calculateChecksum(payload);
+            for (let offset = 0; offset < dataBytes.length; offset += chunkSize) {
+                const chunk = dataBytes.slice(offset, offset + chunkSize);
+                await rxCharacteristic.writeValueWithResponse(chunk);
                 
-                // Aufbau des Datenrahmens: Index / Gesamt / Prüfsumme / Nutzdaten
-                const frame = `${idx}/${total}/${checksum}/${payload}`;
-                const encoder = new TextEncoder();
-                const frameBytes = encoder.encode(frame);
-                
-                await rxCharacteristic.writeValueWithResponse(frameBytes);
-                
-                const prozent = Math.round(((idx + 1) / total) * 100);
+                const prozent = Math.round(((offset + chunk.length) / dataBytes.length) * 100);
                 countdownEl.innerText = `Übertrage: ${prozent}%`;
             }
         }
