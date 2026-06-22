@@ -145,7 +145,8 @@
             line-height: 1.5;
         }
 
-        button { 
+        button, .scroll-btn { 
+            min-height: 44px;
             width: 100%; 
             padding: 14px 24px; 
             font-size: 14px; 
@@ -562,11 +563,11 @@
         .messwerte-item {
             display: flex;
             flex-direction: column;
-            width: 76px; /* Passt perfekt für bis zu 4 Zeichen */
+            width: 76px; 
             box-sizing: border-box;
         }
         .messwerte-item.narrow {
-            width: 66px; /* Kompakt für exakt 3 Zahlen (Sys/Dia) */
+            width: 66px; 
         }
         
         .status-container {
@@ -590,9 +591,10 @@
         .status-indicator {
             user-select: none;
             cursor: pointer;
-            display: inline-block; /* Immer sichtbar */
+            display: inline-block; 
             font-size: 11px;
             line-height: 1;
+            padding: 4px;
         }
 
         .messwerte-item input {
@@ -604,7 +606,7 @@
             box-sizing: border-box;
         }
 
-        /* EKG Scrollbare Checkbox-Liste */
+        /* EKG Scrollbare Checkbox-Liste - Auf vorherigen Zustand zurückgesetzt */
         .ekg-checklist {
             max-height: 160px;
             overflow-y: auto;
@@ -722,56 +724,9 @@
                     <button type="button" class="secondary" style="width: auto; padding: 4px 12px; font-size: 12px; border-radius: 100px; margin: 0;" onclick="clearMesswerte()">🗑️ Leeren</button>
                 </div>
                 
-                <div class="messwerte-grid">
-                    <div class="messwerte-item narrow">
-                        <div class="status-container">
-                            <label for="mw-rr-sys">RR Sys</label>
-                            <span id="status-rr-sys" class="status-indicator" onclick="toggleStatus('rr-sys')">❓</span>
-                        </div>
-                        <input type="number" id="mw-rr-sys" placeholder="120" autocomplete="off" oninput="limitLength(this, 3); handleValueInput(this, 'status-rr-sys');">
-                    </div>
-                    <div class="messwerte-item narrow">
-                        <div class="status-container">
-                            <label for="mw-rr-dia">RR Dia</label>
-                            <span id="status-rr-dia" class="status-indicator" onclick="toggleStatus('rr-dia')">❓</span>
-                        </div>
-                        <input type="number" id="mw-rr-dia" placeholder="80" autocomplete="off" oninput="limitLength(this, 3); handleValueInput(this, 'status-rr-dia');">
-                    </div>
-                    <div class="messwerte-item">
-                        <div class="status-container">
-                            <label for="mw-hf">HF</label>
-                            <span id="status-hf" class="status-indicator" onclick="toggleStatus('hf')">❓</span>
-                        </div>
-                        <input type="number" id="mw-hf" placeholder="75" autocomplete="off" oninput="limitLength(this, 4); handleValueInput(this, 'status-hf');">
-                    </div>
-                    <div class="messwerte-item">
-                        <div class="status-container">
-                            <label for="mw-puls">Puls</label>
-                            <span id="status-puls" class="status-indicator" onclick="toggleStatus('puls')">❓</span>
-                        </div>
-                        <input type="number" id="mw-puls" placeholder="72" autocomplete="off" oninput="limitLength(this, 4); handleValueInput(this, 'status-puls');">
-                    </div>
-                    <div class="messwerte-item">
-                        <div class="status-container">
-                            <label for="mw-bz">BZ</label>
-                            <span id="status-bz" class="status-indicator" onclick="toggleStatus('bz')">❓</span>
-                        </div>
-                        <input type="text" id="mw-bz" placeholder="z.B. HI" autocomplete="off" oninput="limitLength(this, 5); handleValueInput(this, 'status-bz');">
-                    </div>
-                    <div class="messwerte-item">
-                        <div class="status-container">
-                            <label for="mw-af">AF</label>
-                            <span id="status-af" class="status-indicator" onclick="toggleStatus('af')">❓</span>
-                        </div>
-                        <input type="number" id="mw-af" placeholder="14" autocomplete="off" oninput="limitLength(this, 4); handleValueInput(this, 'status-af');">
-                    </div>
-                    <div class="messwerte-item">
-                        <div class="status-container">
-                            <label for="mw-temp">Temp (°C)</label>
-                            <span id="status-temp" class="status-indicator" onclick="toggleStatus('temp')">❓</span>
-                        </div>
-                        <input type="text" id="mw-temp" placeholder="36.5" autocomplete="off" oninput="limitLength(this, 5); handleValueInput(this, 'status-temp');">
-                    </div>
+                <!-- Dynamisches Raster der Parameter via JS -->
+                <div class="messwerte-grid" id="messwerte-grid-container">
+                     <!-- Wird per Javascript befüllt -->
                 </div>
                 
                 <!-- Scrollbare Mehrfachauswahl für EKG Rhythmen -->
@@ -858,6 +813,17 @@
 
         let VORLAGEN = {};
         let KI_PROMPTS = {};
+
+        // Zentrales Konfigurationsobjekt (DRY-Prinzip)
+        const PARAMETER_CONFIG = [
+            { id: "rr-sys", label: "RR Sys", unit: "mmHg", type: "number", maxLen: 3, placeholder: "120", class: "narrow", minPlaus: 50, maxPlaus: 240 },
+            { id: "rr-dia", label: "RR Dia", unit: "mmHg", type: "number", maxLen: 3, placeholder: "80", class: "narrow", minPlaus: 30, maxPlaus: 140 },
+            { id: "hf", label: "HF", unit: "/min", type: "number", maxLen: 4, placeholder: "75", minPlaus: 30, maxPlaus: 200 },
+            { id: "puls", label: "Puls", unit: "/min", type: "number", maxLen: 4, placeholder: "72", minPlaus: 30, maxPlaus: 200 },
+            { id: "bz", label: "BZ", unit: "mg/dl", type: "text", maxLen: 5, placeholder: "HI", minPlaus: 40, maxPlaus: 450, isTextAllowed: true },
+            { id: "af", label: "AF", unit: "/min", type: "number", maxLen: 4, placeholder: "14", minPlaus: 6, maxPlaus: 35 },
+            { id: "temp", label: "Temp", unit: "°C", type: "text", maxLen: 5, placeholder: "36.5", minPlaus: 30.0, maxPlaus: 42.5, isTextAllowed: true }
+        ];
 
         const textarea = document.getElementById("freitext");
         const submitBtn = document.getElementById("submit-btn");
@@ -1249,6 +1215,69 @@
             }
         }
 
+        // Dynamische Generierung des Rasters anhand des Konfigurationsobjekts
+        function renderMesswerteInput() {
+            const container = document.getElementById("messwerte-grid-container");
+            container.innerHTML = "";
+            PARAMETER_CONFIG.forEach(cfg => {
+                const div = document.createElement("div");
+                div.className = `messwerte-item ${cfg.class || ""}`;
+                
+                div.innerHTML = `
+                    <div class="status-container">
+                        <label for="mw-${cfg.id}">${cfg.label}</label>
+                        <span id="status-${cfg.id}" class="status-indicator" onclick="toggleStatus('${cfg.id}')">❓</span>
+                    </div>
+                    <input type="${cfg.type === 'number' ? 'number' : 'text'}" 
+                           id="mw-${cfg.id}" 
+                           placeholder="${cfg.placeholder}" 
+                           autocomplete="off">
+                `;
+                
+                const inputEl = div.querySelector("input");
+                inputEl.addEventListener("input", () => {
+                    limitLength(inputEl, cfg.maxLen);
+                    handleValueInput(inputEl, `status-${cfg.id}`);
+                    checkPlausibility(inputEl, cfg);
+                });
+                
+                container.appendChild(div);
+            });
+        }
+
+        // Plausibilitätsprüfung für Vitalparameter
+        function checkPlausibility(inputEl, config) {
+            const valStr = inputEl.value.trim().toLowerCase();
+            if (!valStr) {
+                inputEl.style.backgroundColor = "";
+                inputEl.style.borderColor = "";
+                return;
+            }
+
+            // Spezialwerte erlauben
+            if (config.isTextAllowed && (valStr === "hi" || valStr === "low")) {
+                inputEl.style.backgroundColor = "";
+                inputEl.style.borderColor = "";
+                return;
+            }
+
+            const val = parseFloat(valStr.replace(',', '.'));
+            if (isNaN(val)) {
+                inputEl.style.backgroundColor = "";
+                inputEl.style.borderColor = "";
+                return;
+            }
+
+            // Visuelles Feedback bei Abweichung der Grenzwerte
+            if (val < config.minPlaus || val > config.maxPlaus) {
+                inputEl.style.borderColor = "var(--md-color-error)";
+                inputEl.style.backgroundColor = "rgba(186, 26, 26, 0.12)"; // Softes Rot
+            } else {
+                inputEl.style.backgroundColor = "";
+                inputEl.style.borderColor = "";
+            }
+        }
+
         // Steuert das Ein- und Ausblenden des Status-Hakens pro Feld
         function handleValueInput(inputEl, statusId) {
             const val = inputEl.value.trim();
@@ -1290,13 +1319,14 @@
         }
 
         function clearMesswerte() {
-            document.getElementById("mw-rr-sys").value = "";
-            document.getElementById("mw-rr-dia").value = "";
-            document.getElementById("mw-hf").value = "";
-            document.getElementById("mw-puls").value = "";
-            document.getElementById("mw-bz").value = "";
-            document.getElementById("mw-af").value = "";
-            document.getElementById("mw-temp").value = "";
+            PARAMETER_CONFIG.forEach(cfg => {
+                const inputEl = document.getElementById(`mw-${cfg.id}`);
+                if (inputEl) {
+                    inputEl.value = "";
+                    inputEl.style.backgroundColor = "";
+                    inputEl.style.borderColor = "";
+                }
+            });
             
             const checkboxes = document.querySelectorAll(".ekg-checkbox");
             checkboxes.forEach(cb => cb.checked = false);
@@ -1311,14 +1341,6 @@
         }
 
         function formatMesswerteFuerAusgabe() {
-            const sys = document.getElementById("mw-rr-sys").value.trim();
-            const dia = document.getElementById("mw-rr-dia").value.trim();
-            const hf = document.getElementById("mw-hf").value.trim();
-            const puls = document.getElementById("mw-puls").value.trim();
-            const bz = document.getElementById("mw-bz").value.trim();
-            const af = document.getElementById("mw-af").value.trim();
-            const temp = document.getElementById("mw-temp").value.trim();
-
             let eintraege = [];
 
             // Hilfsfunktion zur Ermittlung des Status (null = nicht ausgeben (❓), ✅, ❌)
@@ -1330,65 +1352,40 @@
                 return txt;
             };
 
-            // RR Formatierung
+            // RR Formatierung (Sys & Dia kombiniert)
             const sysStatus = getStatusOf("rr-sys");
             const diaStatus = getStatusOf("rr-dia");
+            const sysVal = document.getElementById("mw-rr-sys").value.trim();
+            const diaVal = document.getElementById("mw-rr-dia").value.trim();
 
             if (sysStatus !== null || diaStatus !== null) {
                 if (sysStatus === "❌" || diaStatus === "❌") {
                     eintraege.push("RR nicht gemessen");
                 } else {
-                    const rrString = `${sys || '??'}/${dia || '??'}`;
+                    const rrString = `${sysVal || '??'}/${diaVal || '??'}`;
                     eintraege.push(`RR: ${rrString} mmHg`);
                 }
             }
 
-            // HF
-            const hfStatus = getStatusOf("hf");
-            if (hfStatus !== null) {
-                if (hfStatus === "❌") eintraege.push("HF nicht gemessen");
-                else eintraege.push(`HF: ${hf}/min`);
-            }
+            // Auslesung der restlichen Konfiguration
+            PARAMETER_CONFIG.forEach(cfg => {
+                if (cfg.id === "rr-sys" || cfg.id === "rr-dia") return; // Bereits oben behandelt
 
-            // Puls
-            const pulsStatus = getStatusOf("puls");
-            if (pulsStatus !== null) {
-                if (pulsStatus === "❌") eintraege.push("Puls nicht gemessen");
-                else eintraege.push(`Puls: ${puls}/min`);
-            }
-
-            // BZ
-            const bzStatus = getStatusOf("bz");
-            if (bzStatus !== null) {
-                if (bzStatus === "❌") {
-                    eintraege.push("BZ nicht gemessen");
-                } else {
-                    let bzDisplay = bz;
-                    if (bz.toLowerCase() === "hi") bzDisplay = "HI";
-                    else if (bz.toLowerCase() === "low") bzDisplay = "LOW";
-                    eintraege.push(`BZ: ${bzDisplay} mg/dl`);
+                const status = getStatusOf(cfg.id);
+                if (status !== null) {
+                    if (status === "❌") {
+                        eintraege.push(`${cfg.label} nicht gemessen`);
+                    } else {
+                        const rawVal = document.getElementById(`mw-${cfg.id}`).value.trim();
+                        let displayVal = rawVal;
+                        if (cfg.isTextAllowed) {
+                            if (rawVal.toLowerCase() === "hi") displayVal = "HI";
+                            else if (rawVal.toLowerCase() === "low") displayVal = "LOW";
+                        }
+                        eintraege.push(`${cfg.label}: ${displayVal}${cfg.unit ? ' ' + cfg.unit : ''}`);
+                    }
                 }
-            }
-
-            // AF
-            const afStatus = getStatusOf("af");
-            if (afStatus !== null) {
-                if (afStatus === "❌") eintraege.push("AF nicht gemessen");
-                else eintraege.push(`AF: ${af}/min`);
-            }
-
-            // Temp
-            const tempStatus = getStatusOf("temp");
-            if (tempStatus !== null) {
-                if (tempStatus === "❌") {
-                    eintraege.push("Temp nicht gemessen");
-                } else {
-                    let tempDisplay = temp;
-                    if (temp.toLowerCase() === "hi") tempDisplay = "HI";
-                    else if (temp.toLowerCase() === "low") tempDisplay = "LOW";
-                    eintraege.push(`Temp: ${tempDisplay} °C`);
-                }
-            }
+            });
 
             // Auswertung der EKG Checkboxen
             const ausgewaehlteEkg = [];
@@ -1472,17 +1469,38 @@
             countdownEl.innerText = "Bitte warten...";
         }
 
+        // Berechnung einer einfachen XOR-Prüfsumme für die Fehlerprüfung
+        function calculateChecksum(str) {
+            let checksum = 0;
+            for (let i = 0; i < str.length; i++) {
+                checksum ^= str.charCodeAt(i);
+            }
+            return checksum;
+        }
+
+        // Senden der Segmente mit robustem Datenrahmen-Protokoll
         async function sendBleData(text) {
             const fullText = text + "\x04"; // End-of-Transmission (EOT)
-            const encoder = new TextEncoder();
-            const dataBytes = encoder.encode(fullText);
-            const chunkSize = 128; 
+            const chunkSize = 100; // Maximale Segmentgröße (ausreichend Platz für Header lassen)
+            const chunks = [];
             
-            for (let offset = 0; offset < dataBytes.length; offset += chunkSize) {
-                const chunk = dataBytes.slice(offset, offset + chunkSize);
-                await rxCharacteristic.writeValueWithResponse(chunk);
+            for (let i = 0; i < fullText.length; i += chunkSize) {
+                chunks.push(fullText.slice(i, i + chunkSize));
+            }
+
+            const total = chunks.length;
+            for (let idx = 0; idx < total; idx++) {
+                const payload = chunks[idx];
+                const checksum = calculateChecksum(payload);
                 
-                const prozent = Math.round(((offset + chunk.length) / dataBytes.length) * 100);
+                // Aufbau des Datenrahmens: Index / Gesamt / Prüfsumme / Nutzdaten
+                const frame = `${idx}/${total}/${checksum}/${payload}`;
+                const encoder = new TextEncoder();
+                const frameBytes = encoder.encode(frame);
+                
+                await rxCharacteristic.writeValueWithResponse(frameBytes);
+                
+                const prozent = Math.round(((idx + 1) / total) * 100);
                 countdownEl.innerText = `Übertrage: ${prozent}%`;
             }
         }
@@ -1600,6 +1618,7 @@
         });
 
         window.addEventListener("DOMContentLoaded", async () => {
+            renderMesswerteInput();
             renderEkgChecklist();
             await ladeVorlagenUndPrompts();
             
