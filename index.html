@@ -689,7 +689,7 @@
             
             <textarea name="t" id="freitext" placeholder="Wähle eine Vorlage oder tippe hier freien Text..." autocomplete="off"></textarea>
 
-            <button type="submit" id="submit-btn" class="btn-disabled" disabled>3. Text senden</button>
+            <button type="submit" id="submit-btn" class="btn-disabled" disabled>Text senden</button>
 
             <div class="restore-subtle">
                 <div class="restore-selector">
@@ -1111,16 +1111,16 @@ function waehleProfil(profil) {
             if (text === "") {
                 submitBtn.disabled = true;
                 submitBtn.className = "btn-disabled";
-                submitBtn.innerText = "3. Text senden";
+                submitBtn.innerText = "Text senden";
             } else {
                 submitBtn.disabled = false;
                 if (kiAuswahl !== "keine") {
                     submitBtn.className = "btn-ki";
-                    submitBtn.innerText = "3. An KI senden";
+                    submitBtn.innerText = "An KI senden";
                 } else {
                     if (rxCharacteristic) {
                         submitBtn.className = "btn-device";
-                        submitBtn.innerText = "3. Über Bluetooth senden";
+                        submitBtn.innerText = "Über Bluetooth senden";
                     } else {
                         submitBtn.className = "btn-disabled";
                         submitBtn.innerText = "Bitte erst Bluetooth verbinden";
