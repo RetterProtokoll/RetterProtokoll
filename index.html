@@ -1072,6 +1072,22 @@
             }
         }
 
+        function inZwischenablageKopieren(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                const tempTextArea = document.createElement("textarea");
+                tempTextArea.value = text;
+                tempTextArea.style.position = "fixed"; 
+                document.body.appendChild(tempTextArea);
+                tempTextArea.focus();
+                tempTextArea.select();
+                try { document.execCommand("copy"); } catch (err) {}
+                document.body.removeChild(tempTextArea);
+                return Promise.resolve();
+            }
+        }
+
         function updateSubmitButtonState() {
             const text = textarea.value.trim();
             const selectedProvider = document.querySelector('input[name="provider"]:checked').value;
@@ -1364,17 +1380,19 @@
                 const promptString = basisPrompt + textMitMesswerten;
 
                 localStorage.setItem("letzter_ki_gesendeter_text", basisText);
+                
+                // 1. Sofort in die Zwischenablage kopieren
                 inZwischenablageKopieren(promptString);
 
                 let targetUrl = selectedProvider === 'chatgpt' 
                     ? "https://chatgpt.com/?q=" + encodeURIComponent(promptString)
                     : "https://gemini.google.com/";
 
-                submitBtn.innerText = "📋 Kopiert! Öffne Browser...";
-                setTimeout(() => {
-                    window.open(targetUrl, "_blank");
-                    resetForm();
-                }, 800);
+                // 2. Direkt öffnen (ohne setTimeout), um Pop-up-Blocker zu umgehen
+                window.open(targetUrl, "_blank");
+                
+                // 3. Formular danach zurücksetzen
+                resetForm();
                 return false; 
             }
 
