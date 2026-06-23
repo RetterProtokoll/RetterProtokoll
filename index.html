@@ -697,7 +697,7 @@
                         <input type="radio" id="restore-source-bt" name="restore-source" value="bt" checked>
                         <span>Letzter Bluetooth-Text</span>
                     </label>
-                    <label class="restore-opt" for="restore-source-ki">
+                    <label class="restore-opt" id="restore-opt-ki" for="restore-source-ki">
                         <input type="radio" id="restore-source-ki" name="restore-source" value="ki">
                         <span>Letzter KI-Text</span>
                     </label>
@@ -942,32 +942,46 @@
             });
         }
 
-        function waehleProfil(profil) {
-            ACTIVE_PROFILE = profil;
-            localStorage.setItem("aktives_profil_id", profil.id);
-            document.getElementById("app-title").innerText = `RetterProtokoll (${profil.name})`;
-            
-            befuelleVorlagenButtons();
-            
-            // Überprüfen, ob das Profil KI-Prompts hinterlegt hat
-            const kiContainer = document.getElementById("ki-selection-container");
-            const hatPrompts = profil.prompts && Object.keys(profil.prompts).length > 0;
+function waehleProfil(profil) {
+    ACTIVE_PROFILE = profil;
+    localStorage.setItem("aktives_profil_id", profil.id);
+    document.getElementById("app-title").innerText = `RetterProtokoll (${profil.name})`;
+    
+    befuelleVorlagenButtons();
+    
+    const kiContainer = document.getElementById("ki-selection-container");
+    const restoreOptKi = document.getElementById("restore-opt-ki");
+    const restoreSourceBt = document.getElementById("restore-source-bt");
+    const restoreSourceKi = document.getElementById("restore-source-ki");
+    
+    const hatPrompts = profil.prompts && Object.keys(profil.prompts).length > 0;
 
-            if (hatPrompts) {
-                kiContainer.style.display = "block";
-                anpassenKiDropdowns(profil.prompts);
-            } else {
-                kiContainer.style.display = "none";
-                kiSelect.value = "keine";
-                geminiSelect.value = "keine";
-            }
-            
-            document.getElementById("profile-selection-screen").style.display = "none";
-            document.getElementById("app-screen").style.display = "block";
-            
-            autoResize();
-            updateSubmitButtonState();
+    if (hatPrompts) {
+        kiContainer.style.display = "block";
+        anpassenKiDropdowns(profil.prompts);
+        
+        // KI-Auswahlfeld anzeigen
+        if (restoreOptKi) restoreOptKi.style.display = "flex";
+    } else {
+        kiContainer.style.display = "none";
+        kiSelect.value = "keine";
+        geminiSelect.value = "keine";
+        
+        // KI-Auswahlfeld ausblenden
+        if (restoreOptKi) restoreOptKi.style.display = "none";
+        
+        // Falls die ausgeblendete Option ausgewählt war, auf Bluetooth umschalten
+        if (restoreSourceKi && restoreSourceKi.checked) {
+            if (restoreSourceBt) restoreSourceBt.checked = true;
         }
+    }
+    
+    document.getElementById("profile-selection-screen").style.display = "none";
+    document.getElementById("app-screen").style.display = "block";
+    
+    autoResize();
+    updateSubmitButtonState();
+}
 
         function anpassenKiDropdowns(prompts) {
             const chatgptSelect = document.getElementById("ki-select");
