@@ -10,7 +10,7 @@
     <link id="apple-touch-icon" rel="apple-touch-icon" href="/RetterProtokoll/logo.png">
     
     <style>
-        /* CSS-Variablen im Material Design 3 (Android) Farbschema */
+        /* CSS-Variablen im Material Design 3 Farbschema */
         :root {
             --md-color-primary: #006a6a;
             --md-color-on-primary: #ffffff;
@@ -106,6 +106,33 @@
             display: block; 
         }
 
+        /* Profil-Auswahlbereich */
+        .profile-selection-card {
+            text-align: center;
+        }
+        .profile-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .profile-btn {
+            background: var(--md-color-surface-container);
+            color: var(--md-color-on-surface);
+            border: 1px solid var(--md-color-outline-variant);
+            padding: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .profile-btn:hover {
+            background: var(--md-color-primary-container);
+            color: var(--md-color-on-primary-container);
+            border-color: var(--md-color-primary);
+        }
+
         label { 
             display: block; 
             text-align: left; 
@@ -195,7 +222,7 @@
         }
 
         button.btn-connect {
-            background: #dc2626; /* Standard rot im nicht-verbundenen Zustand */
+            background: #dc2626; 
             color: white;
             margin-top: 0;
             margin-bottom: 0;
@@ -278,21 +305,6 @@
             box-shadow: none !important;  
         }
 
-        .slide-input:focus {
-            outline: none !important;
-            border: none !important;
-            box-shadow: none !important;
-        }
-
-        .slide-input::-webkit-slider-runnable-track {
-            background: transparent;
-            border: none;
-        }
-        .slide-input::-moz-range-track {
-            background: transparent;
-            border: none;
-        }
-
         .slide-input::-webkit-slider-thumb { 
             -webkit-appearance: none; 
             width: 48px; 
@@ -305,44 +317,6 @@
             background-size: 24px;
             cursor: pointer; 
             box-shadow: var(--md-elevation-1);
-            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), 
-                        background-color 0.2s ease, 
-                        box-shadow 0.2s ease;
-        }
-        .slide-input::-webkit-slider-thumb:hover {
-            box-shadow: var(--md-elevation-2);
-            background-color: var(--md-color-error);
-        }
-        .slide-input::-webkit-slider-thumb:active {
-            transform: scale(0.95);
-            background-color: var(--md-color-error);
-            box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0 0 0 10px rgba(186, 26, 26, 0.12);
-        }
-
-        .slide-input::-moz-range-thumb { 
-            width: 48px; 
-            height: 48px; 
-            border-radius: 50%; 
-            background-color: var(--md-color-outline); 
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: 24px;
-            cursor: pointer; 
-            border: none;
-            box-shadow: var(--md-elevation-1);
-            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), 
-                        background-color 0.2s ease, 
-                        box-shadow 0.2s ease;
-        }
-        .slide-input::-moz-range-thumb:hover {
-            box-shadow: var(--md-elevation-2);
-            background-color: var(--md-color-error);
-        }
-        .slide-input::-moz-range-thumb:active {
-            transform: scale(0.95);
-            background-color: var(--md-color-error);
-            box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0 0 0 10px rgba(186, 26, 26, 0.12);
         }
 
         .segmented-control {
@@ -366,8 +340,6 @@
             font-size: 13px;
             font-weight: 600;
             color: var(--md-color-on-surface-variant);
-            text-transform: none;
-            letter-spacing: normal;
             transition: all 0.2s ease;
             box-sizing: border-box;
             display: inline-flex;
@@ -386,7 +358,6 @@
             color: var(--md-color-on-primary-container);
         }
 
-        /* Dezenterer Bereich für den letzten Text */
         .restore-subtle {
             background: var(--md-color-surface-container);
             border-radius: 16px;
@@ -418,7 +389,6 @@
             margin: 0 !important;
             color: var(--md-color-on-surface-variant);
             user-select: none;
-            transition: background-color 0.15s, border-color 0.15s;
         }
         .restore-opt:has(input:checked) {
             background: var(--md-color-primary-container);
@@ -430,7 +400,6 @@
             height: 16px !important;
             margin: 0 !important;
             accent-color: var(--md-color-primary);
-            cursor: pointer;
         }
         button.btn-restore-subtle {
             background: transparent;
@@ -441,16 +410,9 @@
             margin-top: 0;
             border-radius: 100px;
             width: 100%;
-            cursor: pointer;
-            transition: background-color 0.2s;
         }
         button.btn-restore-subtle:hover {
             background: rgba(0, 106, 106, 0.08);
-        }
-        @media (prefers-color-scheme: dark) {
-            button.btn-restore-subtle:hover {
-                background: rgba(128, 211, 211, 0.08);
-            }
         }
         
         button.secondary { 
@@ -465,11 +427,6 @@
         }
         button.secondary:hover { 
             background: rgba(0, 106, 106, 0.08); 
-        }
-        @media (prefers-color-scheme: dark) {
-            button.secondary:hover {
-                background: rgba(128, 211, 211, 0.08);
-            }
         }
 
         #overlay { 
@@ -487,7 +444,7 @@
             color: var(--md-color-on-surface); 
             padding: 20px; 
             box-sizing: border-box; 
-            }
+        }
         .overlay-content { 
             background: var(--md-color-surface); 
             padding: 32px; 
@@ -509,7 +466,6 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Raster-Layout für Vorlagen ohne künstliche Streckung */
         .scroll-container {
             display: flex;
             flex-wrap: wrap; 
@@ -529,20 +485,14 @@
             color: var(--md-color-on-surface);
             border: 1px solid var(--md-color-outline-variant);
             box-shadow: none;
-            transition: background-color 0.2s, border-color 0.2s;
             white-space: nowrap;
-            text-align: center;
         }
         button.scroll-btn:hover {
             background: var(--md-color-primary-container);
             color: var(--md-color-on-primary-container);
             border-color: var(--md-color-primary);
         }
-        button.scroll-btn:active {
-            transform: scale(0.95);
-        }
 
-        /* Messwerte-Container Styling */
         .messwerte-box {
             background: var(--md-color-surface-container);
             border: 1px solid var(--md-color-outline-variant);
@@ -553,7 +503,6 @@
             box-sizing: border-box;
         }
         
-        /* Flexbox für kompakte Eingabefelder nebeneinander */
         .messwerte-grid {
             display: flex;
             flex-wrap: wrap;
@@ -575,7 +524,6 @@
             align-items: center; 
             justify-content: center; 
             gap: 4px; 
-            margin-bottom: 4px;
         }
         .status-container label {
             margin-top: 0;
@@ -583,17 +531,12 @@
             font-size: 11px;
             color: var(--md-color-on-surface-variant);
             white-space: nowrap;
-            text-align: center;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
         
         .status-indicator {
             user-select: none;
             cursor: pointer;
-            display: inline-block; 
             font-size: 11px;
-            line-height: 1;
             padding: 4px;
         }
 
@@ -603,10 +546,8 @@
             border-radius: 8px;
             font-size: 14px;
             text-align: center;
-            box-sizing: border-box;
         }
 
-        /* EKG Scrollbare Checkbox-Liste - Auf vorherigen Zustand zurückgesetzt */
         .ekg-checklist {
             max-height: 160px;
             overflow-y: auto;
@@ -633,7 +574,6 @@
             height: 20px !important;
             margin: 0 !important;
             accent-color: var(--md-color-primary);
-            cursor: pointer;
         }
 
         @media (max-width: 500px) {
@@ -643,30 +583,40 @@
             input, select, textarea { padding: 12px; margin-bottom: 12px; }
             textarea { min-height: 140px; }
             button { padding: 12px; font-size: 14px; }
-            label { margin-top: 12px; font-size: 13px; }
-            
-            button.scroll-btn {
-                flex: 0 0 auto; 
-                font-size: 11px;
-                padding: 6px 12px;
-            }
         }
     </style>
 </head>
 <body>
-   <div id="update-banner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; background: var(--md-color-primary); color: white; padding: 12px; text-align: center; z-index: 2000; font-size: 14px; font-weight: 500; box-shadow: var(--md-elevation-2);">
-    Eine neue Version ist verfügbar! 
-    <button id="update-btn" style="width: auto; margin: 0 0 0 12px; padding: 6px 16px; background: white; color: var(--md-color-primary); font-weight: bold; font-size: 13px;">Aktualisieren</button>
-</div> 
-    <div class="card">
+    <div id="update-banner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; background: var(--md-color-primary); color: white; padding: 12px; text-align: center; z-index: 2000; font-size: 14px; font-weight: 500; box-shadow: var(--md-elevation-2);">
+        Eine neue Version ist verfügbar! 
+        <button id="update-btn" style="width: auto; margin: 0 0 0 12px; padding: 6px 16px; background: white; color: var(--md-color-primary); font-weight: bold; font-size: 13px;">Aktualisieren</button>
+    </div> 
+
+    <!-- 1. VORGESCHALTETE PROFILAUSWAHL -->
+    <div id="profile-selection-screen" class="card">
         <div class="title-container">
-            <img id="header-logo" class="title-logo" src="/RetterProtokoll/logo.png" alt="RetterProtokoll Logo">
-            <h2>RetterProtokoll</h2>
+            <img class="title-logo" src="/RetterProtokoll/logo.png" alt="Logo">
+            <h2>Profil auswählen</h2>
+        </div>
+        <p style="text-align: center; color: var(--md-color-on-surface-variant);">Bitte wählen Sie Ihr Profil, um Ihre persönlichen Vorlagen und Prompts zu laden.</p>
+        <div id="profile-list" class="profile-list">
+            <span style="color: var(--md-color-outline);">Lade Profile...</span>
+        </div>
+    </div>
+
+    <!-- 2. HAUPT-ANWENDUNG (Standardmäßig ausgeblendet) -->
+    <div id="app-screen" class="card" style="display: none;">
+        <div class="title-container" style="justify-content: space-between; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img id="header-logo" class="title-logo" src="/RetterProtokoll/logo.png" alt="Logo">
+                <h2 id="app-title">RetterProtokoll</h2>
+            </div>
+            <!-- Profil wechseln Button -->
+            <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px;" onclick="zeigeProfilauswahl()">👤 Profil wechseln</button>
         </div>
         
         <form id="protokoll-form" method="POST" action="/" onsubmit="return handleFormSubmit(event)">
             
-            <!-- Zeile für Vorlagen und Geschlechtsauswahl -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; margin-bottom: 8px;">
                 <label style="margin: 0;">Vorlagen:</label>
                 <div class="segmented-control" id="gender-filter-container">
@@ -682,7 +632,6 @@
                 <span style="font-size: 14px; color: var(--md-color-outline); padding: 8px 0;">Lade Vorlagen...</span>
             </div>
 
-            <!-- KI-Auswahl & Dropdown kombiniert -->
             <div id="ki-selection-container" style="margin-top: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px;">
                     <label id="ki-label" for="ki-select" style="margin: 0; flex: 1;">ChatGPT-Unterstützung wählen (optional):</label>
@@ -714,44 +663,33 @@
                 </div>
             </div>
 
-            <!-- Button zum Aufklappen der Messwerte -->
             <button type="button" id="toggle-messwerte-btn" class="secondary" style="margin-top: 8px; margin-bottom: 8px;" onclick="toggleMesswerte()">📊 Messwerte eingeben</button>
 
-            <!-- Einklappbarer Messwerte-Bereich -->
             <div id="messwerte-container" class="messwerte-box" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                     <span style="font-weight: 600; font-size: 14px; color: var(--md-color-on-surface-variant);">Messwerte erfassen:</span>
                     <button type="button" class="secondary" style="width: auto; padding: 4px 12px; font-size: 12px; border-radius: 100px; margin: 0;" onclick="clearMesswerte()">🗑️ Leeren</button>
                 </div>
                 
-                <!-- Dynamisches Raster der Parameter via JS -->
-                <div class="messwerte-grid" id="messwerte-grid-container">
-                     <!-- Wird per Javascript befüllt -->
-                </div>
+                <div class="messwerte-grid" id="messwerte-grid-container"></div>
                 
-                <!-- Scrollbare Mehrfachauswahl für EKG Rhythmen -->
                 <div class="messwerte-item" style="margin-top: 14px; width: 100%;">
                     <label style="margin-bottom: 6px; text-align: left;">EKG (Mehrfachauswahl möglich)</label>
-                    <div class="ekg-checklist" id="ekg-checklist-container">
-                        <!-- Wird dynamisch per JS befüllt -->
-                    </div>
+                    <div class="ekg-checklist" id="ekg-checklist-container"></div>
                 </div>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
                 <label for="freitext" style="margin-top: 0; margin-bottom: 0; flex: 1 1 auto; min-width: 100px;">Text bearbeiten:</label>
                 <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0; flex-wrap: nowrap;">
-                    <!-- Bluetooth verbinden Button -->
                     <button type="button" id="connect-ble-btn" class="btn-connect" onclick="connectBluetooth()">
                         <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 -960 960 960" width="1.4em" fill="currentColor" style="vertical-align:middle; margin-right:4px; display:inline-block;"><path d="M440-80v-304L256-200l-56-56 224-224-224-224 56-56 184 184v-304h40l228 228-172 172 172 172L480-80h-40Zm80-496 76-76-76-74v150Zm0 342 76-74-76-76v150Z"/></svg>
                         <span id="connect-text">Verbinden</span>
                     </button>
-                    <!-- Leeren Button -->
                     <button type="button" id="clear-btn" class="secondary" style="margin-top: 0; width: auto; padding: 6px 16px; font-size: 13px; border-radius: 100px;" onclick="zeigeLoeschSlider()">🗑️ Löschen</button>
                 </div>
             </div>
 
-            <!-- Lösch-Slider -->
             <div id="loesch-slider-container" class="slide-container">
                 <span class="slide-text">Zum Löschen schieben</span>
                 <input type="range" id="delete-slider" class="slide-input" min="0" max="100" value="0" oninput="handleSliderInput(this)" onchange="handleSliderChange(this)">
@@ -761,12 +699,6 @@
 
             <button type="submit" id="submit-btn" class="btn-disabled" disabled>3. Text senden</button>
 
-            <label for="speed-select" style="display:none;">Geschwindigkeit:</label>
-            <select name="s" id="speed-select" style="display:none;">
-                <option value="standard" selected>Standard </option>
-            </select>
-            
-            <!-- Neuer, dezenterer Wiederherstellungs-Bereich -->
             <div class="restore-subtle">
                 <div class="restore-selector">
                     <label class="restore-opt" for="restore-source-bt">
@@ -783,7 +715,7 @@
         </form>
     </div>
 
-    <!-- Overlay mit Stopp-Möglichkeit -->
+    <!-- OVERLAYS -->
     <div id="overlay">
         <div class="overlay-content">
             <div id="overlay-loading" style="text-align: center;">
@@ -795,14 +727,13 @@
             </div>
             <div id="overlay-success" style="text-align: center; display: none;">
                 <span style="font-size: 60px;">✅</span>
-                <h3 style="margin: 15px 0;">Text erfolgreich übermittelt und geschrieben!</h3>
+                <h3 style="margin: 15px 0;">Text erfolgreich übermittelt!</h3>
                 <button type="button" onclick="resetForm()" style="background: var(--md-color-primary); max-width: 280px; margin: 20px auto 0 auto;">Nächster Text</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Bluetooth UUIDs für den Nordic UART Service (NUS)
         const BLE_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
         const BLE_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
         const BLE_TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
@@ -811,10 +742,10 @@
         let rxCharacteristic = null;
         let txCharacteristic = null;
 
-        let VORLAGEN = {};
-        let KI_PROMPTS = {};
+        // Globale Variablen für Profile
+        let PROFILES_DATA = [];
+        let ACTIVE_PROFILE = null;
 
-        // Zentrales Konfigurationsobjekt (DRY-Prinzip)
         const PARAMETER_CONFIG = [
             { id: "rr-sys", label: "RR Sys", unit: "mmHg", type: "number", maxLen: 3, placeholder: "120", class: "narrow", minPlaus: 50, maxPlaus: 240 },
             { id: "rr-dia", label: "RR Dia", unit: "mmHg", type: "number", maxLen: 3, placeholder: "80", class: "narrow", minPlaus: 30, maxPlaus: 140 },
@@ -873,17 +804,12 @@
 
         const BT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 -960 960 960" width="1.4em" fill="currentColor" style="vertical-align:middle; margin-right:4px; display:inline-block;"><path d="M440-80v-304L256-200l-56-56 224-224-224-224 56-56 184 184v-304h40l228 228-172 172 172 172L480-80h-40Zm80-496 76-76-76-74v150Zm0 342 76-74-76-76v150Z"/></svg>`;
 
-        // PWA Service Worker Registrierung
+        // Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/RetterProtokoll/sw.js', { updateViaCache: 'none' })
                 .then(reg => {
-                    console.log('Service Worker registriert für:', reg.scope);
-
-                    if (reg.waiting) {
-                        zeigeUpdateBanner(reg.waiting);
-                    }
-
+                    if (reg.waiting) zeigeUpdateBanner(reg.waiting);
                     reg.addEventListener('updatefound', () => {
                         const newWorker = reg.installing;
                         newWorker.addEventListener('statechange', () => {
@@ -892,8 +818,7 @@
                             }
                         });
                     });
-                })
-                .catch(err => console.error('Service Worker Fehler:', err));
+                });
             });
 
             let refreshing = false;
@@ -908,56 +833,40 @@
         function zeigeUpdateBanner(worker) {
             const banner = document.getElementById('update-banner');
             const btn = document.getElementById('update-btn');
-            if (!banner || !btn) return;
-
-            banner.style.display = 'block';
-            btn.onclick = () => {
-                worker.postMessage({ action: 'skipWaiting' });
-            };
+            if (banner && btn) {
+                banner.style.display = 'block';
+                btn.onclick = () => worker.postMessage({ action: 'skipWaiting' });
+            }
         }
 
-        // Bluetooth-Verbindungsaufbau
+        // Bluetooth
         async function connectBluetooth() {
             if (!navigator.bluetooth) {
-                alert("Web Bluetooth wird von diesem Browser nicht unterstützt. Bitte nutzen Sie z.B. Google Chrome oder Microsoft Edge.");
+                alert("Web Bluetooth wird von diesem Browser nicht unterstützt.");
                 return;
             }
-
             try {
                 connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Suche...";
                 bleDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ services: [BLE_SERVICE_UUID] }]
                 });
-
                 connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Verbinde...";
                 const server = await bleDevice.gatt.connect();
-
-                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Service...";
                 const service = await server.getPrimaryService(BLE_SERVICE_UUID);
-
-                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ RX...";
                 rxCharacteristic = await service.getCharacteristic(BLE_RX_UUID);
-
-                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ TX...";
                 txCharacteristic = await service.getCharacteristic(BLE_TX_UUID);
-
-                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Empfang...";
                 await txCharacteristic.startNotifications();
                 txCharacteristic.addEventListener('characteristicvaluechanged', handleBleNotification);
 
                 connectBleBtn.innerHTML = BT_ICON_SVG + " " + (bleDevice.name ? bleDevice.name.substring(0, 10) : "Verbunden");
                 connectBleBtn.style.background = "#2563eb";
-                
                 bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
                 updateSubmitButtonState();
             } catch (error) {
                 console.error("Bluetooth Fehler: ", error);
                 connectBleBtn.innerHTML = BT_ICON_SVG + " Fehler";
                 connectBleBtn.style.background = "#dc2626";
-                bleDevice = null;
-                rxCharacteristic = null;
-                txCharacteristic = null;
-                updateSubmitButtonState();
+                onDisconnected();
             }
         }
 
@@ -973,20 +882,16 @@
         function handleBleNotification(event) {
             const decoder = new TextDecoder();
             const value = decoder.decode(event.target.value).trim();
-            console.log("ESP32 Rückmeldung empfangen:", value);
-
             if (value === "DONE") {
                 loadingDiv.style.display = "none";
                 successDiv.style.display = "block";
                 localStorage.removeItem("aktueller_entwurf");
-                clearMesswerte(); // Messwerte nach erfolgreichem Senden zurücksetzen
-            } 
-            else if (value === "STOPPED") {
+                clearMesswerte();
+            } else if (value === "STOPPED") {
                 alert("Der Tippvorgang wurde erfolgreich abgebrochen.");
                 resetForm();
-            } 
-            else if (value === "BUSY") {
-                alert("Das Gerät ist aktuell beschäftigt. Bitte warten Sie, bis der Tippvorgang beendet ist.");
+            } else if (value === "BUSY") {
+                alert("Das Gerät ist beschäftigt.");
                 resetForm();
             }
         }
@@ -998,40 +903,82 @@
                 const encoder = new TextEncoder();
                 await rxCharacteristic.writeValueWithResponse(encoder.encode("STOP"));
             } catch (error) {
-                console.error("Fehler beim Senden des STOP-Signals:", error);
-                alert("Abbruch konnte nicht gesendet werden.");
+                console.error(error);
             }
         }
 
-        // Asynchrones Laden der Templates aus der JSON-Datei
-        async function ladeVorlagenUndPrompts() {
+        // Lade Profile und weise Vorlagen zu
+        async function ladeProfile() {
             try {
                 const pfad = window.location.pathname.includes('/RetterProtokoll') 
                     ? '/RetterProtokoll/templates.json' 
                     : 'templates.json';
 
                 const response = await fetch(pfad);
-                if (!response.ok) {
-                    throw new Error(`HTTP-Fehler! Status: ${response.status}`);
-                }
-                const data = await response.json();
-                VORLAGEN = data.vorlagen || {};
-                KI_PROMPTS = data.prompts || {};
+                if (!response.ok) throw new Error("Fehler beim Laden.");
                 
-                befuelleVorlagenButtons();
+                const data = await response.json();
+                PROFILES_DATA = data.profiles || [];
+                
+                baueProfilAuswahlliste();
+
+                // Automatischer Login falls im Speicher vorhanden
+                const gespeichertesProfilId = localStorage.getItem("aktives_profil_id");
+                if (gespeichertesProfilId) {
+                    const profil = PROFILES_DATA.find(p => p.id === gespeichertesProfilId);
+                    if (profil) {
+                        waehleProfil(profil);
+                        return;
+                    }
+                }
+                zeigeProfilauswahl();
             } catch (err) {
-                console.error("Laden der Vorlagen fehlgeschlagen", err);
-                vorlageScrollContainer.innerHTML = '<span style="color: var(--md-color-error)">Fehler beim Laden (Offline?)</span>';
+                console.error(err);
+                document.getElementById("profile-list").innerHTML = '<span style="color: var(--md-color-error)">Fehler beim Laden (Offline?)</span>';
             }
+        }
+
+        function baueProfilAuswahlliste() {
+            const container = document.getElementById("profile-list");
+            container.innerHTML = "";
+            PROFILES_DATA.forEach(p => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "profile-btn";
+                btn.innerText = p.name;
+                btn.onclick = () => waehleProfil(p);
+                container.appendChild(btn);
+            });
+        }
+
+        function waehleProfil(profil) {
+            ACTIVE_PROFILE = profil;
+            localStorage.setItem("aktives_profil_id", profil.id);
+            document.getElementById("app-title").innerText = `RetterProtokoll (${profil.name})`;
+            
+            befuelleVorlagenButtons();
+            
+            // Schirme umschalten
+            document.getElementById("profile-selection-screen").style.display = "none";
+            document.getElementById("app-screen").style.display = "block";
+            
+            autoResize();
+            updateSubmitButtonState();
+        }
+
+        function zeigeProfilauswahl() {
+            document.getElementById("profile-selection-screen").style.display = "block";
+            document.getElementById("app-screen").style.display = "none";
         }
 
         function befuelleVorlagenButtons() {
             vorlageScrollContainer.innerHTML = '';
-            
+            if (!ACTIVE_PROFILE) return;
+
             const selectedGenderElement = document.querySelector('input[name="gender"]:checked');
             const selectedGender = selectedGenderElement ? selectedGenderElement.value : 'm';
 
-            const keys = Object.keys(VORLAGEN);
+            const keys = Object.keys(ACTIVE_PROFILE.vorlagen || {});
             
             let filteredKeys = [];
             if (selectedGender === 'm') {
@@ -1097,14 +1044,7 @@
                 loeschSliderContainer.classList.remove("show");
                 setTimeout(resetSliderStyles, 300);
             } else {
-                loeschSliderContainer.style.backgroundColor = "";
-                loeschSliderContainer.style.borderColor = "";
-                slider.value = 0;
-                const textSpan = document.querySelector(".slide-text");
-                if (textSpan) {
-                    textSpan.style.opacity = 1;
-                    textSpan.style.transform = "translateX(0)";
-                }
+                resetSliderStyles();
             }
         }
 
@@ -1152,11 +1092,9 @@
             }
         }
 
-        // Gemeinsame Funktion zum Einfügen des ausgewählten letzten Texts
         function anwendenAusgewaehltenText() {
             const selectedSource = document.querySelector('input[name="restore-source"]:checked').value;
             let gespeicherterText = "";
-            
             if (selectedSource === "bt") {
                 gespeicherterText = localStorage.getItem("letzter_gesendeter_text");
             } else if (selectedSource === "ki") {
@@ -1173,7 +1111,6 @@
             }
         }
 
-        // Steuerung des Messwerte-Bereichs
         function toggleMesswerte() {
             const container = document.getElementById("messwerte-container");
             const btn = document.getElementById("toggle-messwerte-btn");
@@ -1210,12 +1147,9 @@
         }
 
         function limitLength(el, max) {
-            if (el.value.length > max) {
-                el.value = el.value.slice(0, max);
-            }
+            if (el.value.length > max) el.value = el.value.slice(0, max);
         }
 
-        // Dynamische Generierung des Rasters anhand des Konfigurationsobjekts
         function renderMesswerteInput() {
             const container = document.getElementById("messwerte-grid-container");
             container.innerHTML = "";
@@ -1228,10 +1162,7 @@
                         <label for="mw-${cfg.id}">${cfg.label}</label>
                         <span id="status-${cfg.id}" class="status-indicator" onclick="toggleStatus('${cfg.id}')">❓</span>
                     </div>
-                    <input type="${cfg.type === 'number' ? 'number' : 'text'}" 
-                           id="mw-${cfg.id}" 
-                           placeholder="${cfg.placeholder}" 
-                           autocomplete="off">
+                    <input type="${cfg.type === 'number' ? 'number' : 'text'}" id="mw-${cfg.id}" placeholder="${cfg.placeholder}" autocomplete="off">
                 `;
                 
                 const inputEl = div.querySelector("input");
@@ -1240,12 +1171,10 @@
                     handleValueInput(inputEl, `status-${cfg.id}`);
                     checkPlausibility(inputEl, cfg);
                 });
-                
                 container.appendChild(div);
             });
         }
 
-        // Plausibilitätsprüfung für Vitalparameter
         function checkPlausibility(inputEl, config) {
             const valStr = inputEl.value.trim().toLowerCase();
             if (!valStr) {
@@ -1253,68 +1182,48 @@
                 inputEl.style.borderColor = "";
                 return;
             }
-
-            // Spezialwerte erlauben
             if (config.isTextAllowed && (valStr === "hi" || valStr === "low")) {
                 inputEl.style.backgroundColor = "";
                 inputEl.style.borderColor = "";
                 return;
             }
-
             const val = parseFloat(valStr.replace(',', '.'));
-            if (isNaN(val)) {
-                inputEl.style.backgroundColor = "";
-                inputEl.style.borderColor = "";
-                return;
-            }
+            if (isNaN(val)) return;
 
-            // Visuelles Feedback bei Abweichung der Grenzwerte
             if (val < config.minPlaus || val > config.maxPlaus) {
                 inputEl.style.borderColor = "var(--md-color-error)";
-                inputEl.style.backgroundColor = "rgba(186, 26, 26, 0.12)"; // Softes Rot
+                inputEl.style.backgroundColor = "rgba(186, 26, 26, 0.12)";
             } else {
                 inputEl.style.backgroundColor = "";
                 inputEl.style.borderColor = "";
             }
         }
 
-        // Steuert das Ein- und Ausblenden des Status-Hakens pro Feld
         function handleValueInput(inputEl, statusId) {
             const val = inputEl.value.trim();
             const statusEl = document.getElementById(statusId);
             if (val.length > 0) {
                 if (statusEl.innerText === "❓") {
-                    statusEl.innerText = "✅"; // Zu grünem Haken wechseln
-                    statusEl.title = "Gemessen";
+                    statusEl.innerText = "✅";
                 }
             } else {
                 if (statusEl.innerText === "✅") {
-                    statusEl.innerText = "❓"; // Zurück zu Fragezeichen
-                    statusEl.title = "Kein Eintrag";
+                    statusEl.innerText = "❓";
                 }
             }
             updateSubmitButtonState();
         }
 
-        // Wechselt zwischen Haken (gemessen), Fragezeichen (leer) und X (nicht gemessen)
         function toggleStatus(id) {
             const statusEl = document.getElementById(`status-${id}`);
             const inputEl = document.getElementById(`mw-${id}`);
             if (!statusEl || !inputEl) return;
-
             const hasValue = inputEl.value.trim().length > 0;
 
             if (statusEl.innerText === "✅" || statusEl.innerText === "❓") {
                 statusEl.innerText = "❌";
-                statusEl.title = "Nicht gemessen";
             } else if (statusEl.innerText === "❌") {
-                if (hasValue) {
-                    statusEl.innerText = "✅";
-                    statusEl.title = "Gemessen";
-                } else {
-                    statusEl.innerText = "❓";
-                    statusEl.title = "Kein Eintrag";
-                }
+                statusEl.innerText = hasValue ? "✅" : "❓";
             }
         }
 
@@ -1327,89 +1236,58 @@
                     inputEl.style.borderColor = "";
                 }
             });
-            
-            const checkboxes = document.querySelectorAll(".ekg-checkbox");
-            checkboxes.forEach(cb => cb.checked = false);
-
-            // Alle Statushaken wieder auf Fragezeichen zurücksetzen
-            const indicators = document.querySelectorAll(".status-indicator");
-            indicators.forEach(ind => {
-                ind.style.display = "inline-block";
+            document.querySelectorAll(".ekg-checkbox").forEach(cb => cb.checked = false);
+            document.querySelectorAll(".status-indicator").forEach(ind => {
                 ind.innerText = "❓";
-                ind.title = "Kein Eintrag";
             });
         }
 
         function formatMesswerteFuerAusgabe() {
             let eintraege = [];
-
-            // Hilfsfunktion zur Ermittlung des Status (null = nicht ausgeben (❓), ✅, ❌)
             const getStatusOf = (id) => {
                 const el = document.getElementById(`status-${id}`);
-                if (!el) return null;
-                const txt = el.innerText;
-                if (txt === "❓") return null; // Fragezeichen wird ignoriert
-                return txt;
+                return el ? el.innerText : null;
             };
 
-            // RR Formatierung (Sys & Dia kombiniert)
             const sysStatus = getStatusOf("rr-sys");
             const diaStatus = getStatusOf("rr-dia");
             const sysVal = document.getElementById("mw-rr-sys").value.trim();
             const diaVal = document.getElementById("mw-rr-dia").value.trim();
 
-            if (sysStatus !== null || diaStatus !== null) {
+            if (sysStatus !== "❓" || diaStatus !== "❓") {
                 if (sysStatus === "❌" || diaStatus === "❌") {
                     eintraege.push("RR nicht gemessen");
                 } else {
-                    const rrString = `${sysVal || '??'}/${diaVal || '??'}`;
-                    eintraege.push(`RR: ${rrString} mmHg`);
+                    eintraege.push(`RR: ${sysVal || '??'}/${diaVal || '??'} mmHg`);
                 }
             }
 
-            // Auslesung der restlichen Konfiguration
             PARAMETER_CONFIG.forEach(cfg => {
-                if (cfg.id === "rr-sys" || cfg.id === "rr-dia") return; // Bereits oben behandelt
-
+                if (cfg.id === "rr-sys" || cfg.id === "rr-dia") return;
                 const status = getStatusOf(cfg.id);
-                if (status !== null) {
+                if (status !== "❓" && status !== null) {
                     if (status === "❌") {
                         eintraege.push(`${cfg.label} nicht gemessen`);
                     } else {
                         const rawVal = document.getElementById(`mw-${cfg.id}`).value.trim();
-                        let displayVal = rawVal;
-                        if (cfg.isTextAllowed) {
-                            if (rawVal.toLowerCase() === "hi") displayVal = "HI";
-                            else if (rawVal.toLowerCase() === "low") displayVal = "LOW";
-                        }
-                        eintraege.push(`${cfg.label}: ${displayVal}${cfg.unit ? ' ' + cfg.unit : ''}`);
+                        eintraege.push(`${cfg.label}: ${rawVal}${cfg.unit ? ' ' + cfg.unit : ''}`);
                     }
                 }
             });
 
-            // Auswertung der EKG Checkboxen
             const ausgewaehlteEkg = [];
-            const checkboxes = document.querySelectorAll(".ekg-checkbox:checked");
-            checkboxes.forEach(cb => {
-                ausgewaehlteEkg.push(cb.value);
-            });
-
+            document.querySelectorAll(".ekg-checkbox:checked").forEach(cb => ausgewaehlteEkg.push(cb.value));
             if (ausgewaehlteEkg.length > 0) {
                 eintraege.push(`EKG: ${ausgewaehlteEkg.join(", ")}`);
             }
 
-            if (eintraege.length > 0) {
-                return "\n\nMesswerte: " + eintraege.join(" | ");
-            }
-            return "";
+            return eintraege.length > 0 ? "\n\nMesswerte: " + eintraege.join(" | ") : "";
         }
 
-        let lastHeight = 0;
         function autoResize() {
             textarea.style.height = 'auto';
-            const maxHeight = 350; // Maximale Höhe im CSS
+            const maxHeight = 350;
             const newHeight = textarea.scrollHeight;
-            
             if (newHeight > maxHeight) {
                 textarea.style.height = maxHeight + 'px';
                 textarea.style.overflowY = 'auto';
@@ -1420,15 +1298,12 @@
         }
 
         function vorlageEinfuegen(key) {
-            const textEinfuegen = VORLAGEN[key];
+            if (!ACTIVE_PROFILE) return;
+            const textEinfuegen = ACTIVE_PROFILE.vorlagen[key];
             if (!textEinfuegen) return;
 
             const aktuellerText = textarea.value.trim();
-            if (aktuellerText === "") {
-                textarea.value = textEinfuegen;
-            } else {
-                textarea.value = aktuellerText + "\n\n" + textEinfuegen;
-            }
+            textarea.value = aktuellerText === "" ? textEinfuegen : aktuellerText + "\n\n" + textEinfuegen;
             localStorage.setItem("aktueller_entwurf", textarea.value); 
             autoResize();
             updateSubmitButtonState();
@@ -1438,48 +1313,22 @@
             textarea.value = "";
             kiSelect.value = "keine";
             geminiSelect.value = "keine";
-
-            const savedProvider = localStorage.getItem("saved_provider") || "chatgpt";
-            const radioBtn = document.getElementById(`provider-${savedProvider}`);
-            if (radioBtn) radioBtn.checked = true;
-
-            if (savedProvider === 'chatgpt') {
-                document.getElementById("chatgpt-dropdown-container").style.display = "block";
-                document.getElementById("gemini-dropdown-container").style.display = "none";
-                document.getElementById("ki-label").innerText = "ChatGPT-Unterstützung wählen (optional):";
-            } else {
-                document.getElementById("chatgpt-dropdown-container").style.display = "none";
-                document.getElementById("gemini-dropdown-container").style.display = "block";
-                document.getElementById("ki-label").innerText = "Gemini-Unterstützung wählen (optional):";
-            }
-
-            const maleRadio = document.getElementById("gender-m");
-            if (maleRadio) maleRadio.checked = true;
-            befuelleVorlagenButtons();
-
             loeschSliderContainer.classList.remove("show");
-            setTimeout(resetSliderStyles, 300);
             localStorage.removeItem("aktueller_entwurf"); 
             clearMesswerte();
             autoResize();
             updateSubmitButtonState();
             overlay.style.display = "none";
-            successDiv.style.display = "none";
-            loadingDiv.style.display = "block";
-            countdownEl.innerText = "Bitte warten...";
         }
 
-        // Bluetooth-Sende-Funktion ohne künstlichen Delay und ohne zusätzliche Steuerzeichen (wie in der Referenzversion)
         async function sendBleData(text) {
-            const fullText = text + "\x04"; // End-of-Transmission (EOT)
+            const fullText = text + "\x04";
             const encoder = new TextEncoder();
             const dataBytes = encoder.encode(fullText);
-            const chunkSize = 128; 
-            
+            const chunkSize = 128;
             for (let offset = 0; offset < dataBytes.length; offset += chunkSize) {
                 const chunk = dataBytes.slice(offset, offset + chunkSize);
                 await rxCharacteristic.writeValueWithResponse(chunk);
-                
                 const prozent = Math.round(((offset + chunk.length) / dataBytes.length) * 100);
                 countdownEl.innerText = `Übertrage: ${prozent}%`;
             }
@@ -1487,6 +1336,8 @@
 
         async function handleFormSubmit(event) {
             if (event) event.preventDefault();
+            if (!ACTIVE_PROFILE) return false;
+
             const selectedProvider = document.querySelector('input[name="provider"]:checked').value;
             const activeSelect = (selectedProvider === 'chatgpt') ? kiSelect : geminiSelect;
             const kiAuswahl = activeSelect.value;
@@ -1501,36 +1352,20 @@
                     return false;
                 }
 
-                const basisPrompt = KI_PROMPTS[kiAuswahl] || "";
+                const basisPrompt = ACTIVE_PROFILE.prompts[kiAuswahl] || "";
                 const promptString = basisPrompt + textMitMesswerten;
 
                 localStorage.setItem("letzter_ki_gesendeter_text", basisText);
                 inZwischenablageKopieren(promptString);
 
-                let targetUrl = "";
-                if (selectedProvider === 'chatgpt') {
-                    const encodedPrompt = encodeURIComponent(promptString);
-                    targetUrl = "https://chatgpt.com/?q=" + encodedPrompt;
-                    submitBtn.innerText = "📋 Kopiert! Öffne ChatGPT...";
-                } else {
-                    targetUrl = "https://gemini.google.com/";
-                    submitBtn.innerText = "📋 Kopiert! Öffne Gemini...";
-                }
+                let targetUrl = selectedProvider === 'chatgpt' 
+                    ? "https://chatgpt.com/?q=" + encodeURIComponent(promptString)
+                    : "https://gemini.google.com/";
 
-                const originalBg = submitBtn.style.background;
-                submitBtn.style.background = "var(--md-color-primary)"; 
-
+                submitBtn.innerText = "📋 Kopiert! Öffne Browser...";
                 setTimeout(() => {
                     window.open(targetUrl, "_blank");
-                    kiSelect.value = "keine";
-                    geminiSelect.value = "keine";
-                    
-                    textarea.value = "";
-                    localStorage.removeItem("aktueller_entwurf");
-                    clearMesswerte(); // Messwerte zurücksetzen
-                    autoResize();
-                    updateSubmitButtonState();
-                    submitBtn.style.background = originalBg; 
+                    resetForm();
                 }, 800);
                 return false; 
             }
@@ -1541,7 +1376,6 @@
             }
 
             localStorage.setItem("letzter_gesendeter_text", basisText);
-
             overlay.style.display = "flex";
             loadingDiv.style.display = "block";
             successDiv.style.display = "none";
@@ -1549,13 +1383,11 @@
 
             try {
                 await sendBleData(textMitMesswerten);
-                countdownEl.innerText = "Text übertragen. Gerät schreibt...";
+                countdownEl.innerText = "Übertragen. Gerät schreibt...";
             } catch (error) {
-                console.error("Fehler beim Senden: ", error);
-                alert("Übertragungsfehler über Bluetooth: " + error.message);
+                alert("Übertragungsfehler: " + error.message);
                 overlay.style.display = "none";
             }
-
             return false;
         }
 
@@ -1568,16 +1400,14 @@
         kiSelect.addEventListener("change", updateSubmitButtonState);
         geminiSelect.addEventListener("change", updateSubmitButtonState);
 
-        const genderRadios = document.querySelectorAll('input[name="gender"]');
-        genderRadios.forEach(radio => {
+        document.querySelectorAll('input[name="gender"]').forEach(radio => {
             radio.addEventListener('change', () => {
                 befuelleVorlagenButtons();
                 updateSubmitButtonState();
             });
         });
 
-        const providerRadios = document.querySelectorAll('input[name="provider"]');
-        providerRadios.forEach(radio => {
+        document.querySelectorAll('input[name="provider"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 const val = e.target.value;
                 localStorage.setItem("saved_provider", val);
@@ -1600,33 +1430,14 @@
         window.addEventListener("DOMContentLoaded", async () => {
             renderMesswerteInput();
             renderEkgChecklist();
-            await ladeVorlagenUndPrompts();
+            await ladeProfile();
             
             const gespeicherterEntwurf = localStorage.getItem("aktueller_entwurf");
-            if (gespeicherterEntwurf) {
-                textarea.value = gespeicherterEntwurf;
-            }
+            if (gespeicherterEntwurf) textarea.value = gespeicherterEntwurf;
 
-            const savedProvider = localStorage.getItem("saved_provider");
-            if (savedProvider) {
-                const radio = document.getElementById(`provider-${savedProvider}`);
-                if (radio) {
-                    radio.checked = true;
-                    const kiLabel = document.getElementById("ki-label");
-                    if (savedProvider === 'chatgpt') {
-                        document.getElementById("chatgpt-dropdown-container").style.display = "block";
-                        document.getElementById("gemini-dropdown-container").style.display = "none";
-                        if (kiLabel) kiLabel.innerText = "ChatGPT-Unterstützung wählen (optional):";
-                    } else {
-                        document.getElementById("chatgpt-dropdown-container").style.display = "none";
-                        document.getElementById("gemini-dropdown-container").style.display = "block";
-                        if (kiLabel) kiLabel.innerText = "Gemini-Unterstützung wählen (optional):";
-                    }
-                }
-            }
-
-            autoResize();
-            updateSubmitButtonState();
+            const savedProvider = localStorage.getItem("saved_provider") || "chatgpt";
+            const radio = document.getElementById(`provider-${savedProvider}`);
+            if (radio) radio.checked = true;
         });
     </script>
 </body>
