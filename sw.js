@@ -1,4 +1,4 @@
-const CACHE_NAME = 'retter-protokoll-cache-v23'; // Version erhöht für das Profil-Update
+const CACHE_NAME = 'retter-protokoll-cache-v24'; // Version erhöht für das Profil-Update
 
 // 'templates.json' ist hier enthalten, um sie offline verfügbar zu machen
 const ASSETS_TO_CACHE = [
