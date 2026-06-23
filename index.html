@@ -106,10 +106,7 @@
             display: block; 
         }
 
-        /* Profil-Auswahlbereich */
-        .profile-selection-card {
-            text-align: center;
-        }
+        /* Profil-Auswahlschirm */
         .profile-list {
             display: flex;
             flex-direction: column;
@@ -126,6 +123,7 @@
             border-radius: 16px;
             cursor: pointer;
             transition: background-color 0.2s, border-color 0.2s;
+            text-align: center;
         }
         .profile-btn:hover {
             background: var(--md-color-primary-container);
@@ -632,7 +630,7 @@
                 <span style="font-size: 14px; color: var(--md-color-outline); padding: 8px 0;">Lade Vorlagen...</span>
             </div>
 
-            <div id="ki-selection-container" style="margin-top: 16px;">
+            <div id="ki-selection-container" style="margin-top: 16px; display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px;">
                     <label id="ki-label" for="ki-select" style="margin: 0; flex: 1;">ChatGPT-Unterstützung wählen (optional):</label>
                     <div class="segmented-control" id="provider-container">
@@ -647,18 +645,12 @@
                 <div id="chatgpt-dropdown-container">
                     <select id="ki-select" style="margin-bottom: 16px;">
                         <option value="keine" selected>Keine KI (Text direkt senden)</option>
-                        <option value="chatgpt_korrektur">ChatGPT: Text korrigieren</option>
-                        <option value="chatgpt_transportverweigerung">ChatGPT: Transportverweigerung</option>
-                        <option value="chatgpt_abcde">ChatGPT: ABCDE</option>
                     </select>
                 </div>
 
                 <div id="gemini-dropdown-container" style="display: none;">
                     <select id="gemini-select" style="margin-bottom: 16px;">
                         <option value="keine" selected>Keine KI (Text direkt senden)</option>
-                        <option value="gemini_korrektur">Gemini: Text korrigieren</option>
-                        <option value="gemini_transportverweigerung">Gemini: Transportverweigerung</option>
-                        <option value="gemini_abcde">Gemini: ABCDE</option>
                     </select>
                 </div>
             </div>
@@ -922,7 +914,6 @@
                 
                 baueProfilAuswahlliste();
 
-                // Automatischer Login falls im Speicher vorhanden
                 const gespeichertesProfilId = localStorage.getItem("aktives_profil_id");
                 if (gespeichertesProfilId) {
                     const profil = PROFILES_DATA.find(p => p.id === gespeichertesProfilId);
@@ -958,12 +949,45 @@
             
             befuelleVorlagenButtons();
             
-            // Schirme umschalten
+            // Überprüfen, ob das Profil KI-Prompts hinterlegt hat
+            const kiContainer = document.getElementById("ki-selection-container");
+            const hatPrompts = profil.prompts && Object.keys(profil.prompts).length > 0;
+
+            if (hatPrompts) {
+                kiContainer.style.display = "block";
+                anpassenKiDropdowns(profil.prompts);
+            } else {
+                kiContainer.style.display = "none";
+                kiSelect.value = "keine";
+                geminiSelect.value = "keine";
+            }
+            
             document.getElementById("profile-selection-screen").style.display = "none";
             document.getElementById("app-screen").style.display = "block";
             
             autoResize();
             updateSubmitButtonState();
+        }
+
+        function anpassenKiDropdowns(prompts) {
+            const chatgptSelect = document.getElementById("ki-select");
+            const geminiSelect = document.getElementById("gemini-select");
+
+            const befuellen = (selectEl, prefix) => {
+                selectEl.innerHTML = '<option value="keine" selected>Keine KI (Text direkt senden)</option>';
+                Object.keys(prompts).forEach(key => {
+                    if (key.startsWith(prefix)) {
+                        const opt = document.createElement("option");
+                        opt.value = key;
+                        const labelName = key.replace(prefix + "_", "").replace(/^\w/, c => c.toUpperCase());
+                        opt.innerText = `${prefix === 'chatgpt' ? 'ChatGPT' : 'Gemini'}: ${labelName}`;
+                        selectEl.appendChild(opt);
+                    }
+                });
+            };
+
+            befuellen(chatgptSelect, "chatgpt");
+            befuellen(geminiSelect, "gemini");
         }
 
         function zeigeProfilauswahl() {
@@ -1045,22 +1069,6 @@
                 setTimeout(resetSliderStyles, 300);
             } else {
                 resetSliderStyles();
-            }
-        }
-
-        function inZwischenablageKopieren(text) {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                return navigator.clipboard.writeText(text);
-            } else {
-                const tempTextArea = document.createElement("textarea");
-                tempTextArea.value = text;
-                tempTextArea.style.position = "fixed"; 
-                document.body.appendChild(tempTextArea);
-                tempTextArea.focus();
-                tempTextArea.select();
-                try { document.execCommand("copy"); } catch (err) {}
-                document.body.removeChild(tempTextArea);
-                return Promise.resolve();
             }
         }
 
