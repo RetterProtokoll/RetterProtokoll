@@ -1,18 +1,3 @@
-
-Model 11:08
-ThinkingThoughts
-Expand to view model thoughts
-
-chevron_right
-Ich habe die Registrierung so angepasst, dass nur noch nach **E-Mail** und **Passwort** gefragt wird. Zusätzlich wurde ein **„Mit Google anmelden“**-Button integriert.
-
-Wenn sich ein Benutzer neu registriert oder sich zum ersten Mal über Google anmeldet, zieht die App automatisch die Standardstruktur direkt aus der von Ihnen bereitgestellten `templates.json` und legt die Kopie für den Benutzer in der Cloud an.
-
----
-
-### Aktualisierte `index.html`
-
-```html
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -609,23 +594,6 @@ Wenn sich ein Benutzer neu registriert oder sich zum ersten Mal über Google anm
         <input type="password" id="auth-password" placeholder="Passwort..." autocomplete="current-password">
 
         <button type="button" id="auth-submit-btn" class="btn-ki" onclick="fuehreAuthAus()">Anmelden</button>
-
-        <!-- Trennlinie & Google Login -->
-        <div style="display: flex; align-items: center; margin: 16px 0;">
-            <hr style="flex: 1; border: 0; border-top: 1px solid var(--md-color-outline-variant);">
-            <span style="margin: 0 8px; font-size: 12px; color: var(--md-color-outline);">ODER</span>
-            <hr style="flex: 1; border: 0; border-top: 1px solid var(--md-color-outline-variant);">
-        </div>
-
-        <button type="button" class="secondary" style="margin-top: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%;" onclick="anmeldungMitGoogle()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                <path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-1.6 4.17-5.59 7.04-10.75 7.04-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48c12.15 0 22-9.85 22-22 0-1.33-.11-2.67-.5-4z"/>
-                <path fill="#FBBC05" d="M10.54 28.53c-.48-1.45-.76-2.99-.76-4.53s.27-3.08.76-4.53L2.56 13.22C.92 16.47 0 20.12 0 24s.92 7.53 2.56 10.78l7.98-6.25z"/>
-                <path fill="#34A853" d="M24 38.5c6.26 0 11.57-4.22 13.46-9.91l7.98 6.19C41.49 42.62 33.49 48 24 48c-9.38 0-17.49-5.38-21.44-13.22l7.98-6.19c1.89 5.69 7.2 9.91 13.46 9.91z"/>
-            </svg>
-            Mit Google anmelden
-        </button>
     </div>
 
     <!-- Vorlagen-Editor (Verwaltungsbereich) -->
@@ -637,12 +605,19 @@ Wenn sich ein Benutzer neu registriert oder sich zum ersten Mal über Google anm
         <label for="editor-template-select">Vorlage wählen:</label>
         <select id="editor-template-select" onchange="ladeEditorVorlagentext()"></select>
 
+        <!-- Dynamisches Feld für Neuanlagen -->
+        <div id="editor-new-name-container" style="display: none; margin-top: 10px;">
+            <label for="editor-new-name">Name der neuen Vorlage:</label>
+            <input type="text" id="editor-new-name" placeholder="z. B. ACS Aufklärung" autocomplete="off">
+        </div>
+
         <label for="editor-template-text">Inhalt bearbeiten:</label>
         <textarea id="editor-template-text" placeholder="Text der Vorlage..."></textarea>
 
-        <div style="display: flex; gap: 8px; margin-top: 10px;">
-            <button type="button" class="btn-device" style="background: var(--md-color-success);" onclick="speichereVorlagenAenderung()">💾 In der Cloud speichern</button>
-            <button type="button" class="secondary" onclick="zurueckZurHauptseite()">Zurück</button>
+        <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+            <button type="button" class="btn-device" style="background: var(--md-color-success); flex: 1; min-width: 140px;" onclick="speichereVorlagenAenderung()">💾 In der Cloud speichern</button>
+            <button type="button" class="btn-device" id="editor-delete-btn" style="background: var(--md-color-error); width: auto;" onclick="loescheVorlage()">🗑️ Löschen</button>
+            <button type="button" class="secondary" style="width: auto;" onclick="zurueckZurHauptseite()">Zurück</button>
         </div>
     </div>
 
@@ -870,15 +845,6 @@ Wenn sich ein Benutzer neu registriert oder sich zum ersten Mal über Google anm
             });
         }
 
-        function zeigeUpdateBanner(worker) {
-            const banner = document.getElementById('update-banner');
-            const btn = document.getElementById('update-btn');
-            if (banner && btn) {
-                banner.style.display = 'block';
-                btn.onclick = () => worker.postMessage({ action: 'skipWaiting' });
-            }
-        }
-
         // ==========================================
         // AUTH-STATUS DER APP ÜBERWACHEN
         // ==========================================
@@ -909,42 +875,51 @@ Wenn sich ein Benutzer neu registriert oder sich zum ersten Mal über Google anm
                 let doc = await docRef.get();
 
                 if (!doc.exists) {
-                    console.log("Kein Profil dokumentiert. Erstelle Standardprofil aus templates.json...");
+                    console.log("Kein Profil dokumentiert. Lade Standard-Einstellungen aus Firebase globalSettings...");
                     
-                    let standardTemplates = null;
-                    try {
-                        const pfad = window.location.pathname.includes('/RetterProtokoll') 
-                            ? '/RetterProtokoll/templates.json' 
-                            : 'templates.json';
+                    // Standardvorlagen aus dem zentralen Firebase globalSettings Pfad laden
+                    const globalDefaultsRef = db.collection("globalSettings").doc("defaultTemplates");
+                    let globalDoc = await globalDefaultsRef.get();
+                    
+                    let baseVorlagen = {};
+                    let basePrompts = {};
 
-                        const response = await fetch(pfad);
-                        if (response.ok) {
-                            standardTemplates = await response.json();
+                    if (globalDoc.exists) {
+                        baseVorlagen = globalDoc.data().vorlagen || {};
+                        basePrompts = globalDoc.data().prompts || {};
+                        console.log("Standardvorlagen erfolgreich aus Firestore globalSettings bezogen.");
+                    } else {
+                        console.log("globalSettings leer. Initialisiere mit lokaler templates.json...");
+                        try {
+                            const pfad = window.location.pathname.includes('/RetterProtokoll') 
+                                ? '/RetterProtokoll/templates.json' 
+                                : 'templates.json';
+
+                            const response = await fetch(pfad);
+                            if (response.ok) {
+                                const daten = await response.json();
+                                baseVorlagen = daten.vorlagen || {};
+                                basePrompts = daten.prompts || {};
+                                
+                                await globalDefaultsRef.set({ vorlagen: baseVorlagen, prompts: basePrompts });
+                            }
+                        } catch (e) {
+                            console.error("Absicherung fehlgeschlagen: ", e);
                         }
-                    } catch (e) {
-                        console.warn("Fehler beim Abrufen der templates.json vom Server:", e);
                     }
 
-                    // Falls der Server-Fetch fehlschlägt, nutzen wir leere Objekte
-                    const vorlagenBasis = (standardTemplates && standardTemplates.vorlagen) ? standardTemplates.vorlagen : {};
-                    const promptsBasis = (standardTemplates && standardTemplates.prompts) ? standardTemplates.prompts : {};
-
-                    // Bestimme den Namen für das Profil (Google Name oder E-Mail-Präfix)
+                    // Anzeigenamen bestimmen (E-Mail-Präfix)
                     let displayName = "Retter";
-                    if (auth.currentUser) {
-                        if (auth.currentUser.displayName) {
-                            displayName = auth.currentUser.displayName;
-                        } else if (auth.currentUser.email) {
-                            const nameRaw = auth.currentUser.email.split('@')[0];
-                            displayName = nameRaw.charAt(0).toUpperCase() + nameRaw.slice(1);
-                        }
+                    if (auth.currentUser && auth.currentUser.email) {
+                        const nameRaw = auth.currentUser.email.split('@')[0];
+                        displayName = nameRaw.charAt(0).toUpperCase() + nameRaw.slice(1);
                     }
 
                     const neuesProfil = {
                         id: uid,
                         name: displayName,
-                        vorlagen: vorlagenBasis,
-                        prompts: promptsBasis
+                        vorlagen: baseVorlagen,
+                        prompts: basePrompts
                     };
 
                     await docRef.set(neuesProfil);
@@ -957,7 +932,7 @@ Wenn sich ein Benutzer neu registriert oder sich zum ersten Mal über Google anm
                 anpassenKiDropdowns();
             } catch (err) {
                 console.error("Fehler beim Laden des Profils:", err);
-                alert("Fehler beim Laden der Vorlagen. Sind die Firebase-Sicherheitsregeln in der Konsole richtig eingestellt?");
+                alert("Fehler beim Laden der Vorlagen.");
             }
         }
 
@@ -986,30 +961,13 @@ Wenn sich ein Benutzer neu registriert oder sich zum ersten Mal über Google anm
 
             try {
                 if (isRegister) {
-                    // Neues Email/Passwort-Konto registrieren
-                    // Profil wird im Hintergrund bei `ladeBenutzerProfil` automatisch erzeugt
                     await auth.createUserWithEmailAndPassword(email, password);
                 } else {
-                    // Anmelden
                     await auth.signInWithEmailAndPassword(email, password);
                 }
             } catch (err) {
                 console.error(err);
                 errorMsg.innerText = uebersetzeFehlermeldung(err.code);
-                errorMsg.style.display = "block";
-            }
-        }
-
-        // GOOGLE ANMELDUNG (POP-UP)
-        async function anmeldungMitGoogle() {
-            const errorMsg = document.getElementById("auth-error-msg");
-            errorMsg.style.display = "none";
-            try {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                await auth.signInWithPopup(provider);
-            } catch (err) {
-                console.error("Google Login Fehler:", err);
-                errorMsg.innerText = "Google-Anmeldung fehlgeschlagen: " + (err.message || err.code);
                 errorMsg.style.display = "block";
             }
         }
@@ -1110,7 +1068,7 @@ Wenn sich ein Benutzer neu registriert oder sich zum ersten Mal über Google anm
         }
 
         // ==========================================
-        // EDITOR-BEREICH LOGIK
+        // EDITOR-BEREICH LOGIK (ERSTELLEN & LÖSCHEN)
         // ==========================================
         function zeigeEditor() {
             if (!ACTIVE_PROFILE) return;
@@ -1120,6 +1078,13 @@ Wenn sich ein Benutzer neu registriert oder sich zum ersten Mal über Google anm
             const templSelect = document.getElementById("editor-template-select");
             templSelect.innerHTML = "";
 
+            // Option zum Erstellen einer neuen Vorlage hinzufügen
+            const newOpt = document.createElement("option");
+            newOpt.value = "__new__";
+            newOpt.innerText = "🆕 + Neue Vorlage erstellen...";
+            templSelect.appendChild(newOpt);
+
+            // Vorhandene Vorlagen auflisten
             Object.keys(ACTIVE_PROFILE.vorlagen || {}).forEach(key => {
                 const opt = document.createElement("option");
                 opt.value = key;
@@ -1127,32 +1092,101 @@ Wenn sich ein Benutzer neu registriert oder sich zum ersten Mal über Google anm
                 templSelect.appendChild(opt);
             });
 
+            // Setze Standardauswahl auf die erste vorhandene Vorlage, falls vorhanden
+            const keys = Object.keys(ACTIVE_PROFILE.vorlagen);
+            if (keys.length > 0) {
+                templSelect.value = keys[0];
+            } else {
+                templSelect.value = "__new__";
+            }
+
             ladeEditorVorlagentext();
         }
 
         function ladeEditorVorlagentext() {
             const key = document.getElementById("editor-template-select").value;
-            if (ACTIVE_PROFILE && ACTIVE_PROFILE.vorlagen && key) {
-                document.getElementById("editor-template-text").value = ACTIVE_PROFILE.vorlagen[key];
-            } else {
+            const newNameContainer = document.getElementById("editor-new-name-container");
+            const deleteBtn = document.getElementById("editor-delete-btn");
+
+            if (key === "__new__") {
+                newNameContainer.style.display = "block";
+                deleteBtn.style.display = "none";
                 document.getElementById("editor-template-text").value = "";
+                document.getElementById("editor-new-name").value = "";
+            } else {
+                newNameContainer.style.display = "none";
+                deleteBtn.style.display = "block";
+                document.getElementById("editor-template-text").value = ACTIVE_PROFILE.vorlagen[key];
             }
         }
 
         async function speichereVorlagenAenderung() {
             const key = document.getElementById("editor-template-select").value;
-            const text = document.getElementById("editor-template-text").value;
+            const text = document.getElementById("editor-template-text").value.trim();
 
-            if (ACTIVE_PROFILE && key && auth.currentUser) {
-                ACTIVE_PROFILE.vorlagen[key] = text;
+            if (!text) {
+                alert("Der Inhalt der Vorlage darf nicht leer sein.");
+                return;
+            }
+
+            let finalKey = key;
+
+            if (key === "__new__") {
+                const title = document.getElementById("editor-new-name").value.trim();
+                if (!title) {
+                    alert("Bitte tragen Sie einen Namen für die neue Vorlage ein.");
+                    return;
+                }
+
+                // Generiert einen sauberen Key im Schlangenformat
+                const finalKey = title.toLowerCase()
+                                     .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+                                     .replace(/[^a-z0-9]/g, "_")
+                                     .replace(/_+/g, "_")
+                                     .replace(/^_+|_+$/g, "");
+
+                if (ACTIVE_PROFILE.vorlagen[finalKey]) {
+                    alert("Eine Vorlage mit diesem Namen existiert bereits.");
+                    return;
+                }
+
+                ACTIVE_PROFILE.vorlagen[finalKey] = text;
+                document.getElementById("editor-new-name").value = "";
+            } else {
+                ACTIVE_PROFILE.vorlagen[finalKey] = text;
+            }
+
+            try {
+                await db.collection("users").doc(auth.currentUser.uid).set(ACTIVE_PROFILE);
+                alert("Vorlage erfolgreich gespeichert!");
+                
+                // Editor & Ansichten aktualisieren
+                zeigeEditor();
+                befuelleVorlagenButtons();
+            } catch (err) {
+                console.error("Firestore-Fehler beim Speichern:", err);
+                alert("Speichern fehlgeschlagen. Keine Berechtigung oder offline.");
+            }
+        }
+
+        async function loescheVorlage() {
+            const key = document.getElementById("editor-template-select").value;
+            if (key === "__new__") return;
+
+            const name = OPTIONEN_NAMEN[key] || formatiereKey(key);
+
+            if (confirm(`Möchten Sie die Vorlage "${name}" wirklich dauerhaft löschen?`)) {
+                delete ACTIVE_PROFILE.vorlagen[key];
                 
                 try {
                     await db.collection("users").doc(auth.currentUser.uid).set(ACTIVE_PROFILE);
-                    alert("Änderungen erfolgreich in der Cloud gespeichert!");
+                    alert("Vorlage erfolgreich gelöscht.");
+                    
+                    zeigeEditor();
                     befuelleVorlagenButtons();
                 } catch (err) {
-                    console.error("Firestore-Fehler beim Speichern:", err);
-                    alert("Speichern fehlgeschlagen. Keine Berechtigung oder offline.");
+                    console.error("Fehler beim Löschen:", err);
+                    alert("Löschen fehlgeschlagen.");
                 }
             }
         }
