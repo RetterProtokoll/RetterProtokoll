@@ -707,7 +707,7 @@
 
             <div id="ki-selection-container" style="margin-top: 16px; display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px;">
-                    <label id="ki-label" for="ki-select" style="margin: 0; flex: 1;">ChatGPT-Unterstützung wählen (optional):</label>
+                    <label id="ki-label" for="ki-select" style="margin: 0; flex: 1;">KI-Unterstützung wählen (optional):</label>
                     <div class="segmented-control" id="provider-container">
                         <input type="radio" id="provider-chatgpt" name="provider" value="chatgpt" checked>
                         <label for="provider-chatgpt">ChatGPT</label>
@@ -717,14 +717,8 @@
                     </div>
                 </div>
 
-                <div id="chatgpt-dropdown-container">
+                <div>
                     <select id="ki-select" style="margin-bottom: 16px;">
-                        <option value="keine" selected>Keine KI (Text direkt senden)</option>
-                    </select>
-                </div>
-
-                <div id="gemini-dropdown-container" style="display: none;">
-                    <select id="gemini-select" style="margin-bottom: 16px;">
                         <option value="keine" selected>Keine KI (Text direkt senden)</option>
                     </select>
                 </div>
@@ -849,7 +843,6 @@
         const textarea = document.getElementById("freitext");
         const submitBtn = document.getElementById("submit-btn");
         const kiSelect = document.getElementById("ki-select");
-        const geminiSelect = document.getElementById("gemini-select");
         const vorlageScrollContainer = document.getElementById("vorlage-scroll-container");
         const loeschSliderContainer = document.getElementById("loesch-slider-container");
         const deleteSlider = document.getElementById("delete-slider");
@@ -1102,30 +1095,18 @@
             if (hatPrompts) {
                 kiContainer.style.display = "block";
                 
-                const chatgptSelect = document.getElementById("ki-select");
-                const geminiSelect = document.getElementById("gemini-select");
-
-                const befuellen = (selectEl, prefix) => {
-                    selectEl.innerHTML = '<option value="keine" selected>Keine KI (Text direkt senden)</option>';
-                    Object.keys(prompts).forEach(key => {
-                        if (key.startsWith(prefix)) {
-                            const opt = document.createElement("option");
-                            opt.value = key;
-                            const labelName = key.replace(prefix + "_", "").replace(/^\w/, c => c.toUpperCase());
-                            opt.innerText = `${prefix === 'chatgpt' ? 'ChatGPT' : 'Gemini'}: ${labelName}`;
-                            selectEl.appendChild(opt);
-                        }
-                    });
-                };
-
-                befuellen(chatgptSelect, "chatgpt");
-                befuellen(geminiSelect, "gemini");
+                kiSelect.innerHTML = '<option value="keine" selected>Keine KI (Text direkt senden)</option>';
+                Object.keys(prompts).forEach(key => {
+                    const opt = document.createElement("option");
+                    opt.value = key;
+                    opt.innerText = formatiereKey(key);
+                    kiSelect.appendChild(opt);
+                });
 
                 if (restoreOptKi) restoreOptKi.style.display = "flex";
             } else {
                 kiContainer.style.display = "none";
                 kiSelect.value = "keine";
-                geminiSelect.value = "keine";
                 if (restoreOptKi) restoreOptKi.style.display = "none";
                 if (restoreSourceKi && restoreSourceKi.checked) {
                     if (restoreSourceBt) restoreSourceBt.checked = true;
@@ -1188,7 +1169,7 @@
                     selectLabel.innerText = "Prompt wählen:";
                     textLabel.innerText = "Prompt-Text bearbeiten:";
                     newLabel.innerText = "Neuen Prompt erstellen:";
-                    newInput.placeholder = "chatgpt_name oder gemini_name...";
+                    newInput.placeholder = "Name des Prompts (z.B. rechtschreibung)...";
                     genderContainer.style.display = "none"; // Geschlechtsfilter ausblenden
                     
                     Object.keys(ACTIVE_PROFILE.prompts || {}).forEach(key => {
@@ -1262,10 +1243,6 @@
                 }
                 ACTIVE_PROFILE.vorlagen[dbKey] = "";
             } else if (selectedTab === "prompts") {
-                if (!dbKey.startsWith("chatgpt_") && !dbKey.startsWith("gemini_")) {
-                    alert("KI-Prompts müssen mit 'chatgpt_' oder 'gemini_' beginnen!");
-                    return;
-                }
                 if (!ACTIVE_PROFILE.prompts) ACTIVE_PROFILE.prompts = {};
                 if (ACTIVE_PROFILE.prompts[dbKey] !== undefined) {
                     alert("Dieser Prompt existiert bereits.");
@@ -1556,10 +1533,7 @@
 
         function updateSubmitButtonState() {
             const text = textarea.value.trim();
-            const selectedProvider = document.querySelector('input[name="provider"]:checked');
-            const selectedProviderVal = selectedProvider ? selectedProvider.value : 'chatgpt';
-            const activeSelect = (selectedProviderVal === 'chatgpt') ? kiSelect : geminiSelect;
-            const kiAuswahl = activeSelect ? activeSelect.value : 'keine';
+            const kiAuswahl = kiSelect ? kiSelect.value : 'keine';
 
             if (text === "") {
                 submitBtn.disabled = true;
@@ -1583,6 +1557,7 @@
             }
         }
 
+        // Back-Button-Routing
         function zurueckZurHauptseite() {
             document.getElementById("editor-screen").style.display = "none";
             document.getElementById("app-screen").style.display = "block";
@@ -1644,7 +1619,6 @@
             });
         }
 
-        // Begrenzung der Zeichenlänge auf ein Maximum
         function limitLength(el, max) {
             if (el.value.length > max) el.value = el.value.slice(0, max);
         }
@@ -1808,11 +1782,9 @@
             updateSubmitButtonState();
         }
 
-        // Zurücksetzen des aktuellen Dokuments
         function resetForm() {
             textarea.value = "";
             kiSelect.value = "keine";
-            geminiSelect.value = "keine";
             loeschSliderContainer.classList.remove("show");
             localStorage.removeItem("aktueller_entwurf"); 
             clearMesswerte();
@@ -1840,8 +1812,7 @@
 
             const selectedProvider = document.querySelector('input[name="provider"]:checked');
             const selectedProviderVal = selectedProvider ? selectedProvider.value : 'chatgpt';
-            const activeSelect = (selectedProviderVal === 'chatgpt') ? kiSelect : geminiSelect;
-            const kiAuswahl = activeSelect.value;
+            const kiAuswahl = kiSelect.value;
             
             const basisText = textarea.value;
             const messwerteText = formatMesswerteFuerAusgabe();
@@ -1899,7 +1870,6 @@
         });
 
         kiSelect.addEventListener("change", updateSubmitButtonState);
-        geminiSelect.addEventListener("change", updateSubmitButtonState);
 
         document.querySelectorAll('input[name="gender"]').forEach(radio => {
             radio.addEventListener('change', () => {
@@ -1912,18 +1882,6 @@
             radio.addEventListener('change', (e) => {
                 const val = e.target.value;
                 localStorage.setItem("saved_provider", val);
-                const kiLabel = document.getElementById("ki-label");
-                if (val === 'chatgpt') {
-                    document.getElementById("chatgpt-dropdown-container").style.display = "block";
-                    document.getElementById("gemini-dropdown-container").style.display = "none";
-                    geminiSelect.value = "keine";
-                    if (kiLabel) kiLabel.innerText = "ChatGPT-Unterstützung wählen (optional):";
-                } else {
-                    document.getElementById("chatgpt-dropdown-container").style.display = "none";
-                    document.getElementById("gemini-dropdown-container").style.display = "block";
-                    kiSelect.value = "keine";
-                    if (kiLabel) kiLabel.innerText = "Gemini-Unterstützung wählen (optional):";
-                }
                 updateSubmitButtonState();
             });
         });
@@ -1939,16 +1897,6 @@
             const radio = document.getElementById(`provider-${savedProvider}`);
             if (radio) {
                 radio.checked = true;
-                const kiLabel = document.getElementById("ki-label");
-                if (savedProvider === 'chatgpt') {
-                    document.getElementById("chatgpt-dropdown-container").style.display = "block";
-                    document.getElementById("gemini-dropdown-container").style.display = "none";
-                    if (kiLabel) kiLabel.innerText = "ChatGPT-Unterstützung wählen (optional):";
-                } else {
-                    document.getElementById("chatgpt-dropdown-container").style.display = "none";
-                    document.getElementById("gemini-dropdown-container").style.display = "block";
-                    if (kiLabel) kiLabel.innerText = "Gemini-Unterstützung wählen (optional):";
-                }
             }
         });
     </script>
