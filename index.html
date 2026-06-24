@@ -565,7 +565,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-    <div id="update-banner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; background: var(--md-color-primary); color: white; padding: 12px; text-align: center; z-index: 2000; font-weight: 600;">
+    <div id="update-banner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; background: var(--md-color-primary); color: white; padding: 12px; text-align: center; z-index: 2000; font-size: 14px; font-weight: 500; box-shadow: var(--md-elevation-2);">
         Eine neue Version ist verfügbar! 
         <button id="update-btn" style="width: auto; margin: 0 0 0 12px; padding: 6px 16px; background: white; color: var(--md-color-primary); font-weight: bold; font-size: 13px;">Aktualisieren</button>
     </div> 
@@ -684,7 +684,7 @@
             
             <div style="display: flex; gap: 8px; margin-top: 10px; width: 100%; justify-content: flex-end;">
                 <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px;" onclick="zeigeEditor()">⚙️ Vorlagen bearbeiten</button>
-                <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px; border-color: var(--md-color-error); color: var(--md-color-error);" onclick="logoffUser()">🚪 Abmelden</button>
+                <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px; border-color: var(--md-color-error); color: var(--md-color-error);" onclick="logoffUser()">Abmelden 🚪</button>
             </div>
         </div>
         
@@ -707,7 +707,7 @@
 
             <div id="ki-selection-container" style="margin-top: 16px; display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px;">
-                    <label id="ki-label" for="ki-select" style="margin: 0; flex: 1;">KI wählen (optional):</label>
+                    <label id="ki-label" for="ki-select" style="margin: 0; flex: 1;">ChatGPT-Unterstützung wählen (optional):</label>
                     <div class="segmented-control" id="provider-container">
                         <input type="radio" id="provider-chatgpt" name="provider" value="chatgpt" checked>
                         <label for="provider-chatgpt">ChatGPT</label>
@@ -717,9 +717,17 @@
                     </div>
                 </div>
 
-                <select id="ki-select" style="margin-bottom: 16px;">
-                    <option value="keine" selected>Keine KI (Text direkt senden)</option>
-                </select>
+                <div id="chatgpt-dropdown-container">
+                    <select id="ki-select" style="margin-bottom: 16px;">
+                        <option value="keine" selected>Keine KI (Text direkt senden)</option>
+                    </select>
+                </div>
+
+                <div id="gemini-dropdown-container" style="display: none;">
+                    <select id="gemini-select" style="margin-bottom: 16px;">
+                        <option value="keine" selected>Keine KI (Text direkt senden)</option>
+                    </select>
+                </div>
             </div>
 
             <button type="button" id="toggle-messwerte-btn" class="secondary" style="margin-top: 8px; margin-bottom: 8px;" onclick="toggleMesswerte()">📊 Messwerte eingeben</button>
@@ -742,9 +750,7 @@
                 <label for="freitext" style="margin-top: 0; margin-bottom: 0; flex: 1 1 auto; min-width: 100px;">Text bearbeiten:</label>
                 <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0; flex-wrap: nowrap;">
                     <button type="button" id="connect-ble-btn" class="btn-connect" onclick="connectBluetooth()">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 -960 960 960" width="1.4em" fill="currentColor" style="vertical-align:middle; margin-right:4px; display:inline-block;">
-                            <path d="M440-120 260-300h-60v-120h60l180-180v-280h240v280l180 180h60v120h-60l-180 180h-240v-80zm40-360v-240h160v240l-80-80-80 80z"/>
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 -960 960 960" width="1.4em" fill="currentColor" style="vertical-align:middle; margin-right:4px; display:inline-block;"><path d="M440-80v-304L256-200l-56-56 224-224-224-224 56-56 184 184v-304h40l228 228-172 172 172 172L480-80h-40Zm80-496 76-76-76-74v150Zm0 342 76-74-76-76v150Z"/></svg>
                         <span id="connect-text">Verbinden</span>
                     </button>
                     <button type="button" id="clear-btn" class="secondary" style="margin-top: 0; width: auto; padding: 6px 16px; font-size: 13px; border-radius: 100px;" onclick="zeigeLoeschSlider()">🗑️ Löschen</button>
@@ -784,7 +790,7 @@
                 <h3 style="margin: 15px 0; color: var(--md-color-primary);">✍️ Daten werden verarbeitet...</h3>
                 <p id="countdown-text" style="color: var(--md-color-primary); font-weight: bold; font-size: 18px; margin: 10px 0;">Bitte warten...</p>
                 <p style="color: var(--md-color-on-surface-variant); font-size: 14px; margin-bottom: 20px;">Bitte trennen Sie die Verbindung nicht.</p>
-                <button type="button" id="stop-ble-btn" class="btn-device" style="background: var(--md-color-error); margin: 10px auto 0 auto; max-width: 200px;" onclick="sendeStopSignal()">🛑 Schreiben unterbrechen</button>
+                <button type="button" id="stop-ble-btn" class="btn-device" style="background: var(--md-color-error); margin: 10px auto 0 auto; max-width: 200px;" onclick="sendeStopSignal()">🛑 Schreiben abbrechen</button>
             </div>
             <div id="overlay-success" style="text-align: center; display: none;">
                 <span style="font-size: 60px;">✅</span>
@@ -795,9 +801,1127 @@
     </div>
 
     <script>
-        // Placeholder - Original JavaScript wird hier eingefügt
-        // Die KI-Prompts sind jetzt geteilt zwischen ChatGPT und Gemini
-        console.log("HTML aktualisiert: Ein gemeinsamer KI-Prompt-Pool für ChatGPT und Gemini");
+        // ==========================================
+        // FIREBASE INITIALISIERUNG
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqbYce4Rkuk8AwWRWEprjc0lJquD2h1Gg",
+            authDomain: "retter-protokoll.firebaseapp.com",
+            projectId: "retter-protokoll",
+            storageBucket: "retter-protokoll.firebasestorage.app",
+            messagingSenderId: "635653654715",
+            appId: "1:635653654715:web:dc053224fe7b7f4b9d419e"
+        };
+
+        // Firebase starten
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Offline-Persistence (Datencaching) aktivieren
+        db.enablePersistence().catch((err) => {
+            console.warn("Firestore-Caching nicht möglich:", err.code);
+        });
+
+        // Globale Variablen für das aktive Profil des angemeldeten Benutzers
+        let ACTIVE_PROFILE = null;
+        let currentUser = null;
+
+        // Bluetooth-Spezifische UUIDs
+        const BLE_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+        const BLE_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+        const BLE_TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+
+        let bleDevice = null;
+        let rxCharacteristic = null;
+        let txCharacteristic = null;
+
+        const PARAMETER_CONFIG = [
+            { id: "rr-sys", label: "RR Sys", unit: "mmHg", type: "number", maxLen: 3, placeholder: "120", class: "narrow", minPlaus: 50, maxPlaus: 240 },
+            { id: "rr-dia", label: "RR Dia", unit: "mmHg", type: "number", maxLen: 3, placeholder: "80", class: "narrow", minPlaus: 30, maxPlaus: 140 },
+            { id: "hf", label: "HF", unit: "/min", type: "number", maxLen: 4, placeholder: "75", minPlaus: 30, maxPlaus: 200 },
+            { id: "puls", label: "Puls", unit: "/min", type: "number", maxLen: 4, placeholder: "72", minPlaus: 30, maxPlaus: 200 },
+            { id: "bz", label: "BZ", unit: "mg/dl", type: "text", maxLen: 5, placeholder: "HI", minPlaus: 40, maxPlaus: 450, isTextAllowed: true },
+            { id: "af", label: "AF", unit: "/min", type: "number", maxLen: 4, placeholder: "14", minPlaus: 6, maxPlaus: 35 },
+            { id: "temp", label: "Temp", unit: "°C", type: "text", maxLen: 5, placeholder: "36.5", minPlaus: 30.0, maxPlaus: 42.5, isTextAllowed: true }
+        ];
+
+        const textarea = document.getElementById("freitext");
+        const submitBtn = document.getElementById("submit-btn");
+        const kiSelect = document.getElementById("ki-select");
+        const geminiSelect = document.getElementById("gemini-select");
+        const vorlageScrollContainer = document.getElementById("vorlage-scroll-container");
+        const loeschSliderContainer = document.getElementById("loesch-slider-container");
+        const deleteSlider = document.getElementById("delete-slider");
+        const overlay = document.getElementById("overlay");
+        const loadingDiv = document.getElementById("overlay-loading");
+        const successDiv = document.getElementById("overlay-success");
+        const countdownEl = document.getElementById("countdown-text");
+        const connectBleBtn = document.getElementById("connect-ble-btn");
+
+        const OPTIONEN_NAMEN = {
+            "metamizol_w": "Metamizol ♀️",
+            "metamizol_m": "Metamizol ♂️",
+            "mitfahrt_w": "Transportverweigerung ♀️",
+            "mitfahrt_m": "Transportverweigerung ♂️",
+            "hilfe_w": "Hilfeleistung ♀️",
+            "hilfe_m": "Hilfeleistung ♂️",
+            "abcde": "ABCDE",
+            "abcdesampler": "ABCDE SAMPLER",
+            "sampler": "SAMPLER / OPQRST"
+        };
+
+        const EKG_RYHTMEN = [
+            { id: "ekg-sr", label: "Sinusrhythmus (SR)" },
+            { id: "ekg-vhf", label: "Vorhofflimmern (VHF)" },
+            { id: "ekg-vhflat", label: "Vorhofflattern" },
+            { id: "ekg-svt", label: "Supraventrikuläre Tachykardie (SVT)" },
+            { id: "ekg-vt", label: "Ventrikuläre Tachykardie (VT)" },
+            { id: "ekg-kf", label: "Kammerflimmern (KF)" },
+            { id: "ekg-asystolie", label: "Asystolie" },
+            { id: "ekg-pea", label: "PEA (Pulslose elektrische Aktivität)" },
+            { id: "ekg-av1", label: "AV-Block I°" },
+            { id: "ekg-av2w", label: "AV-Block II° (Wenckebach)" },
+            { id: "ekg-av2m", label: "AV-Block II° (Mobitz)" },
+            { id: "ekg-av3", label: "AV-Block III°" },
+            { id: "ekg-lsb", label: "Linksschenkelblock (LSB / LBBB)" },
+            { id: "ekg-rsb", label: "Rechtsschenkelblock (RSB / RBBB)" },
+            { id: "ekg-stemi", label: "STEMI (Herzinfarkt)" },
+            { id: "ekg-ves", label: "Extrasystolen (VES)" },
+            { id: "ekg-brady", label: "Bradykardie" },
+            { id: "ekg-tachy", label: "Tachykardie" }
+        ];
+
+        const BT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 -960 960 960" width="1.4em" fill="currentColor" style="vertical-align:middle; margin-right:4px; display:inline-block;"><path d="M440-80v-304L256-200l-56-56 224-224-224-224 56-56 184 184v-304h40l228 228-172 172 172 172L480-80h-40Zm80-496 76-76-76-74v150Zm0 342 76-74-76-76v150Z"/></svg>`;
+
+        // ==========================================
+        // SERVICE WORKER LOGIK
+        // ==========================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/RetterProtokoll/sw.js', { updateViaCache: 'none' })
+                .then(reg => {
+                    if (reg.waiting) zeigeUpdateBanner(reg.waiting);
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                zeigeUpdateBanner(newWorker);
+                            }
+                        });
+                    });
+                });
+            });
+
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+        }
+
+        function zeigeUpdateBanner(worker) {
+            const banner = document.getElementById('update-banner');
+            const btn = document.getElementById('update-btn');
+            if (banner && btn) {
+                banner.style.display = 'block';
+                btn.onclick = () => worker.postMessage({ action: 'skipWaiting' });
+            }
+        }
+
+        // ==========================================
+        // AUTHENTICATION LOGIK
+        // ==========================================
+        auth.onAuthStateChanged(async (user) => {
+            const loginScreen = document.getElementById("login-screen");
+            const appScreen = document.getElementById("app-screen");
+            const editorScreen = document.getElementById("editor-screen");
+
+            if (user) {
+                currentUser = user;
+                loginScreen.style.display = "none";
+                
+                await ladeBenutzerProfil(user.uid);
+                
+                appScreen.style.display = "block";
+            } else {
+                currentUser = null;
+                ACTIVE_PROFILE = null;
+                appScreen.style.display = "none";
+                editorScreen.style.display = "none";
+                loginScreen.style.display = "block";
+            }
+        });
+
+        function toggleAuthFields() {
+            const isRegister = document.getElementById("tab-register").checked;
+            document.getElementById("reg-name-field").style.display = isRegister ? "block" : "none";
+            document.getElementById("auth-submit-btn").innerText = isRegister ? "Registrieren & starten" : "Anmelden";
+        }
+
+        async function fuehreAuthAus() {
+            const isRegister = document.getElementById("tab-register").checked;
+            const email = document.getElementById("auth-email").value.trim();
+            const password = document.getElementById("auth-password").value;
+            const name = document.getElementById("auth-name").value.trim();
+            const errorEl = document.getElementById("auth-error-msg");
+
+            errorEl.style.display = "none";
+
+            if (!email || !password) {
+                zegeAuthFehler("Bitte füllen Sie alle Felder aus.");
+                return;
+            }
+
+            try {
+                if (isRegister) {
+                    if (!name) {
+                        zegeAuthFehler("Bitte tragen Sie Ihren Namen ein.");
+                        return;
+                    }
+                    const cred = await auth.createUserWithEmailAndPassword(email, password);
+                    await initialisiereNeuesProfil(cred.user.uid, name);
+                } else {
+                    await auth.signInWithEmailAndPassword(email, password);
+                }
+            } catch (err) {
+                console.error(err);
+                zegeAuthFehler(uebersetzeFehlermeldung(err.code));
+            }
+        }
+
+        function logoffUser() {
+            auth.signOut().then(() => {
+                location.reload();
+            });
+        }
+
+        function zegeAuthFehler(text) {
+            const errorEl = document.getElementById("auth-error-msg");
+            errorEl.innerText = text;
+            errorEl.style.display = "block";
+        }
+
+        function uebersetzeFehlermeldung(code) {
+            switch(code) {
+                case "auth/invalid-email": return "Ungültige E-Mail-Adresse.";
+                case "auth/user-not-found": return "Benutzer wurde nicht gefunden.";
+                case "auth/wrong-password": return "Falsches Passwort.";
+                case "auth/email-already-in-use": return "Diese E-Mail-Adresse wird bereits verwendet.";
+                case "auth/weak-password": return "Das Passwort muss mindestens 6 Zeichen lang sein.";
+                default: return "Fehler bei der Anmeldung. Bitte Eingaben prüfen.";
+            }
+        }
+
+        // ==========================================
+        // FIRESTORE DATENBANK-OPERATIONEN
+        // ==========================================
+        async function ladeBenutzerProfil(userId) {
+            try {
+                const docRef = db.collection("users").doc(userId);
+                const doc = await docRef.get();
+
+                if (doc.exists) {
+                    ACTIVE_PROFILE = doc.data();
+                    document.getElementById("app-title").innerText = `RetterProtokoll (${ACTIVE_PROFILE.name})`;
+                    befuelleVorlagenButtons();
+                    anpassenKiDropdowns();
+                } else {
+                    console.error("Kein Profil für diese ID gefunden.");
+                }
+            } catch (err) {
+                console.error("Fehler beim Laden des Profils:", err);
+            }
+        }
+
+        async function initialisiereNeuesProfil(userId, name) {
+            try {
+                const pfad = window.location.pathname.includes('/RetterProtokoll') 
+                    ? '/RetterProtokoll/templates.json' 
+                    : 'templates.json';
+
+                const response = await fetch(pfad);
+                if (!response.ok) throw new Error("templates.json fehlt");
+                const data = await response.json();
+                
+                const standardProfil = data.profiles[0]; 
+
+                const neuesProfil = {
+                    id: userId,
+                    name: name,
+                    vorlagen: standardProfil.vorlagen,
+                    prompts: standardProfil.prompts || {}
+                };
+
+                await db.collection("users").doc(userId).set(neuesProfil);
+            } catch (err) {
+                console.error("Fehler beim Initialisieren des Profils:", err);
+            }
+        }
+
+        function anpassenKiDropdowns() {
+            const kiContainer = document.getElementById("ki-selection-container");
+            const restoreOptKi = document.getElementById("restore-opt-ki");
+            const restoreSourceBt = document.getElementById("restore-source-bt");
+            const restoreSourceKi = document.getElementById("restore-source-ki");
+
+            if (!ACTIVE_PROFILE) return;
+
+            const prompts = ACTIVE_PROFILE.prompts || {};
+            const hatPrompts = Object.keys(prompts).length > 0;
+
+            if (hatPrompts) {
+                kiContainer.style.display = "block";
+                
+                const chatgptSelect = document.getElementById("ki-select");
+                const geminiSelect = document.getElementById("gemini-select");
+
+                const befuellen = (selectEl, prefix) => {
+                    selectEl.innerHTML = '<option value="keine" selected>Keine KI (Text direkt senden)</option>';
+                    Object.keys(prompts).forEach(key => {
+                        if (key.startsWith(prefix)) {
+                            const opt = document.createElement("option");
+                            opt.value = key;
+                            const labelName = key.replace(prefix + "_", "").replace(/^\w/, c => c.toUpperCase());
+                            opt.innerText = `${prefix === 'chatgpt' ? 'ChatGPT' : 'Gemini'}: ${labelName}`;
+                            selectEl.appendChild(opt);
+                        }
+                    });
+                };
+
+                befuellen(chatgptSelect, "chatgpt");
+                befuellen(geminiSelect, "gemini");
+
+                if (restoreOptKi) restoreOptKi.style.display = "flex";
+            } else {
+                kiContainer.style.display = "none";
+                kiSelect.value = "keine";
+                geminiSelect.value = "keine";
+                if (restoreOptKi) restoreOptKi.style.display = "none";
+                if (restoreSourceKi && restoreSourceKi.checked) {
+                    if (restoreSourceBt) restoreSourceBt.checked = true;
+                }
+            }
+        }
+
+         // ==========================================
+        // ERWEITERTE EDITOR-, PROMPT- & EINSTELLUNGSLOGIK
+        // ==========================================
+        function zeigeEditor() {
+            if (!ACTIVE_PROFILE) return;
+            document.getElementById("app-screen").style.display = "none";
+            document.getElementById("editor-screen").style.display = "block";
+
+            document.getElementById("tab-edit-templates").checked = true;
+            switchEditorTab();
+        }
+
+        function switchEditorTab() {
+            const selectedTab = document.querySelector('input[name="editortab"]:checked').value;
+            const contentSection = document.getElementById("editor-content-section");
+            const passwordSection = document.getElementById("editor-password-section");
+            const itemSelect = document.getElementById("editor-item-select");
+            const selectLabel = document.getElementById("editor-select-label");
+            const textLabel = document.getElementById("editor-text-label");
+            const newLabel = document.getElementById("new-item-label");
+            const newInput = document.getElementById("new-item-key");
+            const genderContainer = document.getElementById("new-item-gender-container");
+
+            // Zurücksetzen
+            document.getElementById("pw-error-msg").style.display = "none";
+            document.getElementById("new-password").value = "";
+            document.getElementById("new-password-confirm").value = "";
+            newInput.value = "";
+            document.getElementById("new-gender-n").checked = true;
+
+            if (selectedTab === "password") {
+                contentSection.style.display = "none";
+                passwordSection.style.display = "block";
+            } else {
+                passwordSection.style.display = "none";
+                contentSection.style.display = "block";
+                itemSelect.innerHTML = "";
+
+                if (selectedTab === "templates") {
+                    selectLabel.innerText = "Vorlage wählen:";
+                    textLabel.innerText = "Inhalt bearbeiten:";
+                    newLabel.innerText = "Neue Vorlage erstellen:";
+                    newInput.placeholder = "Name der Vorlage (z.B. ABCDE)...";
+                    genderContainer.style.display = "flex"; // Geschlechtsfilter anzeigen
+                    
+                    Object.keys(ACTIVE_PROFILE.vorlagen || {}).forEach(key => {
+                        const opt = document.createElement("option");
+                        opt.value = key;
+                        opt.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
+                        itemSelect.appendChild(opt);
+                    });
+                } else if (selectedTab === "prompts") {
+                    selectLabel.innerText = "Prompt wählen:";
+                    textLabel.innerText = "Prompt-Text bearbeiten:";
+                    newLabel.innerText = "Neuen Prompt erstellen:";
+                    newInput.placeholder = "chatgpt_name oder gemini_name...";
+                    genderContainer.style.display = "none"; // Geschlechtsfilter ausblenden
+                    
+                    Object.keys(ACTIVE_PROFILE.prompts || {}).forEach(key => {
+                        const opt = document.createElement("option");
+                        opt.value = key;
+                        opt.innerText = formatiereKey(key);
+                        itemSelect.appendChild(opt);
+                    });
+                }
+                ladeEditorInhalt();
+            }
+        }
+
+        function ladeEditorInhalt() {
+            const selectedTab = document.querySelector('input[name="editortab"]:checked').value;
+            const key = document.getElementById("editor-item-select").value;
+            const textarea = document.getElementById("editor-item-text");
+
+            if (!ACTIVE_PROFILE || !key) {
+                textarea.value = "";
+                return;
+            }
+
+            if (selectedTab === "templates") {
+                textarea.value = ACTIVE_PROFILE.vorlagen[key] || "";
+            } else if (selectedTab === "prompts") {
+                textarea.value = ACTIVE_PROFILE.prompts[key] || "";
+            }
+        }
+
+        function erstelleNeuesElement() {
+            const selectedTab = document.querySelector('input[name="editortab"]:checked').value;
+            const inputEl = document.getElementById("new-item-key");
+            const nameRaw = inputEl.value.trim();
+
+            if (!nameRaw) {
+                alert("Bitte geben Sie einen Namen ein.");
+                return;
+            }
+
+            // Normalisierung der Eingabe für die Datenbank
+            let dbKey = nameRaw.toLowerCase()
+                .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+                .replace(/[^a-z0-9_]/g, '_')
+                .replace(/_+/g, '_');
+
+            if (dbKey.startsWith('_')) dbKey = dbKey.substring(1);
+            if (dbKey.endsWith('_')) dbKey = dbKey.slice(0, -1);
+
+            if (!dbKey) {
+                alert("Ungültiger Name.");
+                return;
+            }
+
+            if (selectedTab === "templates") {
+                const gender = document.querySelector('input[name="newgender"]:checked').value;
+                
+                // Eventuell bereits eingetippte Endungen entfernen, um Doppelungen zu vermeiden
+                dbKey = dbKey.replace(/_m$/, '').replace(/_w$/, '');
+
+                if (gender === "m") {
+                    dbKey += "_m";
+                } else if (gender === "w") {
+                    dbKey += "_w";
+                }
+
+                if (!ACTIVE_PROFILE.vorlagen) ACTIVE_PROFILE.vorlagen = {};
+                if (ACTIVE_PROFILE.vorlagen[dbKey] !== undefined) {
+                    alert("Diese Vorlage existiert bereits.");
+                    return;
+                }
+                ACTIVE_PROFILE.vorlagen[dbKey] = "";
+            } else if (selectedTab === "prompts") {
+                if (!dbKey.startsWith("chatgpt_") && !dbKey.startsWith("gemini_")) {
+                    alert("KI-Prompts müssen mit 'chatgpt_' oder 'gemini_' beginnen!");
+                    return;
+                }
+                if (!ACTIVE_PROFILE.prompts) ACTIVE_PROFILE.prompts = {};
+                if (ACTIVE_PROFILE.prompts[dbKey] !== undefined) {
+                    alert("Dieser Prompt existiert bereits.");
+                    return;
+                }
+                ACTIVE_PROFILE.prompts[dbKey] = "";
+            }
+
+            inputEl.value = "";
+            
+            // Editor neu laden und das neue Element direkt auswählen
+            switchEditorTab();
+            document.getElementById("editor-item-select").value = dbKey;
+            ladeEditorInhalt();
+            document.getElementById("editor-item-text").focus();
+        }
+
+        async function speichereEditorAenderung() {
+            const selectedTab = document.querySelector('input[name="editortab"]:checked').value;
+            const key = document.getElementById("editor-item-select").value;
+            const text = document.getElementById("editor-item-text").value;
+
+            if (!ACTIVE_PROFILE || !key || !currentUser) return;
+
+            if (selectedTab === "templates") {
+                ACTIVE_PROFILE.vorlagen[key] = text;
+            } else if (selectedTab === "prompts") {
+                ACTIVE_PROFILE.prompts[key] = text;
+            }
+
+            try {
+                await db.collection("users").doc(currentUser.uid).set(ACTIVE_PROFILE);
+                alert("Änderungen erfolgreich in der Cloud gespeichert!");
+                befuelleVorlagenButtons();
+                anpassenKiDropdowns();
+            } catch (err) {
+                console.error("Firestore-Fehler beim Speichern:", err);
+                alert("Speichern fehlgeschlagen. Keine Berechtigung oder offline.");
+            }
+        }
+
+        async function loescheEditorElement() {
+            const selectedTab = document.querySelector('input[name="editortab"]:checked').value;
+            const key = document.getElementById("editor-item-select").value;
+
+            if (!ACTIVE_PROFILE || !key || !currentUser) {
+                alert("Kein Element zum Löschen ausgewählt.");
+                return;
+            }
+
+            const anzeigenName = OPTIONEN_NAMEN[key] || formatiereKey(key);
+            if (!confirm(`Möchten Sie das Element "${anzeigenName}" wirklich unwiderruflich löschen?`)) {
+                return;
+            }
+
+            if (selectedTab === "templates") {
+                if (ACTIVE_PROFILE.vorlagen && ACTIVE_PROFILE.vorlagen[key] !== undefined) {
+                    delete ACTIVE_PROFILE.vorlagen[key];
+                }
+            } else if (selectedTab === "prompts") {
+                if (ACTIVE_PROFILE.prompts && ACTIVE_PROFILE.prompts[key] !== undefined) {
+                    delete ACTIVE_PROFILE.prompts[key];
+                }
+            }
+
+            try {
+                await db.collection("users").doc(currentUser.uid).set(ACTIVE_PROFILE);
+                alert("Element erfolgreich gelöscht!");
+                
+                befuelleVorlagenButtons();
+                anpassenKiDropdowns();
+                switchEditorTab();
+            } catch (err) {
+                console.error("Firestore-Fehler beim Löschen:", err);
+                alert("Löschen fehlgeschlagen. Keine Berechtigung oder offline.");
+            }
+        }
+
+        async function fuehrePasswortAenderungAus() {
+            const newPassword = document.getElementById("new-password").value;
+            const confirmPassword = document.getElementById("new-password-confirm").value;
+            const errorEl = document.getElementById("pw-error-msg");
+
+            errorEl.style.display = "none";
+
+            if (!newPassword || !confirmPassword) {
+                errorEl.innerText = "Bitte füllen Sie beide Felder aus.";
+                errorEl.style.display = "block";
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                errorEl.innerText = "Das Passwort muss mindestens 6 Zeichen lang sein.";
+                errorEl.style.display = "block";
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                errorEl.innerText = "Die Passwörter stimmen nicht überein.";
+                errorEl.style.display = "block";
+                return;
+            }
+
+            const user = auth.currentUser;
+            if (user) {
+                try {
+                    await user.updatePassword(newPassword);
+                    alert("Passwort erfolgreich aktualisiert!");
+                    document.getElementById("new-password").value = "";
+                    document.getElementById("new-password-confirm").value = "";
+                } catch (err) {
+                    console.error("Fehler beim Ändern des Passworts:", err);
+                    if (err.code === "auth/requires-recent-login") {
+                        errorEl.innerText = "Aus Sicherheitsgründen müssen Sie sich neu anmelden, um das Passwort zu ändern.";
+                    } else {
+                        errorEl.innerText = "Fehler: " + err.message;
+                    }
+                    errorEl.style.display = "block";
+                }
+            } else {
+                errorEl.innerText = "Kein angemeldeter Benutzer gefunden.";
+                errorEl.style.display = "block";
+            }
+        }
+
+        // ==========================================
+        // BLUETOOTH & UI SYSTEMLOGIK
+        // ==========================================
+        async function connectBluetooth() {
+            if (!navigator.bluetooth) {
+                alert("Web Bluetooth wird von diesem Browser nicht unterstützt.");
+                return;
+            }
+            try {
+                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Suche...";
+                bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [BLE_SERVICE_UUID] }]
+                });
+                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Verbinde...";
+                const server = await bleDevice.gatt.connect();
+                const service = await server.getPrimaryService(BLE_SERVICE_UUID);
+                rxCharacteristic = await service.getCharacteristic(BLE_RX_UUID);
+                txCharacteristic = await service.getCharacteristic(BLE_TX_UUID);
+                await txCharacteristic.startNotifications();
+                txCharacteristic.addEventListener('characteristicvaluechanged', handleBleNotification);
+
+                connectBleBtn.innerHTML = BT_ICON_SVG + " " + (bleDevice.name ? bleDevice.name.substring(0, 10) : "Verbunden");
+                connectBleBtn.style.background = "#2563eb";
+                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+                updateSubmitButtonState();
+            } catch (error) {
+                console.error("Bluetooth Fehler: ", error);
+                connectBleBtn.innerHTML = BT_ICON_SVG + " Fehler";
+                connectBleBtn.style.background = "#dc2626";
+                onDisconnected();
+            }
+        }
+
+        function onDisconnected() {
+            connectBleBtn.innerHTML = BT_ICON_SVG + " Verbinden";
+            connectBleBtn.style.background = "#dc2626";
+            bleDevice = null;
+            rxCharacteristic = null;
+            txCharacteristic = null;
+            updateSubmitButtonState();
+        }
+
+        function handleBleNotification(event) {
+            const decoder = new TextDecoder();
+            const value = decoder.decode(event.target.value).trim();
+            if (value === "DONE") {
+                loadingDiv.style.display = "none";
+                successDiv.style.display = "block";
+                localStorage.removeItem("aktueller_entwurf");
+                clearMesswerte();
+            } else if (value === "STOPPED") {
+                alert("Der Tippvorgang wurde erfolgreich abgebrochen.");
+                resetForm();
+            } else if (value === "BUSY") {
+                alert("Das Gerät ist beschäftigt.");
+                resetForm();
+            }
+        }
+
+        async function sendeStopSignal() {
+            if (!rxCharacteristic) return;
+            try {
+                countdownEl.innerText = "Abbruchsignal wird gesendet...";
+                const encoder = new TextEncoder();
+                await rxCharacteristic.writeValueWithResponse(encoder.encode("STOP"));
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function befuelleVorlagenButtons() {
+            vorlageScrollContainer.innerHTML = '';
+            if (!ACTIVE_PROFILE) return;
+
+            const selectedGenderElement = document.querySelector('input[name="gender"]:checked');
+            const selectedGender = selectedGenderElement ? selectedGenderElement.value : 'm';
+
+            const keys = Object.keys(ACTIVE_PROFILE.vorlagen || {});
+            
+            let filteredKeys = [];
+            if (selectedGender === 'm') {
+                filteredKeys = keys.filter(key => !key.endsWith('_w'));
+            } else if (selectedGender === 'w') {
+                filteredKeys = keys.filter(key => !key.endsWith('_m'));
+            } else {
+                filteredKeys = keys;
+            }
+
+            filteredKeys.forEach(key => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "scroll-btn";
+                btn.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
+                btn.onclick = () => vorlageEinfuegen(key);
+                vorlageScrollContainer.appendChild(btn);
+            });
+        }
+
+        function formatiereKey(key) {
+            return key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        function zeigeLoeschSlider() {
+            const text = textarea.value.trim();
+            if (!text) {
+                alert("Das Textfeld ist bereits leer.");
+                return;
+            }
+            loeschSliderContainer.classList.toggle("show");
+            resetSliderStyles();
+        }
+
+        function resetSliderStyles() {
+            loeschSliderContainer.style.backgroundColor = "";
+            loeschSliderContainer.style.borderColor = "";
+            deleteSlider.value = 0;
+            const textSpan = document.querySelector(".slide-text");
+            if (textSpan) {
+                textSpan.style.opacity = 1;
+                textSpan.style.transform = "translateX(0)";
+            }
+        }
+
+        function handleSliderInput(slider) {
+            const textSpan = document.querySelector(".slide-text");
+            const val = slider.value;
+            if (textSpan) {
+                textSpan.style.opacity = (100 - val) / 100;
+                textSpan.style.transform = `translateX(-${val * 0.2}px)`;
+            }
+            loeschSliderContainer.style.backgroundColor = `color-mix(in srgb, var(--md-color-error-container) ${val}%, var(--md-color-surface-container))`;
+            loeschSliderContainer.style.borderColor = `color-mix(in srgb, var(--md-color-error) ${val}%, var(--md-color-outline-variant))`;
+        }
+
+        function handleSliderChange(slider) {
+            if (slider.value == 100) {
+                textarea.value = "";
+                localStorage.removeItem("aktueller_entwurf");
+                autoResize();
+                updateSubmitButtonState();
+                loeschSliderContainer.classList.remove("show");
+                setTimeout(resetSliderStyles, 300);
+            } else {
+                resetSliderStyles();
+            }
+        }
+
+        function inZwischenablageKopieren(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                const tempTextArea = document.createElement("textarea");
+                tempTextArea.value = text;
+                tempTextArea.style.position = "fixed"; 
+                document.body.appendChild(tempTextArea);
+                tempTextArea.focus();
+                tempTextArea.select();
+                try { document.execCommand("copy"); } catch (err) {}
+                document.body.removeChild(tempTextArea);
+                return Promise.resolve();
+            }
+        }
+
+        function updateSubmitButtonState() {
+            const text = textarea.value.trim();
+            const selectedProvider = document.querySelector('input[name="provider"]:checked');
+            const selectedProviderVal = selectedProvider ? selectedProvider.value : 'chatgpt';
+            const activeSelect = (selectedProviderVal === 'chatgpt') ? kiSelect : geminiSelect;
+            const kiAuswahl = activeSelect ? activeSelect.value : 'keine';
+
+            if (text === "") {
+                submitBtn.disabled = true;
+                submitBtn.className = "btn-disabled";
+                submitBtn.innerText = "3. Text senden";
+            } else {
+                submitBtn.disabled = false;
+                if (kiAuswahl !== "keine") {
+                    submitBtn.className = "btn-ki";
+                    submitBtn.innerText = "3. An KI senden";
+                } else {
+                    if (rxCharacteristic) {
+                        submitBtn.className = "btn-device";
+                        submitBtn.innerText = "3. Über Bluetooth senden";
+                    } else {
+                        submitBtn.className = "btn-disabled";
+                        submitBtn.innerText = "Bitte erst Bluetooth verbinden";
+                        submitBtn.disabled = true;
+                    }
+                }
+            }
+        }
+
+        function zurueckZurHauptseite() {
+            document.getElementById("editor-screen").style.display = "none";
+            document.getElementById("app-screen").style.display = "block";
+            autoResize();
+            updateSubmitButtonState();
+        }
+
+        function anwendenAusgewaehltenText() {
+            const selectedSource = document.querySelector('input[name="restore-source"]:checked').value;
+            let gespeicherterText = "";
+            if (selectedSource === "bt") {
+                gespeicherterText = localStorage.getItem("letzter_gesendeter_text");
+            } else if (selectedSource === "ki") {
+                gespeicherterText = localStorage.getItem("letzter_ki_gesendeter_text");
+            }
+
+            if (gespeicherterText) {
+                textarea.value = gespeicherterText;
+                localStorage.setItem("aktueller_entwurf", gespeicherterText);
+                autoResize();
+                updateSubmitButtonState();
+            } else {
+                alert("Kein entsprechender Text im Speicher gefunden.");
+            }
+        }
+
+        function toggleMesswerte() {
+            const container = document.getElementById("messwerte-container");
+            const btn = document.getElementById("toggle-messwerte-btn");
+            if (container.style.display === "none") {
+                container.style.display = "block";
+                btn.innerText = "📊 Messwerte ausblenden";
+            } else {
+                container.style.display = "none";
+                btn.innerText = "📊 Messwerte eingeben";
+            }
+        }
+
+        function renderEkgChecklist() {
+            const container = document.getElementById("ekg-checklist-container");
+            container.innerHTML = "";
+            EKG_RYHTMEN.forEach(item => {
+                const label = document.createElement("label");
+                label.className = "ekg-item-row";
+                label.htmlFor = item.id;
+                
+                const cb = document.createElement("input");
+                cb.type = "checkbox";
+                cb.value = item.label;
+                cb.id = item.id;
+                cb.className = "ekg-checkbox";
+                
+                const span = document.createElement("span");
+                span.innerText = item.label;
+                
+                label.appendChild(cb);
+                label.appendChild(span);
+                container.appendChild(label);
+            });
+        }
+
+        function limitLength(el, max) {
+            if (el.value.length > max) el.value = el.value.slice(0, max);
+        }
+
+        function renderMesswerteInput() {
+            const container = document.getElementById("messwerte-grid-container");
+            container.innerHTML = "";
+            PARAMETER_CONFIG.forEach(cfg => {
+                const div = document.createElement("div");
+                div.className = `messwerte-item ${cfg.class || ""}`;
+                
+                div.innerHTML = `
+                    <div class="status-container">
+                        <label for="mw-${cfg.id}">${cfg.label}</label>
+                        <span id="status-${cfg.id}" class="status-indicator" onclick="toggleStatus('${cfg.id}')">❓</span>
+                    </div>
+                    <input type="${cfg.type === 'number' ? 'number' : 'text'}" id="mw-${cfg.id}" placeholder="${cfg.placeholder}" autocomplete="off">
+                `;
+                
+                const inputEl = div.querySelector("input");
+                inputEl.addEventListener("input", () => {
+                    limitLength(inputEl, cfg.maxLen);
+                    handleValueInput(inputEl, `status-${cfg.id}`);
+                    checkPlausibility(inputEl, cfg);
+                });
+                container.appendChild(div);
+            });
+        }
+
+        function checkPlausibility(inputEl, config) {
+            const valStr = inputEl.value.trim().toLowerCase();
+            if (!valStr) {
+                inputEl.style.backgroundColor = "";
+                inputEl.style.borderColor = "";
+                return;
+            }
+            if (config.isTextAllowed && (valStr === "hi" || valStr === "low")) {
+                inputEl.style.backgroundColor = "";
+                inputEl.style.borderColor = "";
+                return;
+            }
+            const val = parseFloat(valStr.replace(',', '.'));
+            if (isNaN(val)) return;
+
+            if (val < config.minPlaus || val > config.maxPlaus) {
+                inputEl.style.borderColor = "var(--md-color-error)";
+                inputEl.style.backgroundColor = "rgba(186, 26, 26, 0.12)";
+            } else {
+                inputEl.style.backgroundColor = "";
+                inputEl.style.borderColor = "";
+            }
+        }
+
+        function handleValueInput(inputEl, statusId) {
+            const val = inputEl.value.trim();
+            const statusEl = document.getElementById(statusId);
+            if (val.length > 0) {
+                if (statusEl.innerText === "❓") {
+                    statusEl.innerText = "✅";
+                }
+            } else {
+                if (statusEl.innerText === "✅") {
+                    statusEl.innerText = "❓";
+                }
+            }
+            updateSubmitButtonState();
+        }
+
+        function toggleStatus(id) {
+            const statusEl = document.getElementById(`status-${id}`);
+            const inputEl = document.getElementById(`mw-${id}`);
+            if (!statusEl || !inputEl) return;
+            const hasValue = inputEl.value.trim().length > 0;
+
+            if (statusEl.innerText === "✅" || statusEl.innerText === "❓") {
+                statusEl.innerText = "❌";
+            } else if (statusEl.innerText === "❌") {
+                statusEl.innerText = hasValue ? "✅" : "❓";
+            }
+        }
+
+        function clearMesswerte() {
+            PARAMETER_CONFIG.forEach(cfg => {
+                const inputEl = document.getElementById(`mw-${cfg.id}`);
+                if (inputEl) {
+                    inputEl.value = "";
+                    inputEl.style.backgroundColor = "";
+                    inputEl.style.borderColor = "";
+                }
+            });
+            document.querySelectorAll(".ekg-checkbox").forEach(cb => cb.checked = false);
+            document.querySelectorAll(".status-indicator").forEach(ind => {
+                ind.innerText = "❓";
+            });
+        }
+
+        function formatMesswerteFuerAusgabe() {
+            let eintraege = [];
+            const getStatusOf = (id) => {
+                const el = document.getElementById(`status-${id}`);
+                return el ? el.innerText : null;
+            };
+
+            const sysStatus = getStatusOf("rr-sys");
+            const diaStatus = getStatusOf("rr-dia");
+            const sysVal = document.getElementById("mw-rr-sys").value.trim();
+            const diaVal = document.getElementById("mw-rr-dia").value.trim();
+
+            if (sysStatus !== "❓" || diaStatus !== "❓") {
+                if (sysStatus === "❌" || diaStatus === "❌") {
+                    eintraege.push("RR nicht gemessen");
+                } else {
+                    eintraege.push(`RR: ${sysVal || '??'}/${diaVal || '??'} mmHg`);
+                }
+            }
+
+            PARAMETER_CONFIG.forEach(cfg => {
+                if (cfg.id === "rr-sys" || cfg.id === "rr-dia") return;
+                const status = getStatusOf(cfg.id);
+                if (status !== "❓" && status !== null) {
+                    if (status === "❌") {
+                        eintraege.push(`${cfg.label} nicht gemessen`);
+                    } else {
+                        const rawVal = document.getElementById(`mw-${cfg.id}`).value.trim();
+                        eintraege.push(`${cfg.label}: ${rawVal}${cfg.unit ? ' ' + cfg.unit : ''}`);
+                    }
+                }
+            });
+
+            const ausgewaehlteEkg = [];
+            document.querySelectorAll(".ekg-checkbox:checked").forEach(cb => ausgewaehlteEkg.push(cb.value));
+            if (ausgewaehlteEkg.length > 0) {
+                eintraege.push(`EKG: ${ausgewaehlteEkg.join(", ")}`);
+            }
+
+            return eintraege.length > 0 ? "\n\nMesswerte: " + eintraege.join(" | ") : "";
+        }
+
+        function autoResize() {
+            textarea.style.height = 'auto';
+            const maxHeight = 350;
+            const newHeight = textarea.scrollHeight;
+            if (newHeight > maxHeight) {
+                textarea.style.height = maxHeight + 'px';
+                textarea.style.overflowY = 'auto';
+            } else {
+                textarea.style.height = (newHeight > 180 ? newHeight : 180) + 'px';
+                textarea.style.overflowY = 'hidden';
+            }
+        }
+
+        function vorlageEinfuegen(key) {
+            if (!ACTIVE_PROFILE) return;
+            const textEinfuegen = ACTIVE_PROFILE.vorlagen[key];
+            if (!textEinfuegen) return;
+
+            const aktuellerText = textarea.value.trim();
+            textarea.value = aktuellerText === "" ? textEinfuegen : aktuellerText + "\n\n" + textEinfuegen;
+            localStorage.setItem("aktueller_entwurf", textarea.value); 
+            autoResize();
+            updateSubmitButtonState();
+        }
+
+        function resetForm() {
+            textarea.value = "";
+            kiSelect.value = "keine";
+            geminiSelect.value = "keine";
+            loeschSliderContainer.classList.remove("show");
+            localStorage.removeItem("aktueller_entwurf"); 
+            clearMesswerte();
+            autoResize();
+            updateSubmitButtonState();
+            overlay.style.display = "none";
+        }
+
+        async function sendBleData(text) {
+            const fullText = text + "\x04";
+            const encoder = new TextEncoder();
+            const dataBytes = encoder.encode(fullText);
+            const chunkSize = 128;
+            for (let offset = 0; offset < dataBytes.length; offset += chunkSize) {
+                const chunk = dataBytes.slice(offset, offset + chunkSize);
+                await rxCharacteristic.writeValueWithResponse(chunk);
+                const prozent = Math.round(((offset + chunk.length) / dataBytes.length) * 100);
+                countdownEl.innerText = `Übertrage: ${prozent}%`;
+            }
+        }
+
+        async function handleFormSubmit(event) {
+            if (event) event.preventDefault();
+            if (!ACTIVE_PROFILE) return false;
+
+            const selectedProvider = document.querySelector('input[name="provider"]:checked');
+            const selectedProviderVal = selectedProvider ? selectedProvider.value : 'chatgpt';
+            const activeSelect = (selectedProviderVal === 'chatgpt') ? kiSelect : geminiSelect;
+            const kiAuswahl = activeSelect.value;
+            
+            const basisText = textarea.value;
+            const messwerteText = formatMesswerteFuerAusgabe();
+            const textMitMesswerten = basisText + messwerteText;
+
+            if (kiAuswahl !== "keine") {
+                if (!basisText.trim()) {
+                    alert("Bitte schreiben oder wählen Sie zuerst einen Text.");
+                    return false;
+                }
+
+                const basisPrompt = ACTIVE_PROFILE.prompts[kiAuswahl] || "";
+                const promptString = basisPrompt + textMitMesswerten;
+
+                localStorage.setItem("letzter_ki_gesendeter_text", basisText);
+                
+                inZwischenablageKopieren(promptString);
+
+                let targetUrl = selectedProviderVal === 'chatgpt' 
+                    ? "https://chatgpt.com/?q=" + encodeURIComponent(promptString)
+                    : "https://gemini.google.com/";
+
+                window.open(targetUrl, "_blank");
+                
+                resetForm();
+                return false; 
+            }
+
+            if (!rxCharacteristic) {
+                alert("Bitte verbinden Sie zuerst das Bluetooth-Gerät.");
+                return false;
+            }
+
+            localStorage.setItem("letzter_gesendeter_text", basisText);
+            overlay.style.display = "flex";
+            loadingDiv.style.display = "block";
+            successDiv.style.display = "none";
+            countdownEl.innerText = "Übertragung startet...";
+
+            try {
+                await sendBleData(textMitMesswerten);
+                countdownEl.innerText = "Übertragen. Gerät schreibt...";
+            } catch (error) {
+                alert("Übertragungsfehler: " + error.message);
+                overlay.style.display = "none";
+            }
+            return false;
+        }
+
+        // Event-Listener
+        textarea.addEventListener("input", () => {
+            autoResize();
+            updateSubmitButtonState();
+            localStorage.setItem("aktueller_entwurf", textarea.value);
+        });
+
+        kiSelect.addEventListener("change", updateSubmitButtonState);
+        geminiSelect.addEventListener("change", updateSubmitButtonState);
+
+        document.querySelectorAll('input[name="gender"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                befuelleVorlagenButtons();
+                updateSubmitButtonState();
+            });
+        });
+
+        document.querySelectorAll('input[name="provider"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const val = e.target.value;
+                localStorage.setItem("saved_provider", val);
+                const kiLabel = document.getElementById("ki-label");
+                if (val === 'chatgpt') {
+                    document.getElementById("chatgpt-dropdown-container").style.display = "block";
+                    document.getElementById("gemini-dropdown-container").style.display = "none";
+                    geminiSelect.value = "keine";
+                    if (kiLabel) kiLabel.innerText = "ChatGPT-Unterstützung wählen (optional):";
+                } else {
+                    document.getElementById("chatgpt-dropdown-container").style.display = "none";
+                    document.getElementById("gemini-dropdown-container").style.display = "block";
+                    kiSelect.value = "keine";
+                    if (kiLabel) kiLabel.innerText = "Gemini-Unterstützung wählen (optional):";
+                }
+                updateSubmitButtonState();
+            });
+        });
+
+        window.addEventListener("DOMContentLoaded", () => {
+            renderMesswerteInput();
+            renderEkgChecklist();
+            
+            const gespeicherterEntwurf = localStorage.getItem("aktueller_entwurf");
+            if (gespeicherterEntwurf) textarea.value = gespeicherterEntwurf;
+
+            const savedProvider = localStorage.getItem("saved_provider") || "chatgpt";
+            const radio = document.getElementById(`provider-${savedProvider}`);
+            if (radio) {
+                radio.checked = true;
+                const kiLabel = document.getElementById("ki-label");
+                if (savedProvider === 'chatgpt') {
+                    document.getElementById("chatgpt-dropdown-container").style.display = "block";
+                    document.getElementById("gemini-dropdown-container").style.display = "none";
+                    if (kiLabel) kiLabel.innerText = "ChatGPT-Unterstützung wählen (optional):";
+                } else {
+                    document.getElementById("chatgpt-dropdown-container").style.display = "none";
+                    document.getElementById("gemini-dropdown-container").style.display = "block";
+                    if (kiLabel) kiLabel.innerText = "Gemini-Unterstützung wählen (optional):";
+                }
+            }
+        });
     </script>
 </body>
 </html>
