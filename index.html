@@ -860,6 +860,7 @@
             { id: "ekg-tachy", label: "Tachykardie" }
         ];
 
+        // Synchrones und fehlerfreies Kopieren in die Zwischenablage
         function inZwischenablageKopieren(text) {
             const tempTextArea = document.createElement("textarea");
             tempTextArea.value = text;
@@ -878,6 +879,27 @@
         }
 
         // ==========================================
+        // AUTH-STATUS DER APP ÜBERWACHEN
+        // ==========================================
+        auth.onAuthStateChanged(async (user) => {
+            const loginScreen = document.getElementById("login-screen");
+            const appScreen = document.getElementById("app-screen");
+            const editScreen = document.getElementById("editor-screen");
+
+            if (user) {
+                loginScreen.style.display = "none";
+                editScreen.style.display = "none";
+                appScreen.style.display = "block";
+                await ladeBenutzerProfil(user.uid);
+            } else {
+                appScreen.style.display = "none";
+                editScreen.style.display = "none";
+                loginScreen.style.display = "block";
+                ACTIVE_PROFILE = null;
+            }
+        });
+
+        // ==========================================
         // PROFIL AUS CLOUD FIRESTORE LADEN ODER INITIALISIEREN
         // ==========================================
         async function ladeBenutzerProfil(uid) {
@@ -886,7 +908,7 @@
                 let doc = await docRef.get();
 
                 if (!doc.exists) {
-                    console.log("Kein Profil dokumentiert. Versuche Standard-Einstellungen aus Firebase globalSettings...");
+                    console.log("Kein Profil dokumentiert. Lade Standard-Einstellungen aus Firebase globalSettings...");
                     
                     let baseVorlagen = LOCAL_DEFAULT_VORLAGEN;
                     let basePrompts = DEFAULT_PROMPTS;
@@ -898,15 +920,31 @@
                         if (globalDoc.exists) {
                             baseVorlagen = globalDoc.data().vorlagen || LOCAL_DEFAULT_VORLAGEN;
                             basePrompts = globalDoc.data().prompts || DEFAULT_PROMPTS;
-                            console.log("Standardvorlagen erfolgreich aus globalSettings bezogen.");
+                            console.log("Standardvorlagen erfolgreich aus Firestore globalSettings bezogen.");
                         } else {
-                            console.log("globalSettings leer. Versuche, sie mit lokalen Daten zu befüllen...");
-                            await globalDefaultsRef.set({ vorlagen: LOCAL_DEFAULT_VORLAGEN, prompts: DEFAULT_PROMPTS });
+                            console.log("globalSettings leer. Initialisiere mit lokaler templates.json...");
+                            try {
+                                const pfad = window.location.pathname.includes('/RetterProtokoll') 
+                                    ? '/RetterProtokoll/templates.json' 
+                                    : 'templates.json';
+
+                                const response = await fetch(pfad);
+                                if (response.ok) {
+                                    const daten = await response.json();
+                                    baseVorlagen = daten.vorlagen || {};
+                                    basePrompts = daten.prompts || {};
+                                    
+                                    await globalDefaultsRef.set({ vorlagen: baseVorlagen, prompts: basePrompts });
+                                }
+                            } catch (e) {
+                                console.error("Absicherung fehlgeschlagen: ", e);
+                            }
                         }
                     } catch (rulesError) {
                         console.warn("Firestore blockiert globale Abfrage (oder offline). Nutze lokalen Standard-Fallback:", rulesError);
                     }
 
+                    // Anzeigenamen bestimmen (E-Mail-Präfix)
                     let displayName = "Retter";
                     if (auth.currentUser && auth.currentUser.email) {
                         const nameRaw = auth.currentUser.email.split('@')[0];
@@ -929,8 +967,23 @@
                 befuelleVorlagenButtons();
                 anpassenKiDropdowns();
             } catch (err) {
-                console.error("Schwerer Fehler beim Laden des Profils:", err);
-                alert("Fehler beim Laden des Profils. Verbindung oder Firebase prüfen.");
+                console.error("Schwerer Ausnahmefehler beim Laden des Profils:", err);
+                
+                // Ultimative Offline-Ausweichlösung im RAM, falls Firestore komplett blockiert ist
+                let offlineName = "Retter (Offline)";
+                if (auth.currentUser && auth.currentUser.email) {
+                    const nameRaw = auth.currentUser.email.split('@')[0];
+                    offlineName = nameRaw.charAt(0).toUpperCase() + nameRaw.slice(1) + " (Offline)";
+                }
+                ACTIVE_PROFILE = {
+                    id: uid,
+                    name: offlineName,
+                    vorlagen: LOCAL_DEFAULT_VORLAGEN,
+                    prompts: DEFAULT_PROMPTS
+                };
+                document.getElementById("app-title").innerText = `RetterProtokoll (${ACTIVE_PROFILE.name})`;
+                befuelleVorlagenButtons();
+                anpassenKiDropdowns();
             }
         }
 
@@ -1020,7 +1073,7 @@
             return key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
         }
 
-        // Befüllt das dynamische, geteilte KI-Dropdown
+        // Geteilte Prompts laden und dem Dropdown übergeben
         function anpassenKiDropdowns() {
             const kiContainer = document.getElementById("ki-selection-container");
             const restoreOptKi = document.getElementById("restore-opt-ki");
@@ -1053,6 +1106,7 @@
                     if (restoreSourceBt) restoreSourceBt.checked = true;
                 }
             }
+            updateSubmitButtonState();
         }
 
         // ==========================================
@@ -1217,34 +1271,45 @@
         // ==========================================
         // BLUETOOTH & MESSWERTE LOGIK
         // ==========================================
-        async function connectBluetooth() {
+        function connectBluetooth() {
             if (!navigator.bluetooth) {
                 alert("Web Bluetooth wird von diesem Browser nicht unterstützt.");
                 return;
             }
-            try {
-                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Suche...";
-                bleDevice = await navigator.bluetooth.requestDevice({
-                    filters: [{ services: [BLE_SERVICE_UUID] }]
-                });
+            connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Suche...";
+            navigator.bluetooth.requestDevice({
+                filters: [{ services: [BLE_SERVICE_UUID] }]
+            })
+            .then(device => {
+                bleDevice = device;
                 connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Verbinde...";
-                const server = await bleDevice.gatt.connect();
-                const service = await server.getPrimaryService(BLE_SERVICE_UUID);
-                rxCharacteristic = await service.getCharacteristic(BLE_RX_UUID);
-                txCharacteristic = await service.getCharacteristic(BLE_TX_UUID);
-                await txCharacteristic.startNotifications();
+                return device.gatt.connect();
+            })
+            .then(server => {
+                return server.getPrimaryService(BLE_SERVICE_UUID);
+            })
+            .then(service => {
+                return Promise.all([
+                    service.getCharacteristic(BLE_RX_UUID).then(char => rxCharacteristic = char),
+                    service.getCharacteristic(BLE_TX_UUID).then(char => txCharacteristic = char)
+                ]);
+            })
+            .then(() => {
+                return txCharacteristic.startNotifications();
+            })
+            .then(() => {
                 txCharacteristic.addEventListener('characteristicvaluechanged', handleBleNotification);
-
                 connectBleBtn.innerHTML = BT_ICON_SVG + " " + (bleDevice.name ? bleDevice.name.substring(0, 10) : "Verbunden");
                 connectBleBtn.style.background = "#2563eb";
                 bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
                 updateSubmitButtonState();
-            } catch (error) {
+            })
+            .catch(error => {
                 console.error("Bluetooth Fehler: ", error);
                 connectBleBtn.innerHTML = BT_ICON_SVG + " Fehler";
                 connectBleBtn.style.background = "#dc2626";
                 onDisconnected();
-            }
+            });
         }
 
         function onDisconnected() {
@@ -1273,15 +1338,12 @@
             }
         }
 
-        async function sendeStopSignal() {
+        function sendeStopSignal() {
             if (!rxCharacteristic) return;
-            try {
-                countdownEl.innerText = "Abbruchsignal wird gesendet...";
-                const encoder = new TextEncoder();
-                await rxCharacteristic.writeValueWithResponse(encoder.encode("STOP"));
-            } catch (error) {
-                console.error(error);
-            }
+            countdownEl.innerText = "Abbruchsignal wird gesendet...";
+            const encoder = new TextEncoder();
+            rxCharacteristic.writeValueWithResponse(encoder.encode("STOP"))
+            .catch(err => console.error(err));
         }
 
         function zeigeLoeschSlider() {
@@ -1560,23 +1622,39 @@
             overlay.style.display = "none";
         }
 
-        async function sendBleData(text) {
+        function sendBleData(text) {
             const fullText = text + "\x04";
             const encoder = new TextEncoder();
             const dataBytes = encoder.encode(fullText);
             const chunkSize = 128;
-            for (let offset = 0; offset < dataBytes.length; offset += chunkSize) {
-                const chunk = dataBytes.slice(offset, offset + chunkSize);
-                await rxCharacteristic.writeValueWithResponse(chunk);
-                const prozent = Math.round(((offset + chunk.length) / dataBytes.length) * 100);
-                countdownEl.innerText = `Übertrage: ${prozent}%`;
+            
+            let offset = 0;
+            function writeNextChunk() {
+                if (offset < dataBytes.length) {
+                    const chunk = dataBytes.slice(offset, offset + chunkSize);
+                    rxCharacteristic.writeValueWithResponse(chunk)
+                    .then(() => {
+                        offset += chunkSize;
+                        const prozent = Math.round((offset / dataBytes.length) * 100);
+                        countdownEl.innerText = `Übertrage: ${prozent > 100 ? 100 : prozent}%`;
+                        writeNextChunk();
+                    })
+                    .catch(err => {
+                        console.error("Fehler beim Senden des Chunks:", err);
+                        alert("Übertragungsfehler.");
+                        overlay.style.display = "none";
+                    });
+                } else {
+                    countdownEl.innerText = "Übertragen. Gerät schreibt...";
+                }
             }
+            writeNextChunk();
         }
 
         // ==========================================
         // AUSFUEHREN DES GEWUEHNTEN ABSENDENS
         // ==========================================
-        async function handleFormSubmit(event) {
+        function handleFormSubmit(event) {
             if (event) event.preventDefault();
             if (!ACTIVE_PROFILE) return false;
 
@@ -1604,7 +1682,7 @@
                 inZwischenablageKopieren(promptString);
 
                 let targetUrl = selectedProviderVal === 'chatgpt' 
-                    ? "https://chatgpt.com/?q=" + encodeURIComponent(promptString)
+                    ? "https://chatgpt.com/" 
                     : "https://gemini.google.com/";
 
                 // 2. Direktes Öffnen ohne Verzögerungen, um den Pop-up-Blocker zu passieren
@@ -1626,13 +1704,7 @@
             successDiv.style.display = "none";
             countdownEl.innerText = "Übertragung startet...";
 
-            try {
-                await sendBleData(textMitMesswerten);
-                countdownEl.innerText = "Übertragen. Gerät schreibt...";
-            } catch (error) {
-                alert("Übertragungsfehler: " + error.message);
-                overlay.style.display = "none";
-            }
+            sendBleData(textMitMesswerten);
             return false;
         }
 
