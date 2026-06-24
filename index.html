@@ -764,7 +764,7 @@
             
             <textarea name="t" id="freitext" placeholder="Wähle eine Vorlage oder tippe hier freien Text..." autocomplete="off"></textarea>
 
-            <button type="submit" id="submit-btn" class="btn-disabled" disabled>3. Text senden</button>
+            <button type="submit" id="submit-btn" class="btn-disabled" disabled>Text senden</button>
 
             <div class="restore-subtle">
                 <div class="restore-selector">
@@ -894,12 +894,27 @@
 
         const BT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 -960 960 960" width="1.4em" fill="currentColor" style="vertical-align:middle; margin-right:4px; display:inline-block;"><path d="M440-80v-304L256-200l-56-56 224-224-224-224 56-56 184 184v-304h40l228 228-172 172 172 172L480-80h-40Zm80-496 76-76-76-74v150Zm0 342 76-74-76-76v150Z"/></svg>`;
 
+        // Helper zur dynamischen und fehlertoleranten Bestimmung des Installationspfads
+        function ermittleRessourcenPfad(dateiname) {
+            let pfad = dateiname;
+            const pathnameLower = window.location.pathname.toLowerCase();
+            if (pathnameLower.includes('/retterprotokoll')) {
+                const segments = window.location.pathname.split('/');
+                const repoIndex = segments.findIndex(seg => seg.toLowerCase() === 'retterprotokoll');
+                if (repoIndex !== -1) {
+                    pfad = '/' + segments.slice(1, repoIndex + 1).join('/') + '/' + dateiname;
+                }
+            }
+            return pfad;
+        }
+
         // ==========================================
         // SERVICE WORKER LOGIK
         // ==========================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/RetterProtokoll/sw.js', { updateViaCache: 'none' })
+                const swPfad = ermittleRessourcenPfad('sw.js');
+                navigator.serviceWorker.register(swPfad, { updateViaCache: 'none' })
                 .then(reg => {
                     if (reg.waiting) zeigeUpdateBanner(reg.waiting);
                     reg.addEventListener('updatefound', () => {
@@ -1038,26 +1053,38 @@
 
         async function initialisiereNeuesProfil(userId, name) {
             try {
-                const pfad = window.location.pathname.includes('/RetterProtokoll') 
-                    ? '/RetterProtokoll/templates.json' 
-                    : 'templates.json';
-
-                const response = await fetch(pfad);
-                if (!response.ok) throw new Error("templates.json fehlt");
-                const data = await response.json();
+                console.log("Lade Standard-Vorlagen aus Firestore (globalSettings/defaultTemplates)...");
                 
-                const standardProfil = data.profiles[0]; 
+                // Holen der Default-Konfiguration direkt aus der Cloud-Datenbank
+                const defaultTemplatesDoc = await db.collection("globalSettings").doc("defaultTemplates").get();
+                
+                if (!defaultTemplatesDoc.exists) {
+                    throw new Error("Standardvorlagen-Dokument existiert nicht in globalSettings.");
+                }
+
+                const defaultData = defaultTemplatesDoc.data();
 
                 const neuesProfil = {
                     id: userId,
                     name: name,
-                    vorlagen: standardProfil.vorlagen,
-                    prompts: standardProfil.prompts || {}
+                    vorlagen: defaultData.vorlagen || {},
+                    prompts: defaultData.prompts || {}
                 };
 
                 await db.collection("users").doc(userId).set(neuesProfil);
+                console.log("Profil wurde erfolgreich initialisiert.");
             } catch (err) {
-                console.error("Fehler beim Initialisieren des Profils:", err);
+                console.error("Fehler beim Initialisieren des Profils aus der Firestore:", err);
+                alert("Fehler beim Abrufen der Standardvorlagen aus der Datenbank: " + err.message + "\nEin leeres Profil wurde angelegt.");
+                
+                // Robustheits-Fallback
+                const leeresProfil = {
+                    id: userId,
+                    name: name,
+                    vorlagen: {},
+                    prompts: {}
+                };
+                await db.collection("users").doc(userId).set(leeresProfil);
             }
         }
 
@@ -1537,16 +1564,16 @@
             if (text === "") {
                 submitBtn.disabled = true;
                 submitBtn.className = "btn-disabled";
-                submitBtn.innerText = "3. Text senden";
+                submitBtn.innerText = "Text senden";
             } else {
                 submitBtn.disabled = false;
                 if (kiAuswahl !== "keine") {
                     submitBtn.className = "btn-ki";
-                    submitBtn.innerText = "3. An KI senden";
+                    submitBtn.innerText = "An KI senden";
                 } else {
                     if (rxCharacteristic) {
                         submitBtn.className = "btn-device";
-                        submitBtn.innerText = "3. Über Bluetooth senden";
+                        submitBtn.innerText = "Über Bluetooth senden";
                     } else {
                         submitBtn.className = "btn-disabled";
                         submitBtn.innerText = "Bitte erst Bluetooth verbinden";
@@ -1617,6 +1644,7 @@
             });
         }
 
+        // Begrenzung der Zeichenlänge auf ein Maximum
         function limitLength(el, max) {
             if (el.value.length > max) el.value = el.value.slice(0, max);
         }
@@ -1780,6 +1808,7 @@
             updateSubmitButtonState();
         }
 
+        // Zurücksetzen des aktuellen Dokuments
         function resetForm() {
             textarea.value = "";
             kiSelect.value = "keine";
