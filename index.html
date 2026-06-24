@@ -106,31 +106,6 @@
             display: block; 
         }
 
-        /* Profil-Auswahlschirm */
-        .profile-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 20px;
-        }
-        .profile-btn {
-            background: var(--md-color-surface-container);
-            color: var(--md-color-on-surface);
-            border: 1px solid var(--md-color-outline-variant);
-            padding: 16px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: background-color 0.2s, border-color 0.2s;
-            text-align: center;
-        }
-        .profile-btn:hover {
-            background: var(--md-color-primary-container);
-            color: var(--md-color-on-primary-container);
-            border-color: var(--md-color-primary);
-        }
-
         label { 
             display: block; 
             text-align: left; 
@@ -584,8 +559,9 @@
         }
     </style>
 
-    <!-- FIREBASE SDKs (compat Versionen) -->
+    <!-- FIREBASE SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
@@ -594,32 +570,36 @@
         <button id="update-btn" style="width: auto; margin: 0 0 0 12px; padding: 6px 16px; background: white; color: var(--md-color-primary); font-weight: bold; font-size: 13px;">Aktualisieren</button>
     </div> 
 
-    <!-- 1. VORGESCHALTETE PROFILAUSWAHL -->
-    <div id="profile-selection-screen" class="card">
+    <!-- 1. LOGIN- & REGISTRIERUNGSSCHIRM -->
+    <div id="login-screen" class="card">
         <div class="title-container">
             <img class="title-logo" src="/RetterProtokoll/logo.png" alt="Logo">
-            <h2>Profil auswählen</h2>
-        </div>
-        <p style="text-align: center; color: var(--md-color-on-surface-variant);">Nummer wählen & deine Vorlagen laden.</p>
-        <div id="profile-list" class="profile-list">
-            <span style="color: var(--md-color-outline);">Lade Profile...</span>
+            <h2>RetterProtokoll Login</h2>
         </div>
         
-        <!-- Einstellungen-Button -->
-        <button type="button" class="secondary" style="margin-top: 24px;" onclick="zeigePasswortGate()">⚙️ Vorlagen verwalten</button>
-    </div>
+        <div id="auth-error-msg" style="color: var(--md-color-error); font-size: 13px; text-align: center; display: none; margin-bottom: 12px; font-weight: 500;"></div>
 
-    <!-- Passwort-Schutz Gate -->
-    <div id="password-gate-screen" class="card" style="display: none;">
-        <div class="title-container">
-            <h2>Bereich gesperrt</h2>
+        <!-- Tab-Auswahl (Anmelden / Registrieren) -->
+        <div class="segmented-control" style="width: 100%; margin-bottom: 20px; height: 38px;">
+            <input type="radio" id="tab-login" name="authtab" value="login" checked onchange="toggleAuthFields()">
+            <label for="tab-login">Anmelden</label>
+            <input type="radio" id="tab-register" name="authtab" value="register" onchange="toggleAuthFields()">
+            <label for="tab-register">Registrieren</label>
         </div>
-        <p style="color: var(--md-color-on-surface-variant); font-size: 14px;">Bitte Passwort eingeben, um Vorlagen zu bearbeiten:</p>
-        <input type="password" id="admin-pw-input" placeholder="Passwort eingeben..." autocomplete="off">
-        <div style="display: flex; gap: 8px;">
-            <button type="button" class="secondary" onclick="zurueckZurProfilauswahl()">Abbrechen</button>
-            <button type="button" class="btn-ki" onclick="pruefePasswort()">Bestätigen</button>
+
+        <!-- Name (Nur bei Registrierung sichtbar) -->
+        <div id="reg-name-field" style="display: none;">
+            <label for="auth-name">Name (z.B. 001 oder Sven):</label>
+            <input type="text" id="auth-name" placeholder="Rufname oder Funkkennung..." autocomplete="off">
         </div>
+
+        <label for="auth-email">E-Mail (oder z.B. 001@wache.de):</label>
+        <input type="email" id="auth-email" placeholder="E-Mail-Adresse..." autocomplete="username">
+
+        <label for="auth-password">Passwort:</label>
+        <input type="password" id="auth-password" placeholder="Passwort..." autocomplete="current-password">
+
+        <button type="button" id="auth-submit-btn" class="btn-ki" onclick="fuehreAuthAus()">Anmelden</button>
     </div>
 
     <!-- Vorlagen-Editor (Verwaltungsbereich) -->
@@ -628,9 +608,6 @@
             <h2>⚙️ Vorlagen verwalten</h2>
         </div>
         
-        <label for="editor-profile-select">Profil wählen:</label>
-        <select id="editor-profile-select" onchange="ladeEditorProfildaten()"></select>
-
         <label for="editor-template-select">Vorlage wählen:</label>
         <select id="editor-template-select" onchange="ladeEditorVorlagentext()"></select>
 
@@ -639,14 +616,8 @@
 
         <div style="display: flex; gap: 8px; margin-top: 10px;">
             <button type="button" class="btn-device" style="background: var(--md-color-success);" onclick="speichereVorlagenAenderung()">💾 In der Cloud speichern</button>
-            <button type="button" class="secondary" onclick="zurueckZurProfilauswahl()">Zurück</button>
+            <button type="button" class="secondary" onclick="zurueckZurHauptseite()">Zurück</button>
         </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--md-color-outline-variant); margin: 24px 0;">
-
-        <label for="new-pw-input">Editor-Passwort ändern:</label>
-        <input type="password" id="new-pw-input" placeholder="Neues Passwort...">
-        <button type="button" class="secondary" onclick="aenderePasswort()">Passwort aktualisieren</button>
     </div>
 
     <!-- 2. HAUPT-ANWENDUNG (Standardmäßig ausgeblendet) -->
@@ -656,8 +627,11 @@
                 <img id="header-logo" class="title-logo" src="/RetterProtokoll/logo.png" alt="Logo">
                 <h2 id="app-title">RetterProtokoll</h2>
             </div>
-            <!-- Profil wechseln Button -->
-            <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px;" onclick="zeigeProfilauswahl()">👤 Profil wechseln</button>
+            
+            <div style="display: flex; gap: 8px; margin-top: 10px; width: 100%; justify-content: flex-end;">
+                <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px;" onclick="zeigeEditor()">⚙️ Vorlagen bearbeiten</button>
+                <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px; border-color: var(--md-color-error); color: var(--md-color-error);" onclick="logoffUser()">Abmelden 🚪</button>
+            </div>
         </div>
         
         <form id="protokoll-form" method="POST" action="/" onsubmit="return handleFormSubmit(event)">
@@ -774,7 +748,7 @@
 
     <script>
         // ==========================================
-        // FIREBASE INITIALISIERUNG (EINGEFÜGTE KREDENTIALS)
+        // FIREBASE INITIALISIERUNG
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyDqbYce4Rkuk8AwWRWEprjc0lJquD2h1Gg",
@@ -788,19 +762,18 @@
         // Firebase starten
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
 
         // Offline-Persistence (Datencaching) aktivieren
         db.enablePersistence().catch((err) => {
-            if (err.code == 'failed-precondition') {
-                console.warn("Firestore-Caching nicht möglich (mehrere Tabs offen?)");
-            } else if (err.code == 'unimplemented') {
-                console.warn("Browser unterstützt kein Firestore-Caching");
-            }
+            console.warn("Firestore-Caching nicht möglich:", err.code);
         });
 
-        // ==========================================
-        // Bluetooth- & UI-Konfiguration
-        // ==========================================
+        // Globale Variablen für das aktive Profil des angemeldeten Benutzers
+        let ACTIVE_PROFILE = null;
+        let currentUser = null;
+
+        // Bluetooth-Spezifische UUIDs
         const BLE_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
         const BLE_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
         const BLE_TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
@@ -808,10 +781,6 @@
         let bleDevice = null;
         let rxCharacteristic = null;
         let txCharacteristic = null;
-
-        // Globale Variablen für Profile
-        let PROFILES_DATA = [];
-        let ACTIVE_PROFILE = null;
 
         const PARAMETER_CONFIG = [
             { id: "rr-sys", label: "RR Sys", unit: "mmHg", type: "number", maxLen: 3, placeholder: "120", class: "narrow", minPlaus: 50, maxPlaus: 240 },
@@ -874,39 +843,263 @@
         // Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/RetterProtokoll/sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    if (reg.waiting) zeigeUpdateBanner(reg.waiting);
-                    reg.addEventListener('updatefound', () => {
-                        const newWorker = reg.installing;
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                zeigeUpdateBanner(newWorker);
-                            }
-                        });
-                    });
-                });
-            });
-
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) {
-                    refreshing = true;
-                    window.location.reload();
-                }
+                navigator.serviceWorker.register('/RetterProtokoll/sw.js', { updateViaCache: 'none' });
             });
         }
 
-        function zeigeUpdateBanner(worker) {
-            const banner = document.getElementById('update-banner');
-            const btn = document.getElementById('update-btn');
-            if (banner && btn) {
-                banner.style.display = 'block';
-                btn.onclick = () => worker.postMessage({ action: 'skipWaiting' });
+        // ==========================================
+        // 2. AUTHENTICATION LOGIK
+        // ==========================================
+
+        // Überwacht, ob ein Benutzer an- oder abgemeldet ist
+        auth.onAuthStateChanged(async (user) => {
+            const loginScreen = document.getElementById("login-screen");
+            const appScreen = document.getElementById("app-screen");
+            const editorScreen = document.getElementById("editor-screen");
+
+            if (user) {
+                currentUser = user;
+                loginScreen.style.display = "none";
+                
+                // Lade das Profil des angemeldeten Benutzers aus Firestore (Sammlung 'users')
+                await ladeBenutzerProfil(user.uid);
+                
+                appScreen.style.display = "block";
+            } else {
+                currentUser = null;
+                ACTIVE_PROFILE = null;
+                appScreen.style.display = "none";
+                editorScreen.style.display = "none";
+                loginScreen.style.display = "block";
+            }
+        });
+
+        function toggleAuthFields() {
+            const isRegister = document.getElementById("tab-register").checked;
+            document.getElementById("reg-name-field").style.display = isRegister ? "block" : "none";
+            document.getElementById("auth-submit-btn").innerText = isRegister ? "Registrieren & starten" : "Anmelden";
+        }
+
+        async function fuehreAuthAus() {
+            const isRegister = document.getElementById("tab-register").checked;
+            const email = document.getElementById("auth-email").value.trim();
+            const password = document.getElementById("auth-password").value;
+            const name = document.getElementById("auth-name").value.trim();
+            const errorEl = document.getElementById("auth-error-msg");
+
+            errorEl.style.display = "none";
+
+            if (!email || !password) {
+                zegeAuthFehler("Bitte füllen Sie alle Felder aus.");
+                return;
+            }
+
+            try {
+                if (isRegister) {
+                    if (!name) {
+                        zegeAuthFehler("Bitte tragen Sie Ihren Namen ein.");
+                        return;
+                    }
+                    // Neuen Benutzer registrieren
+                    const cred = await auth.createUserWithEmailAndPassword(email, password);
+                    // Standardvorlagen für den Benutzer kopieren
+                    await initialisiereNeuesProfil(cred.user.uid, name);
+                } else {
+                    // Einloggen
+                    await auth.signInWithEmailAndPassword(email, password);
+                }
+            } catch (err) {
+                console.error(err);
+                zegeAuthFehler(uebersetzeFehlermeldung(err.code));
             }
         }
 
-        // Bluetooth
+        function logoffUser() {
+            auth.signOut().then(() => {
+                location.reload();
+            });
+        }
+
+        function zegeAuthFehler(text) {
+            const errorEl = document.getElementById("auth-error-msg");
+            errorEl.innerText = text;
+            errorEl.style.display = "block";
+        }
+
+        function uebersetzeFehlermeldung(code) {
+            switch(code) {
+                case "auth/invalid-email": return "Ungültige E-Mail-Adresse.";
+                case "auth/user-not-found": return "Benutzer wurde nicht gefunden.";
+                case "auth/wrong-password": return "Falsches Passwort.";
+                case "auth/email-already-in-use": return "Diese E-Mail-Adresse wird bereits verwendet.";
+                case "auth/weak-password": return "Das Passwort muss mindestens 6 Zeichen lang sein.";
+                default: return "Fehler bei der Anmeldung. Bitte Eingaben prüfen.";
+            }
+        }
+
+        // ==========================================
+        // 3. FIRESTORE DATENBANK-OPERATIONEN
+        // ==========================================
+
+        // Lädt die persönlichen Vorlagen des angemeldeten Benutzers
+        async function ladeBenutzerProfil(userId) {
+            try {
+                const docRef = db.collection("users").doc(userId);
+                const doc = await docRef.get();
+
+                if (doc.exists) {
+                    ACTIVE_PROFILE = doc.data();
+                    document.getElementById("app-title").innerText = `RetterProtokoll (${ACTIVE_PROFILE.name})`;
+                    befuelleVorlagenButtons();
+                    anpassenKiDropdowns();
+                } else {
+                    console.error("Kein Profil für diese ID gefunden.");
+                }
+            } catch (err) {
+                console.error("Fehler beim Laden des Profils:", err);
+            }
+        }
+
+        // Erstellt die Grund-Vorlagen, wenn sich ein Benutzer registriert
+        async function initialisiereNeuesProfil(userId, name) {
+            try {
+                // Wir ziehen die allerersten Standarddaten aus der lokalen templates.json
+                const pfad = window.location.pathname.includes('/RetterProtokoll') 
+                    ? '/RetterProtokoll/templates.json' 
+                    : 'templates.json';
+
+                const response = await fetch(pfad);
+                if (!response.ok) throw new Error("templates.json fehlt");
+                const data = await response.json();
+                
+                // Wir nehmen das erste Profil aus der templates.json als Vorlage für neue Benutzer
+                const standardProfil = data.profiles[0]; 
+
+                const neuesProfil = {
+                    id: userId,
+                    name: name,
+                    vorlagen: standardProfil.vorlagen,
+                    prompts: standardProfil.prompts || {}
+                };
+
+                // In Firestore unter users/{userId} abspeichern
+                await db.collection("users").doc(userId).set(neuesProfil);
+            } catch (err) {
+                console.error("Fehler beim Initialisieren des Profils:", err);
+            }
+        }
+
+        function anpassenKiDropdowns() {
+            const kiContainer = document.getElementById("ki-selection-container");
+            const restoreOptKi = document.getElementById("restore-opt-ki");
+            const restoreSourceBt = document.getElementById("restore-source-bt");
+            const restoreSourceKi = document.getElementById("restore-source-ki");
+
+            if (!ACTIVE_PROFILE) return;
+
+            const prompts = ACTIVE_PROFILE.prompts || {};
+            const hatPrompts = Object.keys(prompts).length > 0;
+
+            if (hatPrompts) {
+                kiContainer.style.display = "block";
+                
+                const chatgptSelect = document.getElementById("ki-select");
+                const geminiSelect = document.getElementById("gemini-select");
+
+                const befuellen = (selectEl, prefix) => {
+                    selectEl.innerHTML = '<option value="keine" selected>Keine KI (Text direkt senden)</option>';
+                    Object.keys(prompts).forEach(key => {
+                        if (key.startsWith(prefix)) {
+                            const opt = document.createElement("option");
+                            opt.value = key;
+                            const labelName = key.replace(prefix + "_", "").replace(/^\w/, c => c.toUpperCase());
+                            opt.innerText = `${prefix === 'chatgpt' ? 'ChatGPT' : 'Gemini'}: ${labelName}`;
+                            selectEl.appendChild(opt);
+                        }
+                    });
+                };
+
+                befuellen(chatgptSelect, "chatgpt");
+                befuellen(geminiSelect, "gemini");
+
+                if (restoreOptKi) restoreOptKi.style.display = "flex";
+            } else {
+                kiContainer.style.display = "none";
+                kiSelect.value = "keine";
+                geminiSelect.value = "keine";
+                if (restoreOptKi) restoreOptKi.style.display = "none";
+                if (restoreSourceKi && restoreSourceKi.checked) {
+                    if (restoreSourceBt) restoreSourceBt.checked = true;
+                }
+            }
+        }
+
+        // ==========================================
+        // 4. EDITOR LOGIK
+        // ==========================================
+        function zeigeEditor() {
+            if (!ACTIVE_PROFILE) return;
+            document.getElementById("app-screen").style.display = "none";
+            document.getElementById("editor-screen").style.display = "block";
+
+            // Füllt das Vorlagen-Dropdown im Editor
+            const templSelect = document.getElementById("editor-template-select");
+            templSelect.innerHTML = "";
+
+            Object.keys(ACTIVE_PROFILE.vorlagen || {}).forEach(key => {
+                const opt = document.createElement("option");
+                opt.value = key;
+                opt.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
+                templSelect.appendChild(opt);
+            });
+
+            ladeEditorVorlagentext();
+        }
+
+        function ladeEditorVorlagentext() {
+            const key = document.getElementById("editor-template-select").value;
+            if (ACTIVE_PROFILE && ACTIVE_PROFILE.vorlagen && key) {
+                document.getElementById("editor-template-text").value = ACTIVE_PROFILE.vorlagen[key];
+            } else {
+                document.getElementById("editor-template-text").value = "";
+            }
+        }
+
+        async function speichereVorlagenAenderung() {
+            const key = document.getElementById("editor-template-select").value;
+            const text = document.getElementById("editor-template-text").value;
+
+            if (ACTIVE_PROFILE && key && currentUser) {
+                ACTIVE_PROFILE.vorlagen[key] = text;
+                
+                try {
+                    // Update direkt in Firestore
+                    await db.collection("users").doc(currentUser.uid).set(ACTIVE_PROFILE);
+                    alert("Änderungen erfolgreich in der Cloud gespeichert!");
+                    befuelleVorlagenButtons();
+                } catch (err) {
+                    console.error("Firestore-Fehler beim Speichern:", err);
+                    alert("Speichern fehlgeschlagen. Keine Berechtigung oder offline.");
+                }
+            }
+        }
+
+        function zurueckZurHauptseite() {
+            document.getElementById("editor-screen").style.display = "none";
+            document.getElementById("app-screen").style.display = "block";
+            autoResize();
+            updateSubmitButtonState();
+        }
+
+        function zurueckZurProfilauswahl() {
+            // Unbenutzt, da Login-Screen jetzt davorliegt
+            auth.signOut();
+        }
+
+        // ==========================================
+        // Standard Bluetooth- & UI-Funktionen
+        // ==========================================
+
         async function connectBluetooth() {
             if (!navigator.bluetooth) {
                 alert("Web Bluetooth wird von diesem Browser nicht unterstützt.");
@@ -974,236 +1167,6 @@
             }
         }
 
-        // ==========================================
-        // LADE PROFILE AUS FIREBASE CLOUD FIRESTORE
-        // ==========================================
-        async function ladeProfile() {
-            try {
-                const docRef = db.collection("appConfig").doc("templates");
-                const doc = await docRef.get();
-
-                if (doc.exists) {
-                    PROFILES_DATA = doc.data().profiles || [];
-                    console.log("Profile erfolgreich aus der Cloud geladen.");
-                } else {
-                    console.log("Keine Cloud-Daten gefunden. Initialisiere aus templates.json...");
-                    const pfad = window.location.pathname.includes('/RetterProtokoll') 
-                        ? '/RetterProtokoll/templates.json' 
-                        : 'templates.json';
-
-                    const response = await fetch(pfad);
-                    if (!response.ok) throw new Error("Fehler beim Laden der templates.json");
-                    const data = await response.json();
-                    PROFILES_DATA = data.profiles || [];
-                    
-                    await docRef.set({ profiles: PROFILES_DATA });
-                }
-                
-                baueProfilAuswahlliste();
-
-                const gespeichertesProfilId = localStorage.getItem("aktives_profil_id");
-                if (gespeichertesProfilId) {
-                    const profil = PROFILES_DATA.find(p => p.id === gespeichertesProfilId);
-                    if (profil) {
-                        waehleProfil(profil);
-                        return;
-                    }
-                }
-                zeigeProfilauswahl();
-            } catch (err) {
-                console.error("Cloud-Ladefehler:", err);
-                document.getElementById("profile-list").innerHTML = '<span style="color: var(--md-color-error)">Fehler beim Laden (Offline?)</span>';
-            }
-        }
-
-        function baueProfilAuswahlliste() {
-            const container = document.getElementById("profile-list");
-            container.innerHTML = "";
-            PROFILES_DATA.forEach(p => {
-                const btn = document.createElement("button");
-                btn.type = "button";
-                btn.className = "profile-btn";
-                btn.innerText = p.name;
-                btn.onclick = () => waehleProfil(p);
-                container.appendChild(btn);
-            });
-        }
-
-        function waehleProfil(profil) {
-            ACTIVE_PROFILE = profil;
-            localStorage.setItem("aktives_profil_id", profil.id);
-            document.getElementById("app-title").innerText = `RetterProtokoll (${profil.name})`;
-            
-            befuelleVorlagenButtons();
-            
-            const kiContainer = document.getElementById("ki-selection-container");
-            const restoreOptKi = document.getElementById("restore-opt-ki");
-            const restoreSourceBt = document.getElementById("restore-source-bt");
-            const restoreSourceKi = document.getElementById("restore-source-ki");
-            
-            const hatPrompts = profil.prompts && Object.keys(profil.prompts).length > 0;
-
-            if (hatPrompts) {
-                kiContainer.style.display = "block";
-                anpassenKiDropdowns(profil.prompts);
-                if (restoreOptKi) restoreOptKi.style.display = "flex";
-            } else {
-                kiContainer.style.display = "none";
-                kiSelect.value = "keine";
-                geminiSelect.value = "keine";
-                if (restoreOptKi) restoreOptKi.style.display = "none";
-                if (restoreSourceKi && restoreSourceKi.checked) {
-                    if (restoreSourceBt) restoreSourceBt.checked = true;
-                }
-            }
-            
-            document.getElementById("profile-selection-screen").style.display = "none";
-            document.getElementById("password-gate-screen").style.display = "none";
-            document.getElementById("editor-screen").style.display = "none";
-            document.getElementById("app-screen").style.display = "block";
-            
-            autoResize();
-            updateSubmitButtonState();
-        }
-
-        function anpassenKiDropdowns(prompts) {
-            const chatgptSelect = document.getElementById("ki-select");
-            const geminiSelect = document.getElementById("gemini-select");
-
-            const befuellen = (selectEl, prefix) => {
-                selectEl.innerHTML = '<option value="keine" selected>Keine KI (Text direkt senden)</option>';
-                Object.keys(prompts).forEach(key => {
-                    if (key.startsWith(prefix)) {
-                        const opt = document.createElement("option");
-                        opt.value = key;
-                        const labelName = key.replace(prefix + "_", "").replace(/^\w/, c => c.toUpperCase());
-                        opt.innerText = `${prefix === 'chatgpt' ? 'ChatGPT' : 'Gemini'}: ${labelName}`;
-                        selectEl.appendChild(opt);
-                    }
-                });
-            };
-
-            befuellen(chatgptSelect, "chatgpt");
-            befuellen(geminiSelect, "gemini");
-        }
-
-        function zeigeProfilauswahl() {
-            document.getElementById("profile-selection-screen").style.display = "block";
-            document.getElementById("password-gate-screen").style.display = "none";
-            document.getElementById("editor-screen").style.display = "none";
-            document.getElementById("app-screen").style.display = "none";
-        }
-
-        /* Passwort-Gate & Editor Logik */
-        function zeigePasswortGate() {
-            document.getElementById("profile-selection-screen").style.display = "none";
-            document.getElementById("password-gate-screen").style.display = "block";
-            document.getElementById("admin-pw-input").value = "";
-            document.getElementById("admin-pw-input").focus();
-        }
-
-        function pruefePasswort() {
-            const eingegebenesPw = document.getElementById("admin-pw-input").value;
-            const gespeichertesPw = localStorage.getItem("editor_password") || "112";
-
-            if (eingegebenesPw === gespeichertesPw) {
-                zeigeEditor();
-            } else {
-                alert("Falsches Passwort!");
-            }
-        }
-
-        function zurueckZurProfilauswahl() {
-            document.getElementById("password-gate-screen").style.display = "none";
-            document.getElementById("editor-screen").style.display = "none";
-            document.getElementById("profile-selection-screen").style.display = "block";
-        }
-
-        function zeigeEditor() {
-            document.getElementById("password-gate-screen").style.display = "none";
-            document.getElementById("editor-screen").style.display = "block";
-
-            // Profile in das Dropdown laden
-            const profSelect = document.getElementById("editor-profile-select");
-            profSelect.innerHTML = "";
-            PROFILES_DATA.forEach(p => {
-                const opt = document.createElement("option");
-                opt.value = p.id;
-                opt.innerText = p.name;
-                profSelect.appendChild(opt);
-            });
-
-            ladeEditorProfildaten();
-        }
-
-        function ladeEditorProfildaten() {
-            const profId = document.getElementById("editor-profile-select").value;
-            const profil = PROFILES_DATA.find(p => p.id === profId);
-            if (!profil) return;
-
-            const templSelect = document.getElementById("editor-template-select");
-            templSelect.innerHTML = "";
-
-            Object.keys(profil.vorlagen || {}).forEach(key => {
-                const opt = document.createElement("option");
-                opt.value = key;
-                opt.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
-                templSelect.appendChild(opt);
-            });
-
-            ladeEditorVorlagentext();
-        }
-
-        function ladeEditorVorlagentext() {
-            const profId = document.getElementById("editor-profile-select").value;
-            const key = document.getElementById("editor-template-select").value;
-            const profil = PROFILES_DATA.find(p => p.id === profId);
-
-            if (profil && profil.vorlagen && key) {
-                document.getElementById("editor-template-text").value = profil.vorlagen[key];
-            } else {
-                document.getElementById("editor-template-text").value = "";
-            }
-        }
-
-        // ==========================================
-        // SPEICHERE VORLAGEN IN CLOUD FIRESTORE
-        // ==========================================
-        async function speichereVorlagenAenderung() {
-            const profId = document.getElementById("editor-profile-select").value;
-            const key = document.getElementById("editor-template-select").value;
-            const text = document.getElementById("editor-template-text").value;
-
-            const index = PROFILES_DATA.findIndex(p => p.id === profId);
-            if (index !== -1 && key) {
-                PROFILES_DATA[index].vorlagen[key] = text;
-                
-                try {
-                    await db.collection("appConfig").doc("templates").set({ profiles: PROFILES_DATA });
-                    alert("Vorlage erfolgreich in der Cloud gespeichert und synchronisiert!");
-                    
-                    if (ACTIVE_PROFILE && ACTIVE_PROFILE.id === profId) {
-                        ACTIVE_PROFILE = PROFILES_DATA[index];
-                        befuelleVorlagenButtons();
-                    }
-                } catch (err) {
-                    console.error("Firestore-Speicherfehler:", err);
-                    alert("Speichern fehlgeschlagen. Überprüfen Sie Ihre Internetverbindung.");
-                }
-            }
-        }
-
-        function aenderePasswort() {
-            const neuesPw = document.getElementById("new-pw-input").value.trim();
-            if (neuesPw.length < 1) {
-                alert("Das Passwort darf nicht leer sein.");
-                return;
-            }
-            localStorage.setItem("editor_password", neuesPw);
-            document.getElementById("new-pw-input").value = "";
-            alert("Passwort erfolgreich geändert!");
-        }
-
         function befuelleVorlagenButtons() {
             vorlageScrollContainer.innerHTML = '';
             if (!ACTIVE_PROFILE) return;
@@ -1230,13 +1193,6 @@
                 btn.onclick = () => vorlageEinfuegen(key);
                 vorlageScrollContainer.appendChild(btn);
             });
-        }
-
-        // ==========================================
-        // Hilfsfunktionen & Eventlistener
-        // ==========================================
-        function formatiereKey(key) {
-            return key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
         }
 
         function zeigeLoeschSlider() {
@@ -1284,26 +1240,11 @@
             }
         }
 
-        function inZwischenablageKopieren(text) {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                return navigator.clipboard.writeText(text);
-            } else {
-                const tempTextArea = document.createElement("textarea");
-                tempTextArea.value = text;
-                tempTextArea.style.position = "fixed"; 
-                document.body.appendChild(tempTextArea);
-                tempTextArea.focus();
-                tempTextArea.select();
-                try { document.execCommand("copy"); } catch (err) {}
-                document.body.removeChild(tempTextArea);
-                return Promise.resolve();
-            }
-        }
-
         function updateSubmitButtonState() {
             const text = textarea.value.trim();
-            const selectedProvider = document.querySelector('input[name="provider"]:checked').value;
-            const activeSelect = (selectedProvider === 'chatgpt') ? kiSelect : geminiSelect;
+            const selectedProvider = document.querySelector('input[name="provider"]:checked');
+            const selectedProviderVal = selectedProvider ? selectedProvider.value : 'chatgpt';
+            const activeSelect = (selectedProviderVal === 'chatgpt') ? kiSelect : geminiSelect;
             const kiAuswahl = activeSelect.value;
 
             if (text === "") {
@@ -1325,25 +1266,6 @@
                         submitBtn.disabled = true;
                     }
                 }
-            }
-        }
-
-        function anwendenAusgewaehltenText() {
-            const selectedSource = document.querySelector('input[name="restore-source"]:checked').value;
-            let gespeicherterText = "";
-            if (selectedSource === "bt") {
-                gespeicherterText = localStorage.getItem("letzter_gesendeter_text");
-            } else if (selectedSource === "ki") {
-                gespeicherterText = localStorage.getItem("letzter_ki_gesendeter_text");
-            }
-
-            if (gespeicherterText) {
-                textarea.value = gespeicherterText;
-                localStorage.setItem("aktueller_entwurf", gespeicherterText);
-                autoResize();
-                updateSubmitButtonState();
-            } else {
-                alert("Kein entsprechender Text im Speicher gefunden.");
             }
         }
 
@@ -1380,10 +1302,6 @@
                 label.appendChild(span);
                 container.appendChild(label);
             });
-        }
-
-        function limitLength(el, max) {
-            if (el.value.length > max) el.value = el.value.slice(0, max);
         }
 
         function renderMesswerteInput() {
@@ -1574,8 +1492,9 @@
             if (event) event.preventDefault();
             if (!ACTIVE_PROFILE) return false;
 
-            const selectedProvider = document.querySelector('input[name="provider"]:checked').value;
-            const activeSelect = (selectedProvider === 'chatgpt') ? kiSelect : geminiSelect;
+            const selectedProvider = document.querySelector('input[name="provider"]:checked');
+            const selectedProviderVal = selectedProvider ? selectedProvider.value : 'chatgpt';
+            const activeSelect = (selectedProviderVal === 'chatgpt') ? kiSelect : geminiSelect;
             const kiAuswahl = activeSelect.value;
             
             const basisText = textarea.value;
@@ -1595,7 +1514,7 @@
                 
                 inZwischenablageKopieren(promptString);
 
-                let targetUrl = selectedProvider === 'chatgpt' 
+                let targetUrl = selectedProviderVal === 'chatgpt' 
                     ? "https://chatgpt.com/?q=" + encodeURIComponent(promptString)
                     : "https://gemini.google.com/";
 
@@ -1662,10 +1581,9 @@
             });
         });
 
-        window.addEventListener("DOMContentLoaded", async () => {
+        window.addEventListener("DOMContentLoaded", () => {
             renderMesswerteInput();
             renderEkgChecklist();
-            await ladeProfile();
             
             const gespeicherterEntwurf = localStorage.getItem("aktueller_entwurf");
             if (gespeicherterEntwurf) textarea.value = gespeicherterEntwurf;
