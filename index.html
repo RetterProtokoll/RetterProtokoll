@@ -596,27 +596,35 @@
         <button type="button" id="auth-submit-btn" class="btn-ki" onclick="fuehreAuthAus()">Anmelden</button>
     </div>
 
-    <!-- Vorlagen-Editor (Verwaltungsbereich) -->
+    <!-- Vorlagen- & Prompt-Editor (Verwaltungsbereich) -->
     <div id="editor-screen" class="card" style="display: none;">
         <div class="title-container">
-            <h2>⚙️ Vorlagen verwalten</h2>
+            <h2>⚙️ Verwaltung</h2>
+        </div>
+
+        <!-- Auswahl: Bearbeite Vorlagen ODER Prompts -->
+        <div class="segmented-control" style="width: 100%; margin-bottom: 20px; height: 38px;">
+            <input type="radio" id="editor-tab-vorlagen" name="editortab" value="vorlagen" checked onchange="ladeEditorDaten()">
+            <label for="editor-tab-vorlagen">Vorlagen bearbeiten</label>
+            <input type="radio" id="editor-tab-prompts" name="editortab" value="prompts" onchange="ladeEditorDaten()">
+            <label for="editor-tab-prompts">Prompts bearbeiten</label>
         </div>
         
-        <label for="editor-template-select">Vorlage wählen:</label>
-        <select id="editor-template-select" onchange="ladeEditorVorlagentext()"></select>
+        <label id="editor-select-label" for="editor-item-select">Auswählen:</label>
+        <select id="editor-item-select" onchange="ladeAusgewaehltenText()"></select>
 
         <!-- Dynamisches Feld für Neuanlagen -->
         <div id="editor-new-name-container" style="display: none; margin-top: 10px;">
-            <label for="editor-new-name">Name der neuen Vorlage:</label>
-            <input type="text" id="editor-new-name" placeholder="z. B. ACS Aufklärung" autocomplete="off">
+            <label id="editor-new-name-label" for="editor-new-name">Name:</label>
+            <input type="text" id="editor-new-name" placeholder="z. B. Neuer Eintrag" autocomplete="off">
         </div>
 
-        <label for="editor-template-text">Inhalt bearbeiten:</label>
-        <textarea id="editor-template-text" placeholder="Text der Vorlage..."></textarea>
+        <label for="editor-text-area">Inhalt:</label>
+        <textarea id="editor-text-area" placeholder="Text eingeben..."></textarea>
 
         <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
-            <button type="button" class="btn-device" style="background: var(--md-color-success); flex: 1; min-width: 140px;" onclick="speichereVorlagenAenderung()">💾 In der Cloud speichern</button>
-            <button type="button" class="btn-device" id="editor-delete-btn" style="background: var(--md-color-error); width: auto;" onclick="loescheVorlage()">🗑️ Löschen</button>
+            <button type="button" class="btn-device" style="background: var(--md-color-success); flex: 1; min-width: 140px;" onclick="speichereAenderung()">💾 In der Cloud speichern</button>
+            <button type="button" class="btn-device" id="editor-delete-btn" style="background: var(--md-color-error); width: auto;" onclick="loescheEintrag()">🗑️ Löschen</button>
             <button type="button" class="secondary" style="width: auto;" onclick="zurueckZurHauptseite()">Zurück</button>
         </div>
     </div>
@@ -630,7 +638,7 @@
             </div>
             
             <div style="display: flex; gap: 8px; margin-top: 10px; width: 100%; justify-content: flex-end;">
-                <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px;" onclick="zeigeEditor()">⚙️ Vorlagen bearbeiten</button>
+                <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px;" onclick="zeigeEditor()">⚙️ Vorlagen & Prompts bearbeiten</button>
                 <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px; border-color: var(--md-color-error); color: var(--md-color-error);" onclick="logoffUser()">Abmelden 🚪</button>
             </div>
         </div>
@@ -875,38 +883,24 @@
                 let doc = await docRef.get();
 
                 if (!doc.exists) {
-                    console.log("Kein Profil dokumentiert. Lade Standard-Einstellungen aus Firebase globalSettings...");
+                    console.log("Kein Profil dokumentiert. Erstelle Standardprofil aus templates.json...");
                     
-                    // Standardvorlagen aus dem zentralen Firebase globalSettings Pfad laden
-                    const globalDefaultsRef = db.collection("globalSettings").doc("defaultTemplates");
-                    let globalDoc = await globalDefaultsRef.get();
-                    
-                    let baseVorlagen = {};
-                    let basePrompts = {};
+                    let standardTemplates = null;
+                    try {
+                        const pfad = window.location.pathname.includes('/RetterProtokoll') 
+                            ? '/RetterProtokoll/templates.json' 
+                            : 'templates.json';
 
-                    if (globalDoc.exists) {
-                        baseVorlagen = globalDoc.data().vorlagen || {};
-                        basePrompts = globalDoc.data().prompts || {};
-                        console.log("Standardvorlagen erfolgreich aus Firestore globalSettings bezogen.");
-                    } else {
-                        console.log("globalSettings leer. Initialisiere mit lokaler templates.json...");
-                        try {
-                            const pfad = window.location.pathname.includes('/RetterProtokoll') 
-                                ? '/RetterProtokoll/templates.json' 
-                                : 'templates.json';
-
-                            const response = await fetch(pfad);
-                            if (response.ok) {
-                                const daten = await response.json();
-                                baseVorlagen = daten.vorlagen || {};
-                                basePrompts = daten.prompts || {};
-                                
-                                await globalDefaultsRef.set({ vorlagen: baseVorlagen, prompts: basePrompts });
-                            }
-                        } catch (e) {
-                            console.error("Absicherung fehlgeschlagen: ", e);
+                        const response = await fetch(pfad);
+                        if (response.ok) {
+                            standardTemplates = await response.json();
                         }
+                    } catch (e) {
+                        console.warn("Fehler beim Abrufen der templates.json vom Server:", e);
                     }
+
+                    const vorlagenBasis = (standardTemplates && standardTemplates.vorlagen) ? standardTemplates.vorlagen : {};
+                    const promptsBasis = (standardTemplates && standardTemplates.prompts) ? standardTemplates.prompts : {};
 
                     // Anzeigenamen bestimmen (E-Mail-Präfix)
                     let displayName = "Retter";
@@ -918,8 +912,8 @@
                     const neuesProfil = {
                         id: uid,
                         name: displayName,
-                        vorlagen: baseVorlagen,
-                        prompts: basePrompts
+                        vorlagen: vorlagenBasis,
+                        prompts: promptsBasis
                     };
 
                     await docRef.set(neuesProfil);
@@ -1068,122 +1062,159 @@
         }
 
         // ==========================================
-        // EDITOR-BEREICH LOGIK (ERSTELLEN & LÖSCHEN)
+        // UNIFIED EDITOR (VORLAGEN & PROMPTS)
         // ==========================================
         function zeigeEditor() {
             if (!ACTIVE_PROFILE) return;
             document.getElementById("app-screen").style.display = "none";
             document.getElementById("editor-screen").style.display = "block";
+            ladeEditorDaten();
+        }
 
-            const templSelect = document.getElementById("editor-template-select");
-            templSelect.innerHTML = "";
+        // Lädt die Dropdown-Daten basierend auf dem gewählten Tab (Vorlagen oder Prompts)
+        function ladeEditorDaten() {
+            const isVorlagen = document.getElementById("editor-tab-vorlagen").checked;
+            const itemSelect = document.getElementById("editor-item-select");
+            const selectLabel = document.getElementById("editor-select-label");
+            const newNameLabel = document.getElementById("editor-new-name-label");
+            const newNameInput = document.getElementById("editor-new-name");
 
-            // Option zum Erstellen einer neuen Vorlage hinzufügen
+            itemSelect.innerHTML = "";
+
+            // Option zum Hinzufügen erstellen
             const newOpt = document.createElement("option");
             newOpt.value = "__new__";
-            newOpt.innerText = "🆕 + Neue Vorlage erstellen...";
-            templSelect.appendChild(newOpt);
+            
+            if (isVorlagen) {
+                selectLabel.innerText = "Vorlage wählen:";
+                newNameLabel.innerText = "Name der neuen Vorlage:";
+                newNameInput.placeholder = "z. B. ACS Aufklärung";
+                newOpt.innerText = "🆕 + Neue Vorlage erstellen...";
+            } else {
+                selectLabel.innerText = "Prompt wählen:";
+                newNameLabel.innerText = "Name des neuen Prompts:";
+                newNameInput.placeholder = "z. B. chatgpt_diagnose";
+                newOpt.innerText = "🆕 + Neuen Prompt erstellen...";
+            }
+            itemSelect.appendChild(newOpt);
 
-            // Vorhandene Vorlagen auflisten
-            Object.keys(ACTIVE_PROFILE.vorlagen || {}).forEach(key => {
+            // Vorhandene Elemente auflisten
+            const targetMap = isVorlagen ? ACTIVE_PROFILE.vorlagen : ACTIVE_PROFILE.prompts;
+            const keys = Object.keys(targetMap || {});
+
+            keys.forEach(key => {
                 const opt = document.createElement("option");
                 opt.value = key;
                 opt.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
-                templSelect.appendChild(opt);
+                itemSelect.appendChild(opt);
             });
 
-            // Setze Standardauswahl auf die erste vorhandene Vorlage, falls vorhanden
-            const keys = Object.keys(ACTIVE_PROFILE.vorlagen);
+            // Standardmäßig das erste Element auswählen, falls vorhanden
             if (keys.length > 0) {
-                templSelect.value = keys[0];
+                itemSelect.value = keys[0];
             } else {
-                templSelect.value = "__new__";
+                itemSelect.value = "__new__";
             }
 
-            ladeEditorVorlagentext();
+            ladeAusgewaehltenText();
         }
 
-        function ladeEditorVorlagentext() {
-            const key = document.getElementById("editor-template-select").value;
+        function ladeAusgewaehltenText() {
+            const isVorlagen = document.getElementById("editor-tab-vorlagen").checked;
+            const key = document.getElementById("editor-item-select").value;
             const newNameContainer = document.getElementById("editor-new-name-container");
             const deleteBtn = document.getElementById("editor-delete-btn");
+            const textArea = document.getElementById("editor-text-area");
 
             if (key === "__new__") {
                 newNameContainer.style.display = "block";
                 deleteBtn.style.display = "none";
-                document.getElementById("editor-template-text").value = "";
+                textArea.value = "";
                 document.getElementById("editor-new-name").value = "";
             } else {
                 newNameContainer.style.display = "none";
                 deleteBtn.style.display = "block";
-                document.getElementById("editor-template-text").value = ACTIVE_PROFILE.vorlagen[key];
+                const targetMap = isVorlagen ? ACTIVE_PROFILE.vorlagen : ACTIVE_PROFILE.prompts;
+                textArea.value = targetMap[key] || "";
             }
         }
 
-        async function speichereVorlagenAenderung() {
-            const key = document.getElementById("editor-template-select").value;
-            const text = document.getElementById("editor-template-text").value.trim();
+        async function speichereAenderung() {
+            const isVorlagen = document.getElementById("editor-tab-vorlagen").checked;
+            const key = document.getElementById("editor-item-select").value;
+            const text = document.getElementById("editor-text-area").value.trim();
 
             if (!text) {
-                alert("Der Inhalt der Vorlage darf nicht leer sein.");
+                alert("Der Inhalt darf nicht leer sein.");
                 return;
             }
 
             let finalKey = key;
+            const targetMap = isVorlagen ? ACTIVE_PROFILE.vorlagen : ACTIVE_PROFILE.prompts;
 
             if (key === "__new__") {
                 const title = document.getElementById("editor-new-name").value.trim();
                 if (!title) {
-                    alert("Bitte tragen Sie einen Namen für die neue Vorlage ein.");
+                    alert("Bitte tragen Sie einen Namen ein.");
                     return;
                 }
 
                 // Generiert einen sauberen Key im Schlangenformat
-                const finalKey = title.toLowerCase()
-                                     .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
-                                     .replace(/[^a-z0-9]/g, "_")
-                                     .replace(/_+/g, "_")
-                                     .replace(/^_+|_+$/g, "");
+                finalKey = title.toLowerCase()
+                                .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+                                .replace(/[^a-z0-9]/g, "_")
+                                .replace(/_+/g, "_")
+                                .replace(/^_+|_+$/g, "");
 
-                if (ACTIVE_PROFILE.vorlagen[finalKey]) {
-                    alert("Eine Vorlage mit diesem Namen existiert bereits.");
+                if (!finalKey) {
+                    alert("Ungültiger Name.");
                     return;
                 }
 
-                ACTIVE_PROFILE.vorlagen[finalKey] = text;
+                if (targetMap[finalKey]) {
+                    alert("Ein Eintrag mit diesem Namen existiert bereits.");
+                    return;
+                }
+
+                targetMap[finalKey] = text;
                 document.getElementById("editor-new-name").value = "";
             } else {
-                ACTIVE_PROFILE.vorlagen[finalKey] = text;
+                targetMap[finalKey] = text;
             }
 
             try {
+                // In Firestore speichern
                 await db.collection("users").doc(auth.currentUser.uid).set(ACTIVE_PROFILE);
-                alert("Vorlage erfolgreich gespeichert!");
+                alert("Erfolgreich in der Cloud gespeichert!");
                 
                 // Editor & Ansichten aktualisieren
-                zeigeEditor();
+                ladeEditorDaten();
                 befuelleVorlagenButtons();
+                anpassenKiDropdowns();
             } catch (err) {
                 console.error("Firestore-Fehler beim Speichern:", err);
                 alert("Speichern fehlgeschlagen. Keine Berechtigung oder offline.");
             }
         }
 
-        async function loescheVorlage() {
-            const key = document.getElementById("editor-template-select").value;
+        async function loescheEintrag() {
+            const isVorlagen = document.getElementById("editor-tab-vorlagen").checked;
+            const key = document.getElementById("editor-item-select").value;
             if (key === "__new__") return;
 
             const name = OPTIONEN_NAMEN[key] || formatiereKey(key);
+            const targetMap = isVorlagen ? ACTIVE_PROFILE.vorlagen : ACTIVE_PROFILE.prompts;
 
-            if (confirm(`Möchten Sie die Vorlage "${name}" wirklich dauerhaft löschen?`)) {
-                delete ACTIVE_PROFILE.vorlagen[key];
+            if (confirm(`Möchten Sie den Eintrag "${name}" wirklich dauerhaft löschen?`)) {
+                delete targetMap[key];
                 
                 try {
                     await db.collection("users").doc(auth.currentUser.uid).set(ACTIVE_PROFILE);
-                    alert("Vorlage erfolgreich gelöscht.");
+                    alert("Erfolgreich gelöscht.");
                     
-                    zeigeEditor();
+                    ladeEditorDaten();
                     befuelleVorlagenButtons();
+                    anpassenKiDropdowns();
                 } catch (err) {
                     console.error("Fehler beim Löschen:", err);
                     alert("Löschen fehlgeschlagen.");
