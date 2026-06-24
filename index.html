@@ -602,37 +602,73 @@
         <button type="button" id="auth-submit-btn" class="btn-ki" onclick="fuehreAuthAus()">Anmelden</button>
     </div>
 
-    <!-- Vorlagen-Editor (Verwaltungsbereich) -->
+      <!-- Vorlagen-, Prompt- & Passwort-Editor (Verwaltungsbereich) -->
     <div id="editor-screen" class="card" style="display: none;">
         <div class="title-container">
-            <h2>⚙️ Vorlagen verwalten</h2>
+            <h2>⚙️ Einstellungen & Verwaltung</h2>
         </div>
         
-        <label for="editor-template-select">Vorlage wählen:</label>
-        <select id="editor-template-select" onchange="ladeEditorVorlagentext()"></select>
-
-        <label for="editor-template-text">Inhalt bearbeiten:</label>
-        <textarea id="editor-template-text" placeholder="Text der Vorlage..."></textarea>
-
-        <div style="display: flex; gap: 8px; margin-top: 10px;">
-            <button type="button" class="btn-device" style="background: var(--md-color-success);" onclick="speichereVorlagenAenderung()">💾 In der Cloud speichern</button>
-            <button type="button" class="secondary" onclick="zurueckZurHauptseite()">Zurück</button>
+        <!-- Tab-Auswahl innerhalb des Editors -->
+        <div class="segmented-control" style="width: 100%; margin-bottom: 20px; height: 38px;">
+            <input type="radio" id="tab-edit-templates" name="editortab" value="templates" checked onchange="switchEditorTab()">
+            <label for="tab-edit-templates">Vorlagen</label>
+            <input type="radio" id="tab-edit-prompts" name="editortab" value="prompts" onchange="switchEditorTab()">
+            <label for="tab-edit-prompts">KI-Prompts</label>
+            <input type="radio" id="tab-edit-password" name="editortab" value="password" onchange="switchEditorTab()">
+            <label for="tab-edit-password">🔑 PW ändern</label>
         </div>
-    </div>
 
-    <!-- 2. HAUPT-ANWENDUNG (Standardmäßig ausgeblendet) -->
-    <div id="app-screen" class="card" style="display: none;">
-        <div class="title-container" style="justify-content: space-between; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <img id="header-logo" class="title-logo" src="/RetterProtokoll/logo.png" alt="Logo">
-                <h2 id="app-title">RetterProtokoll</h2>
+        <!-- Sektion für Vorlagen & Prompts -->
+        <div id="editor-content-section">
+            <!-- Formular zum Hinzufügen neuer Elemente -->
+            <div id="new-item-container" style="background: var(--md-color-surface-container); padding: 12px; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--md-color-outline-variant);">
+                <label id="new-item-label" for="new-item-key" style="margin-top: 0; font-size: 13px;">Neu erstellen:</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="new-item-key" placeholder="Name eingeben..." style="margin: 0; padding: 10px; font-size: 14px; flex: 1;">
+                    <button type="button" class="btn-ki" style="margin: 0; width: auto; padding: 10px 16px; font-size: 13px; min-height: auto;" onclick="erstelleNeuesElement()">➕ Neu</button>
+                </div>
+
+                <!-- Geschlechtsauswahl für neue Vorlagen (wird bei Prompts ausgeblendet) -->
+                <div id="new-item-gender-container" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 8px;">
+                    <span style="font-size: 13px; color: var(--md-color-on-surface-variant); font-weight: 500;">Zugehörigkeit / Filter:</span>
+                    <div class="segmented-control" style="height: 30px;">
+                        <input type="radio" id="new-gender-n" name="newgender" value="n" checked>
+                        <label for="new-gender-n">Neutral</label>
+                        
+                        <input type="radio" id="new-gender-m" name="newgender" value="m">
+                        <label for="new-gender-m">♂️ M</label>
+                        
+                        <input type="radio" id="new-gender-w" name="newgender" value="w">
+                        <label for="new-gender-w">♀️ W</label>
+                    </div>
+                </div>
             </div>
+
+            <label id="editor-select-label" for="editor-item-select">Auswählen:</label>
+            <select id="editor-item-select" onchange="ladeEditorInhalt()"></select>
+
+            <label id="editor-text-label" for="editor-item-text">Inhalt bearbeiten:</label>
+            <textarea id="editor-item-text" placeholder="Inhalt der Auswahl..."></textarea>
+
+            <button type="button" class="btn-device" style="background: var(--md-color-success); margin-bottom: 12px;" onclick="speichereEditorAenderung()">💾 In der Cloud speichern</button>
+        </div>
+
+        <!-- Sektion für Passwortänderung -->
+        <div id="editor-password-section" style="display: none;">
+            <div id="pw-error-msg" style="color: var(--md-color-error); font-size: 13px; text-align: center; display: none; margin-bottom: 12px; font-weight: 500;"></div>
             
-            <div style="display: flex; gap: 8px; margin-top: 10px; width: 100%; justify-content: flex-end;">
-                <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px;" onclick="zeigeEditor()">⚙️ Vorlagen bearbeiten</button>
-                <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px; border-color: var(--md-color-error); color: var(--md-color-error);" onclick="logoffUser()">Abmelden 🚪</button>
-            </div>
+            <label for="new-password">Neues Passwort:</label>
+            <input type="password" id="new-password" placeholder="Mindestens 6 Zeichen..." autocomplete="new-password">
+
+            <label for="new-password-confirm">Passwort bestätigen:</label>
+            <input type="password" id="new-password-confirm" placeholder="Passwort wiederholen..." autocomplete="new-password">
+
+            <button type="button" class="btn-ki" style="margin-bottom: 12px;" onclick="fuehrePasswortAenderungAus()">🔑 Passwort aktualisieren</button>
         </div>
+
+        <!-- Zurück-Button für alle Tabs -->
+        <button type="button" class="secondary" onclick="zurueckZurHauptseite()">Zurück</button>
+    </div>
         
         <form id="protokoll-form" method="POST" action="/" onsubmit="return handleFormSubmit(event)">
             
@@ -1052,61 +1088,226 @@
             }
         }
 
-        // ==========================================
-        // EDITOR LOGIK
+         // ==========================================
+        // ERWEITERTE EDITOR-, PROMPT- & EINSTELLUNGSLOGIK
         // ==========================================
         function zeigeEditor() {
             if (!ACTIVE_PROFILE) return;
             document.getElementById("app-screen").style.display = "none";
             document.getElementById("editor-screen").style.display = "block";
 
-            const templSelect = document.getElementById("editor-template-select");
-            templSelect.innerHTML = "";
-
-            Object.keys(ACTIVE_PROFILE.vorlagen || {}).forEach(key => {
-                const opt = document.createElement("option");
-                opt.value = key;
-                opt.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
-                templSelect.appendChild(opt);
-            });
-
-            ladeEditorVorlagentext();
+            document.getElementById("tab-edit-templates").checked = true;
+            switchEditorTab();
         }
 
-        function ladeEditorVorlagentext() {
-            const key = document.getElementById("editor-template-select").value;
-            if (ACTIVE_PROFILE && ACTIVE_PROFILE.vorlagen && key) {
-                document.getElementById("editor-template-text").value = ACTIVE_PROFILE.vorlagen[key];
+        function switchEditorTab() {
+            const selectedTab = document.querySelector('input[name="editortab"]:checked').value;
+            const contentSection = document.getElementById("editor-content-section");
+            const passwordSection = document.getElementById("editor-password-section");
+            const itemSelect = document.getElementById("editor-item-select");
+            const selectLabel = document.getElementById("editor-select-label");
+            const textLabel = document.getElementById("editor-text-label");
+            const newLabel = document.getElementById("new-item-label");
+            const newInput = document.getElementById("new-item-key");
+            const genderContainer = document.getElementById("new-item-gender-container");
+
+            // Zurücksetzen
+            document.getElementById("pw-error-msg").style.display = "none";
+            document.getElementById("new-password").value = "";
+            document.getElementById("new-password-confirm").value = "";
+            newInput.value = "";
+            document.getElementById("new-gender-n").checked = true;
+
+            if (selectedTab === "password") {
+                contentSection.style.display = "none";
+                passwordSection.style.display = "block";
             } else {
-                document.getElementById("editor-template-text").value = "";
-            }
-        }
+                passwordSection.style.display = "none";
+                contentSection.style.display = "block";
+                itemSelect.innerHTML = "";
 
-        async function speichereVorlagenAenderung() {
-            const key = document.getElementById("editor-template-select").value;
-            const text = document.getElementById("editor-template-text").value;
-
-            if (ACTIVE_PROFILE && key && currentUser) {
-                ACTIVE_PROFILE.vorlagen[key] = text;
-                
-                try {
-                    await db.collection("users").doc(currentUser.uid).set(ACTIVE_PROFILE);
-                    alert("Änderungen erfolgreich in der Cloud gespeichert!");
-                    befuelleVorlagenButtons();
-                } catch (err) {
-                    console.error("Firestore-Fehler beim Speichern:", err);
-                    alert("Speichern fehlgeschlagen. Keine Berechtigung oder offline.");
+                if (selectedTab === "templates") {
+                    selectLabel.innerText = "Vorlage wählen:";
+                    textLabel.innerText = "Inhalt bearbeiten:";
+                    newLabel.innerText = "Neue Vorlage erstellen:";
+                    newInput.placeholder = "Name der Vorlage (z.B. ABCDE)...";
+                    genderContainer.style.display = "flex"; // Geschlechtsfilter anzeigen
+                    
+                    Object.keys(ACTIVE_PROFILE.vorlagen || {}).forEach(key => {
+                        const opt = document.createElement("option");
+                        opt.value = key;
+                        opt.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
+                        itemSelect.appendChild(opt);
+                    });
+                } else if (selectedTab === "prompts") {
+                    selectLabel.innerText = "Prompt wählen:";
+                    textLabel.innerText = "Prompt-Text bearbeiten:";
+                    newLabel.innerText = "Neuen Prompt erstellen:";
+                    newInput.placeholder = "chatgpt_name oder gemini_name...";
+                    genderContainer.style.display = "none"; // Geschlechtsfilter ausblenden
+                    
+                    Object.keys(ACTIVE_PROFILE.prompts || {}).forEach(key => {
+                        const opt = document.createElement("option");
+                        opt.value = key;
+                        opt.innerText = formatiereKey(key);
+                        itemSelect.appendChild(opt);
+                    });
                 }
+                ladeEditorInhalt();
             }
         }
 
-        function zurueckZurHauptseite() {
-            document.getElementById("editor-screen").style.display = "none";
-            document.getElementById("app-screen").style.display = "block";
-            autoResize();
-            updateSubmitButtonState();
+        function ladeEditorInhalt() {
+            const selectedTab = document.querySelector('input[name="editortab"]:checked').value;
+            const key = document.getElementById("editor-item-select").value;
+            const textarea = document.getElementById("editor-item-text");
+
+            if (!ACTIVE_PROFILE || !key) {
+                textarea.value = "";
+                return;
+            }
+
+            if (selectedTab === "templates") {
+                textarea.value = ACTIVE_PROFILE.vorlagen[key] || "";
+            } else if (selectedTab === "prompts") {
+                textarea.value = ACTIVE_PROFILE.prompts[key] || "";
+            }
         }
 
+        function erstelleNeuesElement() {
+            const selectedTab = document.querySelector('input[name="editortab"]:checked').value;
+            const inputEl = document.getElementById("new-item-key");
+            const nameRaw = inputEl.value.trim();
+
+            if (!nameRaw) {
+                alert("Bitte geben Sie einen Namen ein.");
+                return;
+            }
+
+            // Normalisierung der Eingabe für die Datenbank
+            let dbKey = nameRaw.toLowerCase()
+                .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+                .replace(/[^a-z0-9_]/g, '_')
+                .replace(/_+/g, '_');
+
+            if (dbKey.startsWith('_')) dbKey = dbKey.substring(1);
+            if (dbKey.endsWith('_')) dbKey = dbKey.slice(0, -1);
+
+            if (!dbKey) {
+                alert("Ungültiger Name.");
+                return;
+            }
+
+            if (selectedTab === "templates") {
+                const gender = document.querySelector('input[name="newgender"]:checked').value;
+                
+                // Eventuell bereits eingetippte Endungen entfernen, um Doppelungen zu vermeiden
+                dbKey = dbKey.replace(/_m$/, '').replace(/_w$/, '');
+
+                if (gender === "m") {
+                    dbKey += "_m";
+                } else if (gender === "w") {
+                    dbKey += "_w";
+                }
+
+                if (!ACTIVE_PROFILE.vorlagen) ACTIVE_PROFILE.vorlagen = {};
+                if (ACTIVE_PROFILE.vorlagen[dbKey] !== undefined) {
+                    alert("Diese Vorlage existiert bereits.");
+                    return;
+                }
+                ACTIVE_PROFILE.vorlagen[dbKey] = "";
+            } else if (selectedTab === "prompts") {
+                if (!dbKey.startsWith("chatgpt_") && !dbKey.startsWith("gemini_")) {
+                    alert("KI-Prompts müssen mit 'chatgpt_' oder 'gemini_' beginnen!");
+                    return;
+                }
+                if (!ACTIVE_PROFILE.prompts) ACTIVE_PROFILE.prompts = {};
+                if (ACTIVE_PROFILE.prompts[dbKey] !== undefined) {
+                    alert("Dieser Prompt existiert bereits.");
+                    return;
+                }
+                ACTIVE_PROFILE.prompts[dbKey] = "";
+            }
+
+            inputEl.value = "";
+            
+            // Editor neu laden und das neue Element direkt auswählen
+            switchEditorTab();
+            document.getElementById("editor-item-select").value = dbKey;
+            ladeEditorInhalt();
+            document.getElementById("editor-item-text").focus();
+        }
+
+        async function speichereEditorAenderung() {
+            const selectedTab = document.querySelector('input[name="editortab"]:checked').value;
+            const key = document.getElementById("editor-item-select").value;
+            const text = document.getElementById("editor-item-text").value;
+
+            if (!ACTIVE_PROFILE || !key || !currentUser) return;
+
+            if (selectedTab === "templates") {
+                ACTIVE_PROFILE.vorlagen[key] = text;
+            } else if (selectedTab === "prompts") {
+                ACTIVE_PROFILE.prompts[key] = text;
+            }
+
+            try {
+                await db.collection("users").doc(currentUser.uid).set(ACTIVE_PROFILE);
+                alert("Änderungen erfolgreich in der Cloud gespeichert!");
+                befuelleVorlagenButtons();
+                anpassenKiDropdowns();
+            } catch (err) {
+                console.error("Firestore-Fehler beim Speichern:", err);
+                alert("Speichern fehlgeschlagen. Keine Berechtigung oder offline.");
+            }
+        }
+
+        async function fuehrePasswortAenderungAus() {
+            const newPassword = document.getElementById("new-password").value;
+            const confirmPassword = document.getElementById("new-password-confirm").value;
+            const errorEl = document.getElementById("pw-error-msg");
+
+            errorEl.style.display = "none";
+
+            if (!newPassword || !confirmPassword) {
+                errorEl.innerText = "Bitte füllen Sie beide Felder aus.";
+                errorEl.style.display = "block";
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                errorEl.innerText = "Das Passwort muss mindestens 6 Zeichen lang sein.";
+                errorEl.style.display = "block";
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                errorEl.innerText = "Die Passwörter stimmen nicht überein.";
+                errorEl.style.display = "block";
+                return;
+            }
+
+            const user = auth.currentUser;
+            if (user) {
+                try {
+                    await user.updatePassword(newPassword);
+                    alert("Passwort erfolgreich aktualisiert!");
+                    document.getElementById("new-password").value = "";
+                    document.getElementById("new-password-confirm").value = "";
+                } catch (err) {
+                    console.error("Fehler beim Ändern des Passworts:", err);
+                    if (err.code === "auth/requires-recent-login") {
+                        errorEl.innerText = "Aus Sicherheitsgründen müssen Sie sich neu anmelden, um das Passwort zu ändern.";
+                    } else {
+                        errorEl.innerText = "Fehler: " + err.message;
+                    }
+                    errorEl.style.display = "block";
+                }
+            } else {
+                errorEl.innerText = "Kein angemeldeter Benutzer gefunden.";
+                errorEl.style.display = "block";
+            }
+        }
         // ==========================================
         // BLUETOOTH & UI SYSTEMLOGIK
         // ==========================================
