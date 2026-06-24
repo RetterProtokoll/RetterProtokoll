@@ -587,6 +587,12 @@
             <label for="tab-register">Registrieren</label>
         </div>
 
+        <!-- Name (Nur bei Registrierung sichtbar) -->
+        <div id="reg-name-field" style="display: none;">
+            <label for="auth-name">Name (z.B. 001 oder Sven):</label>
+            <input type="text" id="auth-name" placeholder="Rufname oder Funkkennung..." autocomplete="off">
+        </div>
+
         <label for="auth-email">E-Mail (oder z.B. 001@wache.de):</label>
         <input type="email" id="auth-email" placeholder="E-Mail-Adresse..." autocomplete="username">
 
@@ -596,36 +602,21 @@
         <button type="button" id="auth-submit-btn" class="btn-ki" onclick="fuehreAuthAus()">Anmelden</button>
     </div>
 
-    <!-- Vorlagen- & Prompt-Editor (Verwaltungsbereich) -->
+    <!-- Vorlagen-Editor (Verwaltungsbereich) -->
     <div id="editor-screen" class="card" style="display: none;">
         <div class="title-container">
-            <h2>⚙️ Verwaltung</h2>
-        </div>
-
-        <!-- Auswahl: Bearbeite Vorlagen ODER Prompts -->
-        <div class="segmented-control" style="width: 100%; margin-bottom: 20px; height: 38px;">
-            <input type="radio" id="editor-tab-vorlagen" name="editortab" value="vorlagen" checked onchange="ladeEditorDaten()">
-            <label for="editor-tab-vorlagen">Vorlagen bearbeiten</label>
-            <input type="radio" id="editor-tab-prompts" name="editortab" value="prompts" onchange="ladeEditorDaten()">
-            <label for="editor-tab-prompts">Prompts bearbeiten</label>
+            <h2>⚙️ Vorlagen verwalten</h2>
         </div>
         
-        <label id="editor-select-label" for="editor-item-select">Auswählen:</label>
-        <select id="editor-item-select" onchange="ladeAusgewaehltenText()"></select>
+        <label for="editor-template-select">Vorlage wählen:</label>
+        <select id="editor-template-select" onchange="ladeEditorVorlagentext()"></select>
 
-        <!-- Dynamisches Feld für Neuanlagen -->
-        <div id="editor-new-name-container" style="display: none; margin-top: 10px;">
-            <label id="editor-new-name-label" for="editor-new-name">Name:</label>
-            <input type="text" id="editor-new-name" placeholder="z. B. Neuer Eintrag" autocomplete="off">
-        </div>
+        <label for="editor-template-text">Inhalt bearbeiten:</label>
+        <textarea id="editor-template-text" placeholder="Text der Vorlage..."></textarea>
 
-        <label for="editor-text-area">Inhalt:</label>
-        <textarea id="editor-text-area" placeholder="Text eingeben..."></textarea>
-
-        <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
-            <button type="button" class="btn-device" style="background: var(--md-color-success); flex: 1; min-width: 140px;" onclick="speichereAenderung()">💾 In der Cloud speichern</button>
-            <button type="button" class="btn-device" id="editor-delete-btn" style="background: var(--md-color-error); width: auto;" onclick="loescheEintrag()">🗑️ Löschen</button>
-            <button type="button" class="secondary" style="width: auto;" onclick="zurueckZurHauptseite()">Zurück</button>
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button type="button" class="btn-device" style="background: var(--md-color-success);" onclick="speichereVorlagenAenderung()">💾 In der Cloud speichern</button>
+            <button type="button" class="secondary" onclick="zurueckZurHauptseite()">Zurück</button>
         </div>
     </div>
 
@@ -638,12 +629,12 @@
             </div>
             
             <div style="display: flex; gap: 8px; margin-top: 10px; width: 100%; justify-content: flex-end;">
-                <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px;" onclick="zeigeEditor()">⚙️ Vorlagen & Prompts bearbeiten</button>
+                <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px;" onclick="zeigeEditor()">⚙️ Vorlagen bearbeiten</button>
                 <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px; border-color: var(--md-color-error); color: var(--md-color-error);" onclick="logoffUser()">Abmelden 🚪</button>
             </div>
         </div>
         
-        <form id="protokoll-form" method="POST" action="/" onsubmit="return false">
+        <form id="protokoll-form" method="POST" action="/" onsubmit="return handleFormSubmit(event)">
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; margin-bottom: 8px;">
                 <label style="margin: 0;">Vorlagen:</label>
@@ -660,21 +651,26 @@
                 <span style="font-size: 14px; color: var(--md-color-outline); padding: 8px 0;">Lade Vorlagen...</span>
             </div>
 
-            <!-- Geteiltes KI-Auswahlmenü -->
             <div id="ki-selection-container" style="margin-top: 16px; display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px;">
-                    <label id="ki-label" for="ki-select" style="margin: 0; flex: 1;">KI-Unterstützung wählen (optional):</label>
+                    <label id="ki-label" for="ki-select" style="margin: 0; flex: 1;">ChatGPT-Unterstützung wählen (optional):</label>
                     <div class="segmented-control" id="provider-container">
-                        <input type="radio" id="provider-chatgpt" name="provider" value="chatgpt" checked onchange="updateSubmitButtonState()">
+                        <input type="radio" id="provider-chatgpt" name="provider" value="chatgpt" checked>
                         <label for="provider-chatgpt">ChatGPT</label>
                         
-                        <input type="radio" id="provider-gemini" name="provider" value="gemini" onchange="updateSubmitButtonState()">
+                        <input type="radio" id="provider-gemini" name="provider" value="gemini">
                         <label for="provider-gemini">Gemini</label>
                     </div>
                 </div>
 
-                <div id="ki-dropdown-container">
-                    <select id="ki-select" style="margin-bottom: 16px;" onchange="updateSubmitButtonState()">
+                <div id="chatgpt-dropdown-container">
+                    <select id="ki-select" style="margin-bottom: 16px;">
+                        <option value="keine" selected>Keine KI (Text direkt senden)</option>
+                    </select>
+                </div>
+
+                <div id="gemini-dropdown-container" style="display: none;">
+                    <select id="gemini-select" style="margin-bottom: 16px;">
                         <option value="keine" selected>Keine KI (Text direkt senden)</option>
                     </select>
                 </div>
@@ -714,7 +710,7 @@
             
             <textarea name="t" id="freitext" placeholder="Wähle eine Vorlage oder tippe hier freien Text..." autocomplete="off"></textarea>
 
-            <button type="button" id="submit-btn" class="btn-disabled" onclick="handleFormSubmit(event)" disabled>3. Text senden</button>
+            <button type="submit" id="submit-btn" class="btn-disabled" disabled>3. Text senden</button>
 
             <div class="restore-subtle">
                 <div class="restore-selector">
@@ -773,15 +769,18 @@
             console.warn("Firestore-Caching nicht möglich:", err.code);
         });
 
-        // Globale Variablen
+        // Globale Variablen für das aktive Profil des angemeldeten Benutzers
         let ACTIVE_PROFILE = null;
-        let bleDevice = null;
-        let rxCharacteristic = null;
-        let txCharacteristic = null;
+        let currentUser = null;
 
+        // Bluetooth-Spezifische UUIDs
         const BLE_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
         const BLE_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
         const BLE_TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+
+        let bleDevice = null;
+        let rxCharacteristic = null;
+        let txCharacteristic = null;
 
         const PARAMETER_CONFIG = [
             { id: "rr-sys", label: "RR Sys", unit: "mmHg", type: "number", maxLen: 3, placeholder: "120", class: "narrow", minPlaus: 50, maxPlaus: 240 },
@@ -793,28 +792,10 @@
             { id: "temp", label: "Temp", unit: "°C", type: "text", maxLen: 5, placeholder: "36.5", minPlaus: 30.0, maxPlaus: 42.5, isTextAllowed: true }
         ];
 
-        // Standard-Voreinstellungen als Fallback, falls Cloud blockiert ist
-        const LOCAL_DEFAULT_VORLAGEN = {
-            "metamizol_m": "Ausdrückliche und detaillierte Aufklärung des Patienten über das seltene, dosisunabhängige und potenziell lebensbedrohliche Risiko einer Metamizol-induzierten Agranulozytose (akute, schwere Schädigung der Granulozyten im Knochenmark mit konsekutivem Zusammenbruch der Immunabwehr)...",
-            "metamizol_w": "Ausdrückliche und detaillierte Aufklärung der Patientin über das seltene, dosisunabhängige und potenziell lebensbedrohliche Risiko einer Metamizol-induzierten Agranulozytose...",
-            "mitfahrt_w": "Die Patientin verblieb auf eigenen ausdrücklichen Wunsch vor Ort...",
-            "mitfahrt_m": "Der Patient verblieb auf eigenen ausdrücklichen Wunsch vor Ort...",
-            "hilfe_w": "Die Patientin verbleibt nach mehrmaligem, ausdrücklichem Angebot...",
-            "hilfe_m": "Der Patient verbleibt nach mehrmaligem, ausdrücklichem Angebot...",
-            "abcde": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss...",
-            "abcdesampler": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig...",
-            "sampler": "S (Symptome): Aktuell beschwerdefrei..."
-        };
-
-        const DEFAULT_PROMPTS = {
-            "korrektur": "Korrigiere und optimiere den folgenden Text für ein Rettungsdienstprotokoll. Achte auf eine fachlich korrekte, präzise und professionelle Formulierung...",
-            "transportverweigerung": "Du bist ein erfahrener, fachlich exzellenter Notfallsanitäter im deutschen Rettungsdienst. Deine Aufgabe ist es, für ein digitales Rettungsdienstprotokoll...",
-            "abcde": "Rolle: Du bist ein erfahrener Notfallsanitäter und Dokumentations-Experte für den Rettungsdienst..."
-        };
-
         const textarea = document.getElementById("freitext");
         const submitBtn = document.getElementById("submit-btn");
         const kiSelect = document.getElementById("ki-select");
+        const geminiSelect = document.getElementById("gemini-select");
         const vorlageScrollContainer = document.getElementById("vorlage-scroll-container");
         const loeschSliderContainer = document.getElementById("loesch-slider-container");
         const deleteSlider = document.getElementById("delete-slider");
@@ -833,10 +814,7 @@
             "hilfe_m": "Hilfeleistung ♂️",
             "abcde": "ABCDE",
             "abcdesampler": "ABCDE SAMPLER",
-            "sampler": "SAMPLER / OPQRST",
-            "korrektur": "Korrektur",
-            "transportverweigerung": "Transportverweigerung (Aufklärung)",
-            "abcde_prompt": "ABCDE Ausfüllen"
+            "sampler": "SAMPLER / OPQRST"
         };
 
         const EKG_RYHTMEN = [
@@ -860,139 +838,72 @@
             { id: "ekg-tachy", label: "Tachykardie" }
         ];
 
-        // Synchrones und fehlerfreies Kopieren in die Zwischenablage
-        function inZwischenablageKopieren(text) {
-            const tempTextArea = document.createElement("textarea");
-            tempTextArea.value = text;
-            tempTextArea.style.position = "absolute";
-            tempTextArea.style.left = "-9999px";
-            tempTextArea.setAttribute('readonly', '');
-            document.body.appendChild(tempTextArea);
-            tempTextArea.select();
-            tempTextArea.setSelectionRange(0, 99999);
-            try {
-                document.execCommand("copy");
-            } catch (err) {
-                console.error("Synchrones Kopieren fehlgeschlagen:", err);
+        const BT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 -960 960 960" width="1.4em" fill="currentColor" style="vertical-align:middle; margin-right:4px; display:inline-block;"><path d="M440-80v-304L256-200l-56-56 224-224-224-224 56-56 184 184v-304h40l228 228-172 172 172 172L480-80h-40Zm80-496 76-76-76-74v150Zm0 342 76-74-76-76v150Z"/></svg>`;
+
+        // ==========================================
+        // SERVICE WORKER LOGIK
+        // ==========================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/RetterProtokoll/sw.js', { updateViaCache: 'none' })
+                .then(reg => {
+                    if (reg.waiting) zeigeUpdateBanner(reg.waiting);
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                zeigeUpdateBanner(newWorker);
+                            }
+                        });
+                    });
+                });
+            });
+
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+        }
+
+        function zeigeUpdateBanner(worker) {
+            const banner = document.getElementById('update-banner');
+            const btn = document.getElementById('update-btn');
+            if (banner && btn) {
+                banner.style.display = 'block';
+                btn.onclick = () => worker.postMessage({ action: 'skipWaiting' });
             }
-            document.body.removeChild(tempTextArea);
         }
 
         // ==========================================
-        // AUTH-STATUS DER APP ÜBERWACHEN
+        // AUTHENTICATION LOGIK
         // ==========================================
         auth.onAuthStateChanged(async (user) => {
             const loginScreen = document.getElementById("login-screen");
             const appScreen = document.getElementById("app-screen");
-            const editScreen = document.getElementById("editor-screen");
+            const editorScreen = document.getElementById("editor-screen");
 
             if (user) {
+                currentUser = user;
                 loginScreen.style.display = "none";
-                editScreen.style.display = "none";
-                appScreen.style.display = "block";
+                
                 await ladeBenutzerProfil(user.uid);
+                
+                appScreen.style.display = "block";
             } else {
-                appScreen.style.display = "none";
-                editScreen.style.display = "none";
-                loginScreen.style.display = "block";
+                currentUser = null;
                 ACTIVE_PROFILE = null;
+                appScreen.style.display = "none";
+                editorScreen.style.display = "none";
+                loginScreen.style.display = "block";
             }
         });
 
-        // ==========================================
-        // PROFIL AUS CLOUD FIRESTORE LADEN ODER INITIALISIEREN
-        // ==========================================
-        async function ladeBenutzerProfil(uid) {
-            try {
-                const docRef = db.collection("users").doc(uid);
-                let doc = await docRef.get();
-
-                if (!doc.exists) {
-                    console.log("Kein Profil dokumentiert. Lade Standard-Einstellungen aus Firebase globalSettings...");
-                    
-                    let baseVorlagen = LOCAL_DEFAULT_VORLAGEN;
-                    let basePrompts = DEFAULT_PROMPTS;
-
-                    try {
-                        const globalDefaultsRef = db.collection("globalSettings").doc("defaultTemplates");
-                        let globalDoc = await globalDefaultsRef.get();
-                        
-                        if (globalDoc.exists) {
-                            baseVorlagen = globalDoc.data().vorlagen || LOCAL_DEFAULT_VORLAGEN;
-                            basePrompts = globalDoc.data().prompts || DEFAULT_PROMPTS;
-                            console.log("Standardvorlagen erfolgreich aus Firestore globalSettings bezogen.");
-                        } else {
-                            console.log("globalSettings leer. Initialisiere mit lokaler templates.json...");
-                            try {
-                                const pfad = window.location.pathname.includes('/RetterProtokoll') 
-                                    ? '/RetterProtokoll/templates.json' 
-                                    : 'templates.json';
-
-                                const response = await fetch(pfad);
-                                if (response.ok) {
-                                    const daten = await response.json();
-                                    baseVorlagen = daten.vorlagen || {};
-                                    basePrompts = daten.prompts || {};
-                                    
-                                    await globalDefaultsRef.set({ vorlagen: baseVorlagen, prompts: basePrompts });
-                                }
-                            } catch (e) {
-                                console.error("Absicherung fehlgeschlagen: ", e);
-                            }
-                        }
-                    } catch (rulesError) {
-                        console.warn("Firestore blockiert globale Abfrage (oder offline). Nutze lokalen Standard-Fallback:", rulesError);
-                    }
-
-                    // Anzeigenamen bestimmen (E-Mail-Präfix)
-                    let displayName = "Retter";
-                    if (auth.currentUser && auth.currentUser.email) {
-                        const nameRaw = auth.currentUser.email.split('@')[0];
-                        displayName = nameRaw.charAt(0).toUpperCase() + nameRaw.slice(1);
-                    }
-
-                    const neuesProfil = {
-                        id: uid,
-                        name: displayName,
-                        vorlagen: baseVorlagen,
-                        prompts: basePrompts
-                    };
-
-                    await docRef.set(neuesProfil);
-                    doc = await docRef.get();
-                }
-
-                ACTIVE_PROFILE = doc.data();
-                document.getElementById("app-title").innerText = `RetterProtokoll (${ACTIVE_PROFILE.name})`;
-                befuelleVorlagenButtons();
-                anpassenKiDropdowns();
-            } catch (err) {
-                console.error("Schwerer Ausnahmefehler beim Laden des Profils:", err);
-                
-                // Ultimative Offline-Ausweichlösung im RAM, falls Firestore komplett blockiert ist
-                let offlineName = "Retter (Offline)";
-                if (auth.currentUser && auth.currentUser.email) {
-                    const nameRaw = auth.currentUser.email.split('@')[0];
-                    offlineName = nameRaw.charAt(0).toUpperCase() + nameRaw.slice(1) + " (Offline)";
-                }
-                ACTIVE_PROFILE = {
-                    id: uid,
-                    name: offlineName,
-                    vorlagen: LOCAL_DEFAULT_VORLAGEN,
-                    prompts: DEFAULT_PROMPTS
-                };
-                document.getElementById("app-title").innerText = `RetterProtokoll (${ACTIVE_PROFILE.name})`;
-                befuelleVorlagenButtons();
-                anpassenKiDropdowns();
-            }
-        }
-
-        // ==========================================
-        // REGISTRIEREN & ANMELDEN LOGIK
-        // ==========================================
         function toggleAuthFields() {
-            document.getElementById("auth-error-msg").style.display = "none";
             const isRegister = document.getElementById("tab-register").checked;
+            document.getElementById("reg-name-field").style.display = isRegister ? "block" : "none";
             document.getElementById("auth-submit-btn").innerText = isRegister ? "Registrieren & starten" : "Anmelden";
         }
 
@@ -1000,31 +911,43 @@
             const isRegister = document.getElementById("tab-register").checked;
             const email = document.getElementById("auth-email").value.trim();
             const password = document.getElementById("auth-password").value;
-            const errorMsg = document.getElementById("auth-error-msg");
+            const name = document.getElementById("auth-name").value.trim();
+            const errorEl = document.getElementById("auth-error-msg");
 
-            errorMsg.style.display = "none";
+            errorEl.style.display = "none";
 
             if (!email || !password) {
-                errorMsg.innerText = "Bitte E-Mail und Passwort eingeben.";
-                errorMsg.style.display = "block";
+                zegeAuthFehler("Bitte füllen Sie alle Felder aus.");
                 return;
             }
 
             try {
                 if (isRegister) {
-                    await auth.createUserWithEmailAndPassword(email, password);
+                    if (!name) {
+                        zegeAuthFehler("Bitte tragen Sie Ihren Namen ein.");
+                        return;
+                    }
+                    const cred = await auth.createUserWithEmailAndPassword(email, password);
+                    await initialisiereNeuesProfil(cred.user.uid, name);
                 } else {
                     await auth.signInWithEmailAndPassword(email, password);
                 }
             } catch (err) {
                 console.error(err);
-                errorMsg.innerText = uebersetzeFehlermeldung(err.code);
-                errorMsg.style.display = "block";
+                zegeAuthFehler(uebersetzeFehlermeldung(err.code));
             }
         }
 
         function logoffUser() {
-            auth.signOut();
+            auth.signOut().then(() => {
+                location.reload();
+            });
+        }
+
+        function zegeAuthFehler(text) {
+            const errorEl = document.getElementById("auth-error-msg");
+            errorEl.innerText = text;
+            errorEl.style.display = "block";
         }
 
         function uebersetzeFehlermeldung(code) {
@@ -1034,13 +957,226 @@
                 case "auth/wrong-password": return "Falsches Passwort.";
                 case "auth/email-already-in-use": return "Diese E-Mail-Adresse wird bereits verwendet.";
                 case "auth/weak-password": return "Das Passwort muss mindestens 6 Zeichen lang sein.";
-                default: return "Fehler: " + code;
+                default: return "Fehler bei der Anmeldung. Bitte Eingaben prüfen.";
             }
         }
 
         // ==========================================
-        // VORLAGEN BUTTONS RENDERN
+        // FIRESTORE DATENBANK-OPERATIONEN
         // ==========================================
+        async function ladeBenutzerProfil(userId) {
+            try {
+                const docRef = db.collection("users").doc(userId);
+                const doc = await docRef.get();
+
+                if (doc.exists) {
+                    ACTIVE_PROFILE = doc.data();
+                    document.getElementById("app-title").innerText = `RetterProtokoll (${ACTIVE_PROFILE.name})`;
+                    befuelleVorlagenButtons();
+                    anpassenKiDropdowns();
+                } else {
+                    console.error("Kein Profil für diese ID gefunden.");
+                }
+            } catch (err) {
+                console.error("Fehler beim Laden des Profils:", err);
+            }
+        }
+
+        async function initialisiereNeuesProfil(userId, name) {
+            try {
+                const pfad = window.location.pathname.includes('/RetterProtokoll') 
+                    ? '/RetterProtokoll/templates.json' 
+                    : 'templates.json';
+
+                const response = await fetch(pfad);
+                if (!response.ok) throw new Error("templates.json fehlt");
+                const data = await response.json();
+                
+                const standardProfil = data.profiles[0]; 
+
+                const neuesProfil = {
+                    id: userId,
+                    name: name,
+                    vorlagen: standardProfil.vorlagen,
+                    prompts: standardProfil.prompts || {}
+                };
+
+                await db.collection("users").doc(userId).set(neuesProfil);
+            } catch (err) {
+                console.error("Fehler beim Initialisieren des Profils:", err);
+            }
+        }
+
+        function anpassenKiDropdowns() {
+            const kiContainer = document.getElementById("ki-selection-container");
+            const restoreOptKi = document.getElementById("restore-opt-ki");
+            const restoreSourceBt = document.getElementById("restore-source-bt");
+            const restoreSourceKi = document.getElementById("restore-source-ki");
+
+            if (!ACTIVE_PROFILE) return;
+
+            const prompts = ACTIVE_PROFILE.prompts || {};
+            const hatPrompts = Object.keys(prompts).length > 0;
+
+            if (hatPrompts) {
+                kiContainer.style.display = "block";
+                
+                const chatgptSelect = document.getElementById("ki-select");
+                const geminiSelect = document.getElementById("gemini-select");
+
+                const befuellen = (selectEl, prefix) => {
+                    selectEl.innerHTML = '<option value="keine" selected>Keine KI (Text direkt senden)</option>';
+                    Object.keys(prompts).forEach(key => {
+                        if (key.startsWith(prefix)) {
+                            const opt = document.createElement("option");
+                            opt.value = key;
+                            const labelName = key.replace(prefix + "_", "").replace(/^\w/, c => c.toUpperCase());
+                            opt.innerText = `${prefix === 'chatgpt' ? 'ChatGPT' : 'Gemini'}: ${labelName}`;
+                            selectEl.appendChild(opt);
+                        }
+                    });
+                };
+
+                befuellen(chatgptSelect, "chatgpt");
+                befuellen(geminiSelect, "gemini");
+
+                if (restoreOptKi) restoreOptKi.style.display = "flex";
+            } else {
+                kiContainer.style.display = "none";
+                kiSelect.value = "keine";
+                geminiSelect.value = "keine";
+                if (restoreOptKi) restoreOptKi.style.display = "none";
+                if (restoreSourceKi && restoreSourceKi.checked) {
+                    if (restoreSourceBt) restoreSourceBt.checked = true;
+                }
+            }
+        }
+
+        // ==========================================
+        // EDITOR LOGIK
+        // ==========================================
+        function zeigeEditor() {
+            if (!ACTIVE_PROFILE) return;
+            document.getElementById("app-screen").style.display = "none";
+            document.getElementById("editor-screen").style.display = "block";
+
+            const templSelect = document.getElementById("editor-template-select");
+            templSelect.innerHTML = "";
+
+            Object.keys(ACTIVE_PROFILE.vorlagen || {}).forEach(key => {
+                const opt = document.createElement("option");
+                opt.value = key;
+                opt.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
+                templSelect.appendChild(opt);
+            });
+
+            ladeEditorVorlagentext();
+        }
+
+        function ladeEditorVorlagentext() {
+            const key = document.getElementById("editor-template-select").value;
+            if (ACTIVE_PROFILE && ACTIVE_PROFILE.vorlagen && key) {
+                document.getElementById("editor-template-text").value = ACTIVE_PROFILE.vorlagen[key];
+            } else {
+                document.getElementById("editor-template-text").value = "";
+            }
+        }
+
+        async function speichereVorlagenAenderung() {
+            const key = document.getElementById("editor-template-select").value;
+            const text = document.getElementById("editor-template-text").value;
+
+            if (ACTIVE_PROFILE && key && currentUser) {
+                ACTIVE_PROFILE.vorlagen[key] = text;
+                
+                try {
+                    await db.collection("users").doc(currentUser.uid).set(ACTIVE_PROFILE);
+                    alert("Änderungen erfolgreich in der Cloud gespeichert!");
+                    befuelleVorlagenButtons();
+                } catch (err) {
+                    console.error("Firestore-Fehler beim Speichern:", err);
+                    alert("Speichern fehlgeschlagen. Keine Berechtigung oder offline.");
+                }
+            }
+        }
+
+        function zurueckZurHauptseite() {
+            document.getElementById("editor-screen").style.display = "none";
+            document.getElementById("app-screen").style.display = "block";
+            autoResize();
+            updateSubmitButtonState();
+        }
+
+        // ==========================================
+        // BLUETOOTH & UI SYSTEMLOGIK
+        // ==========================================
+        async function connectBluetooth() {
+            if (!navigator.bluetooth) {
+                alert("Web Bluetooth wird von diesem Browser nicht unterstützt.");
+                return;
+            }
+            try {
+                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Suche...";
+                bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [BLE_SERVICE_UUID] }]
+                });
+                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Verbinde...";
+                const server = await bleDevice.gatt.connect();
+                const service = await server.getPrimaryService(BLE_SERVICE_UUID);
+                rxCharacteristic = await service.getCharacteristic(BLE_RX_UUID);
+                txCharacteristic = await service.getCharacteristic(BLE_TX_UUID);
+                await txCharacteristic.startNotifications();
+                txCharacteristic.addEventListener('characteristicvaluechanged', handleBleNotification);
+
+                connectBleBtn.innerHTML = BT_ICON_SVG + " " + (bleDevice.name ? bleDevice.name.substring(0, 10) : "Verbunden");
+                connectBleBtn.style.background = "#2563eb";
+                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+                updateSubmitButtonState();
+            } catch (error) {
+                console.error("Bluetooth Fehler: ", error);
+                connectBleBtn.innerHTML = BT_ICON_SVG + " Fehler";
+                connectBleBtn.style.background = "#dc2626";
+                onDisconnected();
+            }
+        }
+
+        function onDisconnected() {
+            connectBleBtn.innerHTML = BT_ICON_SVG + " Verbinden";
+            connectBleBtn.style.background = "#dc2626";
+            bleDevice = null;
+            rxCharacteristic = null;
+            txCharacteristic = null;
+            updateSubmitButtonState();
+        }
+
+        function handleBleNotification(event) {
+            const decoder = new TextDecoder();
+            const value = decoder.decode(event.target.value).trim();
+            if (value === "DONE") {
+                loadingDiv.style.display = "none";
+                successDiv.style.display = "block";
+                localStorage.removeItem("aktueller_entwurf");
+                clearMesswerte();
+            } else if (value === "STOPPED") {
+                alert("Der Tippvorgang wurde erfolgreich abgebrochen.");
+                resetForm();
+            } else if (value === "BUSY") {
+                alert("Das Gerät ist beschäftigt.");
+                resetForm();
+            }
+        }
+
+        async function sendeStopSignal() {
+            if (!rxCharacteristic) return;
+            try {
+                countdownEl.innerText = "Abbruchsignal wird gesendet...";
+                const encoder = new TextEncoder();
+                await rxCharacteristic.writeValueWithResponse(encoder.encode("STOP"));
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
         function befuelleVorlagenButtons() {
             vorlageScrollContainer.innerHTML = '';
             if (!ACTIVE_PROFILE) return;
@@ -1071,279 +1207,6 @@
 
         function formatiereKey(key) {
             return key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-        }
-
-        // Geteilte Prompts laden und dem Dropdown übergeben
-        function anpassenKiDropdowns() {
-            const kiContainer = document.getElementById("ki-selection-container");
-            const restoreOptKi = document.getElementById("restore-opt-ki");
-            const restoreSourceBt = document.getElementById("restore-source-bt");
-            const restoreSourceKi = document.getElementById("restore-source-ki");
-
-            if (!ACTIVE_PROFILE) return;
-
-            const prompts = ACTIVE_PROFILE.prompts || {};
-            const hatPrompts = Object.keys(prompts).length > 0;
-
-            if (hatPrompts) {
-                kiContainer.style.display = "block";
-                
-                kiSelect.innerHTML = '<option value="keine" selected>Keine KI (Text direkt senden)</option>';
-                
-                Object.keys(prompts).forEach(key => {
-                    const opt = document.createElement("option");
-                    opt.value = key;
-                    opt.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
-                    kiSelect.appendChild(opt);
-                });
-
-                if (restoreOptKi) restoreOptKi.style.display = "flex";
-            } else {
-                kiContainer.style.display = "none";
-                kiSelect.value = "keine";
-                if (restoreOptKi) restoreOptKi.style.display = "none";
-                if (restoreSourceKi && restoreSourceKi.checked) {
-                    if (restoreSourceBt) restoreSourceBt.checked = true;
-                }
-            }
-            updateSubmitButtonState();
-        }
-
-        // ==========================================
-        // UNIFIED EDITOR (VORLAGEN & PROMPTS)
-        // ==========================================
-        function zeigeEditor() {
-            if (!ACTIVE_PROFILE) return;
-            document.getElementById("app-screen").style.display = "none";
-            document.getElementById("editor-screen").style.display = "block";
-            ladeEditorDaten();
-        }
-
-        function ladeEditorDaten() {
-            const isVorlagen = document.getElementById("editor-tab-vorlagen").checked;
-            const itemSelect = document.getElementById("editor-item-select");
-            const selectLabel = document.getElementById("editor-select-label");
-            const newNameLabel = document.getElementById("editor-new-name-label");
-            const newNameInput = document.getElementById("editor-new-name");
-
-            itemSelect.innerHTML = "";
-
-            const newOpt = document.createElement("option");
-            newOpt.value = "__new__";
-            
-            if (isVorlagen) {
-                selectLabel.innerText = "Vorlage wählen:";
-                newNameLabel.innerText = "Name der neuen Vorlage:";
-                newNameInput.placeholder = "z. B. ACS Aufklärung";
-                newOpt.innerText = "🆕 + Neue Vorlage erstellen...";
-            } else {
-                selectLabel.innerText = "Prompt wählen:";
-                newNameLabel.innerText = "Name des neuen Prompts:";
-                newNameInput.placeholder = "z. B. chatgpt_diagnose";
-                newOpt.innerText = "🆕 + Neuen Prompt erstellen...";
-            }
-            itemSelect.appendChild(newOpt);
-
-            const targetMap = isVorlagen ? ACTIVE_PROFILE.vorlagen : ACTIVE_PROFILE.prompts;
-            const keys = Object.keys(targetMap || {});
-
-            keys.forEach(key => {
-                const opt = document.createElement("option");
-                opt.value = key;
-                opt.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
-                itemSelect.appendChild(opt);
-            });
-
-            if (keys.length > 0) {
-                itemSelect.value = keys[0];
-            } else {
-                itemSelect.value = "__new__";
-            }
-
-            ladeAusgewaehltenText();
-        }
-
-        function ladeAusgewaehltenText() {
-            const isVorlagen = document.getElementById("editor-tab-vorlagen").checked;
-            const key = document.getElementById("editor-item-select").value;
-            const newNameContainer = document.getElementById("editor-new-name-container");
-            const deleteBtn = document.getElementById("editor-delete-btn");
-            const textArea = document.getElementById("editor-text-area");
-
-            if (key === "__new__") {
-                newNameContainer.style.display = "block";
-                deleteBtn.style.display = "none";
-                textArea.value = "";
-                document.getElementById("editor-new-name").value = "";
-            } else {
-                newNameContainer.style.display = "none";
-                deleteBtn.style.display = "block";
-                const targetMap = isVorlagen ? ACTIVE_PROFILE.vorlagen : ACTIVE_PROFILE.prompts;
-                textArea.value = targetMap[key] || "";
-            }
-        }
-
-        async function speichereAenderung() {
-            const isVorlagen = document.getElementById("editor-tab-vorlagen").checked;
-            const key = document.getElementById("editor-item-select").value;
-            const text = document.getElementById("editor-text-area").value.trim();
-
-            if (!text) {
-                alert("Der Inhalt darf nicht leer sein.");
-                return;
-            }
-
-            let finalKey = key;
-            const targetMap = isVorlagen ? ACTIVE_PROFILE.vorlagen : ACTIVE_PROFILE.prompts;
-
-            if (key === "__new__") {
-                const title = document.getElementById("editor-new-name").value.trim();
-                if (!title) {
-                    alert("Bitte tragen Sie einen Namen ein.");
-                    return;
-                }
-
-                finalKey = title.toLowerCase()
-                                .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
-                                .replace(/[^a-z0-9]/g, "_")
-                                .replace(/_+/g, "_")
-                                .replace(/^_+|_+$/g, "");
-
-                if (!finalKey) {
-                    alert("Ungültiger Name.");
-                    return;
-                }
-
-                if (targetMap[finalKey]) {
-                    alert("Ein Eintrag mit diesem Namen existiert bereits.");
-                    return;
-                }
-
-                targetMap[finalKey] = text;
-                document.getElementById("editor-new-name").value = "";
-            } else {
-                targetMap[finalKey] = text;
-            }
-
-            try {
-                await db.collection("users").doc(auth.currentUser.uid).set(ACTIVE_PROFILE);
-                alert("Erfolgreich in der Cloud gespeichert!");
-                ladeEditorDaten();
-                befuelleVorlagenButtons();
-                anpassenKiDropdowns();
-            } catch (err) {
-                console.error("Firestore-Fehler beim Speichern:", err);
-                alert("Speichern fehlgeschlagen. Keine Berechtigung oder offline.");
-            }
-        }
-
-        async function loescheEintrag() {
-            const isVorlagen = document.getElementById("editor-tab-vorlagen").checked;
-            const key = document.getElementById("editor-item-select").value;
-            if (key === "__new__") return;
-
-            const name = OPTIONEN_NAMEN[key] || formatiereKey(key);
-            const targetMap = isVorlagen ? ACTIVE_PROFILE.vorlagen : ACTIVE_PROFILE.prompts;
-
-            if (confirm(`Möchten Sie den Eintrag "${name}" wirklich dauerhaft löschen?`)) {
-                delete targetMap[key];
-                
-                try {
-                    await db.collection("users").doc(auth.currentUser.uid).set(ACTIVE_PROFILE);
-                    alert("Erfolgreich gelöscht.");
-                    ladeEditorDaten();
-                    befuelleVorlagenButtons();
-                    anpassenKiDropdowns();
-                } catch (err) {
-                    console.error("Fehler beim Löschen:", err);
-                    alert("Löschen fehlgeschlagen.");
-                }
-            }
-        }
-
-        function zurueckZurHauptseite() {
-            document.getElementById("editor-screen").style.display = "none";
-            document.getElementById("app-screen").style.display = "block";
-            autoResize();
-            updateSubmitButtonState();
-        }
-
-        // ==========================================
-        // BLUETOOTH & MESSWERTE LOGIK
-        // ==========================================
-        function connectBluetooth() {
-            if (!navigator.bluetooth) {
-                alert("Web Bluetooth wird von diesem Browser nicht unterstützt.");
-                return;
-            }
-            connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Suche...";
-            navigator.bluetooth.requestDevice({
-                filters: [{ services: [BLE_SERVICE_UUID] }]
-            })
-            .then(device => {
-                bleDevice = device;
-                connectBleBtn.innerHTML = BT_ICON_SVG + " ⏳ Verbinde...";
-                return device.gatt.connect();
-            })
-            .then(server => {
-                return server.getPrimaryService(BLE_SERVICE_UUID);
-            })
-            .then(service => {
-                return Promise.all([
-                    service.getCharacteristic(BLE_RX_UUID).then(char => rxCharacteristic = char),
-                    service.getCharacteristic(BLE_TX_UUID).then(char => txCharacteristic = char)
-                ]);
-            })
-            .then(() => {
-                return txCharacteristic.startNotifications();
-            })
-            .then(() => {
-                txCharacteristic.addEventListener('characteristicvaluechanged', handleBleNotification);
-                connectBleBtn.innerHTML = BT_ICON_SVG + " " + (bleDevice.name ? bleDevice.name.substring(0, 10) : "Verbunden");
-                connectBleBtn.style.background = "#2563eb";
-                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
-                updateSubmitButtonState();
-            })
-            .catch(error => {
-                console.error("Bluetooth Fehler: ", error);
-                connectBleBtn.innerHTML = BT_ICON_SVG + " Fehler";
-                connectBleBtn.style.background = "#dc2626";
-                onDisconnected();
-            });
-        }
-
-        function onDisconnected() {
-            connectBleBtn.innerHTML = BT_ICON_SVG + " Verbinden";
-            connectBleBtn.style.background = "#dc2626";
-            bleDevice = null;
-            rxCharacteristic = null;
-            txCharacteristic = null;
-            updateSubmitButtonState();
-        }
-
-        function handleBleNotification(event) {
-            const decoder = new TextDecoder();
-            const value = decoder.decode(event.target.value).trim();
-            if (value === "DONE") {
-                loadingDiv.style.display = "none";
-                successDiv.style.display = "block";
-                localStorage.removeItem("aktueller_entwurf");
-                clearMesswerte();
-            } else if (value === "STOPPED") {
-                alert("Der Tippvorgang wurde erfolgreich abgebrochen.");
-                resetForm();
-            } else if (value === "BUSY") {
-                alert("Das Gerät ist beschäftigt.");
-                resetForm();
-            }
-        }
-
-        function sendeStopSignal() {
-            if (!rxCharacteristic) return;
-            countdownEl.innerText = "Abbruchsignal wird gesendet...";
-            const encoder = new TextEncoder();
-            rxCharacteristic.writeValueWithResponse(encoder.encode("STOP"))
-            .catch(err => console.error(err));
         }
 
         function zeigeLoeschSlider() {
@@ -1391,9 +1254,28 @@
             }
         }
 
+        function inZwischenablageKopieren(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                const tempTextArea = document.createElement("textarea");
+                tempTextArea.value = text;
+                tempTextArea.style.position = "fixed"; 
+                document.body.appendChild(tempTextArea);
+                tempTextArea.focus();
+                tempTextArea.select();
+                try { document.execCommand("copy"); } catch (err) {}
+                document.body.removeChild(tempTextArea);
+                return Promise.resolve();
+            }
+        }
+
         function updateSubmitButtonState() {
             const text = textarea.value.trim();
-            const kiAuswahl = kiSelect.value;
+            const selectedProvider = document.querySelector('input[name="provider"]:checked');
+            const selectedProviderVal = selectedProvider ? selectedProvider.value : 'chatgpt';
+            const activeSelect = (selectedProviderVal === 'chatgpt') ? kiSelect : geminiSelect;
+            const kiAuswahl = activeSelect ? activeSelect.value : 'keine';
 
             if (text === "") {
                 submitBtn.disabled = true;
@@ -1414,6 +1296,25 @@
                         submitBtn.disabled = true;
                     }
                 }
+            }
+        }
+
+        function anwendenAusgewaehltenText() {
+            const selectedSource = document.querySelector('input[name="restore-source"]:checked').value;
+            let gespeicherterText = "";
+            if (selectedSource === "bt") {
+                gespeicherterText = localStorage.getItem("letzter_gesendeter_text");
+            } else if (selectedSource === "ki") {
+                gespeicherterText = localStorage.getItem("letzter_ki_gesendeter_text");
+            }
+
+            if (gespeicherterText) {
+                textarea.value = gespeicherterText;
+                localStorage.setItem("aktueller_entwurf", gespeicherterText);
+                autoResize();
+                updateSubmitButtonState();
+            } else {
+                alert("Kein entsprechender Text im Speicher gefunden.");
             }
         }
 
@@ -1450,6 +1351,10 @@
                 label.appendChild(span);
                 container.appendChild(label);
             });
+        }
+
+        function limitLength(el, max) {
+            if (el.value.length > max) el.value = el.value.slice(0, max);
         }
 
         function renderMesswerteInput() {
@@ -1614,6 +1519,7 @@
         function resetForm() {
             textarea.value = "";
             kiSelect.value = "keine";
+            geminiSelect.value = "keine";
             loeschSliderContainer.classList.remove("show");
             localStorage.removeItem("aktueller_entwurf"); 
             clearMesswerte();
@@ -1622,51 +1528,32 @@
             overlay.style.display = "none";
         }
 
-        function sendBleData(text) {
+        async function sendBleData(text) {
             const fullText = text + "\x04";
             const encoder = new TextEncoder();
             const dataBytes = encoder.encode(fullText);
             const chunkSize = 128;
-            
-            let offset = 0;
-            function writeNextChunk() {
-                if (offset < dataBytes.length) {
-                    const chunk = dataBytes.slice(offset, offset + chunkSize);
-                    rxCharacteristic.writeValueWithResponse(chunk)
-                    .then(() => {
-                        offset += chunkSize;
-                        const prozent = Math.round((offset / dataBytes.length) * 100);
-                        countdownEl.innerText = `Übertrage: ${prozent > 100 ? 100 : prozent}%`;
-                        writeNextChunk();
-                    })
-                    .catch(err => {
-                        console.error("Fehler beim Senden des Chunks:", err);
-                        alert("Übertragungsfehler.");
-                        overlay.style.display = "none";
-                    });
-                } else {
-                    countdownEl.innerText = "Übertragen. Gerät schreibt...";
-                }
+            for (let offset = 0; offset < dataBytes.length; offset += chunkSize) {
+                const chunk = dataBytes.slice(offset, offset + chunkSize);
+                await rxCharacteristic.writeValueWithResponse(chunk);
+                const prozent = Math.round(((offset + chunk.length) / dataBytes.length) * 100);
+                countdownEl.innerText = `Übertrage: ${prozent}%`;
             }
-            writeNextChunk();
         }
 
-        // ==========================================
-        // AUSFUEHREN DES GEWUEHNTEN ABSENDENS
-        // ==========================================
-        function handleFormSubmit(event) {
+        async function handleFormSubmit(event) {
             if (event) event.preventDefault();
             if (!ACTIVE_PROFILE) return false;
 
             const selectedProvider = document.querySelector('input[name="provider"]:checked');
             const selectedProviderVal = selectedProvider ? selectedProvider.value : 'chatgpt';
-            const kiAuswahl = kiSelect.value;
+            const activeSelect = (selectedProviderVal === 'chatgpt') ? kiSelect : geminiSelect;
+            const kiAuswahl = activeSelect.value;
             
             const basisText = textarea.value;
             const messwerteText = formatMesswerteFuerAusgabe();
             const textMitMesswerten = basisText + messwerteText;
 
-            // KI-Aktion (ChatGPT / Gemini)
             if (kiAuswahl !== "keine") {
                 if (!basisText.trim()) {
                     alert("Bitte schreiben oder wählen Sie zuerst einen Text.");
@@ -1678,21 +1565,18 @@
 
                 localStorage.setItem("letzter_ki_gesendeter_text", basisText);
                 
-                // 1. Text kopieren (Benutzer-Geste bleibt vollkommen intakt)
                 inZwischenablageKopieren(promptString);
 
                 let targetUrl = selectedProviderVal === 'chatgpt' 
-                    ? "https://chatgpt.com/" 
+                    ? "https://chatgpt.com/?q=" + encodeURIComponent(promptString)
                     : "https://gemini.google.com/";
 
-                // 2. Direktes Öffnen ohne Verzögerungen, um den Pop-up-Blocker zu passieren
                 window.open(targetUrl, "_blank");
                 
                 resetForm();
                 return false; 
             }
 
-            // Bluetooth-Übertragung
             if (!rxCharacteristic) {
                 alert("Bitte verbinden Sie zuerst das Bluetooth-Gerät.");
                 return false;
@@ -1704,19 +1588,49 @@
             successDiv.style.display = "none";
             countdownEl.innerText = "Übertragung startet...";
 
-            sendBleData(textMitMesswerten);
+            try {
+                await sendBleData(textMitMesswerten);
+                countdownEl.innerText = "Übertragen. Gerät schreibt...";
+            } catch (error) {
+                alert("Übertragungsfehler: " + error.message);
+                overlay.style.display = "none";
+            }
             return false;
         }
 
+        // Event-Listener
         textarea.addEventListener("input", () => {
             autoResize();
             updateSubmitButtonState();
             localStorage.setItem("aktueller_entwurf", textarea.value);
         });
 
+        kiSelect.addEventListener("change", updateSubmitButtonState);
+        geminiSelect.addEventListener("change", updateSubmitButtonState);
+
         document.querySelectorAll('input[name="gender"]').forEach(radio => {
             radio.addEventListener('change', () => {
                 befuelleVorlagenButtons();
+                updateSubmitButtonState();
+            });
+        });
+
+        document.querySelectorAll('input[name="provider"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const val = e.target.value;
+                localStorage.setItem("saved_provider", val);
+                const kiLabel = document.getElementById("ki-label");
+                if (val === 'chatgpt') {
+                    document.getElementById("chatgpt-dropdown-container").style.display = "block";
+                    document.getElementById("gemini-dropdown-container").style.display = "none";
+                    geminiSelect.value = "keine";
+                    if (kiLabel) kiLabel.innerText = "ChatGPT-Unterstützung wählen (optional):";
+                } else {
+                    document.getElementById("chatgpt-dropdown-container").style.display = "none";
+                    document.getElementById("gemini-dropdown-container").style.display = "block";
+                    kiSelect.value = "keine";
+                    if (kiLabel) kiLabel.innerText = "Gemini-Unterstützung wählen (optional):";
+                }
                 updateSubmitButtonState();
             });
         });
@@ -1730,7 +1644,19 @@
 
             const savedProvider = localStorage.getItem("saved_provider") || "chatgpt";
             const radio = document.getElementById(`provider-${savedProvider}`);
-            if (radio) radio.checked = true;
+            if (radio) {
+                radio.checked = true;
+                const kiLabel = document.getElementById("ki-label");
+                if (savedProvider === 'chatgpt') {
+                    document.getElementById("chatgpt-dropdown-container").style.display = "block";
+                    document.getElementById("gemini-dropdown-container").style.display = "none";
+                    if (kiLabel) kiLabel.innerText = "ChatGPT-Unterstützung wählen (optional):";
+                } else {
+                    document.getElementById("chatgpt-dropdown-container").style.display = "none";
+                    document.getElementById("gemini-dropdown-container").style.display = "block";
+                    if (kiLabel) kiLabel.innerText = "Gemini-Unterstützung wählen (optional):";
+                }
+            }
         });
     </script>
 </body>
