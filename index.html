@@ -643,7 +643,7 @@
             </div>
         </div>
         
-        <form id="protokoll-form" method="POST" action="/" onsubmit="return handleFormSubmit(event)">
+        <form id="protokoll-form" method="POST" action="/" onsubmit="return false">
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; margin-bottom: 8px;">
                 <label style="margin: 0;">Vorlagen:</label>
@@ -660,26 +660,21 @@
                 <span style="font-size: 14px; color: var(--md-color-outline); padding: 8px 0;">Lade Vorlagen...</span>
             </div>
 
+            <!-- Geteiltes KI-Auswahlmenü -->
             <div id="ki-selection-container" style="margin-top: 16px; display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px;">
-                    <label id="ki-label" for="ki-select" style="margin: 0; flex: 1;">ChatGPT-Unterstützung wählen (optional):</label>
+                    <label id="ki-label" for="ki-select" style="margin: 0; flex: 1;">KI-Unterstützung wählen (optional):</label>
                     <div class="segmented-control" id="provider-container">
-                        <input type="radio" id="provider-chatgpt" name="provider" value="chatgpt" checked>
+                        <input type="radio" id="provider-chatgpt" name="provider" value="chatgpt" checked onchange="updateSubmitButtonState()">
                         <label for="provider-chatgpt">ChatGPT</label>
                         
-                        <input type="radio" id="provider-gemini" name="provider" value="gemini">
+                        <input type="radio" id="provider-gemini" name="provider" value="gemini" onchange="updateSubmitButtonState()">
                         <label for="provider-gemini">Gemini</label>
                     </div>
                 </div>
 
-                <div id="chatgpt-dropdown-container">
-                    <select id="ki-select" style="margin-bottom: 16px;">
-                        <option value="keine" selected>Keine KI (Text direkt senden)</option>
-                    </select>
-                </div>
-
-                <div id="gemini-dropdown-container" style="display: none;">
-                    <select id="gemini-select" style="margin-bottom: 16px;">
+                <div id="ki-dropdown-container">
+                    <select id="ki-select" style="margin-bottom: 16px;" onchange="updateSubmitButtonState()">
                         <option value="keine" selected>Keine KI (Text direkt senden)</option>
                     </select>
                 </div>
@@ -719,7 +714,7 @@
             
             <textarea name="t" id="freitext" placeholder="Wähle eine Vorlage oder tippe hier freien Text..." autocomplete="off"></textarea>
 
-            <button type="submit" id="submit-btn" class="btn-disabled" disabled>3. Text senden</button>
+            <button type="button" id="submit-btn" class="btn-disabled" onclick="handleFormSubmit(event)" disabled>3. Text senden</button>
 
             <div class="restore-subtle">
                 <div class="restore-selector">
@@ -801,7 +796,6 @@
         const textarea = document.getElementById("freitext");
         const submitBtn = document.getElementById("submit-btn");
         const kiSelect = document.getElementById("ki-select");
-        const geminiSelect = document.getElementById("gemini-select");
         const vorlageScrollContainer = document.getElementById("vorlage-scroll-container");
         const loeschSliderContainer = document.getElementById("loesch-slider-container");
         const deleteSlider = document.getElementById("delete-slider");
@@ -820,7 +814,10 @@
             "hilfe_m": "Hilfeleistung ♂️",
             "abcde": "ABCDE",
             "abcdesampler": "ABCDE SAMPLER",
-            "sampler": "SAMPLER / OPQRST"
+            "sampler": "SAMPLER / OPQRST",
+            "korrektur": "Korrektur",
+            "transportverweigerung": "Transportverweigerung (Aufklärung)",
+            "abcde_prompt": "ABCDE Ausfüllen"
         };
 
         const EKG_RYHTMEN = [
@@ -844,35 +841,23 @@
             { id: "ekg-tachy", label: "Tachykardie" }
         ];
 
-        const BT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 -960 960 960" width="1.4em" fill="currentColor" style="vertical-align:middle; margin-right:4px; display:inline-block;"><path d="M440-80v-304L256-200l-56-56 224-224-224-224 56-56 184 184v-304h40l228 228-172 172 172 172L480-80h-40Zm80-496 76-76-76-74v150Zm0 342 76-74-76-76v150Z"/></svg>`;
-
-        // Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/RetterProtokoll/sw.js', { updateViaCache: 'none' });
-            });
-        }
-
-        // ==========================================
-        // AUTH-STATUS DER APP ÜBERWACHEN
-        // ==========================================
-        auth.onAuthStateChanged(async (user) => {
-            const loginScreen = document.getElementById("login-screen");
-            const appScreen = document.getElementById("app-screen");
-            const editScreen = document.getElementById("editor-screen");
-
-            if (user) {
-                loginScreen.style.display = "none";
-                editScreen.style.display = "none";
-                appScreen.style.display = "block";
-                await ladeBenutzerProfil(user.uid);
-            } else {
-                appScreen.style.display = "none";
-                editScreen.style.display = "none";
-                loginScreen.style.display = "block";
-                ACTIVE_PROFILE = null;
+        // Synchrones und störungsfreies Kopieren für Mobilgeräte
+        function inZwischenablageKopieren(text) {
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = text;
+            tempTextArea.style.position = "absolute";
+            tempTextArea.style.left = "-9999px";
+            tempTextArea.setAttribute('readonly', '');
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            tempTextArea.setSelectionRange(0, 99999);
+            try {
+                document.execCommand("copy");
+            } catch (err) {
+                console.error("Synchrones Kopieren fehlgeschlagen:", err);
             }
-        });
+            document.body.removeChild(tempTextArea);
+        }
 
         // ==========================================
         // PROFIL AUS CLOUD FIRESTORE LADEN ODER INITIALISIEREN
@@ -883,24 +868,37 @@
                 let doc = await docRef.get();
 
                 if (!doc.exists) {
-                    console.log("Kein Profil dokumentiert. Erstelle Standardprofil aus templates.json...");
+                    console.log("Kein Profil dokumentiert. Lade Standard-Einstellungen aus Firebase globalSettings...");
                     
-                    let standardTemplates = null;
-                    try {
-                        const pfad = window.location.pathname.includes('/RetterProtokoll') 
-                            ? '/RetterProtokoll/templates.json' 
-                            : 'templates.json';
+                    const globalDefaultsRef = db.collection("globalSettings").doc("defaultTemplates");
+                    let globalDoc = await globalDefaultsRef.get();
+                    
+                    let baseVorlagen = {};
+                    let basePrompts = {};
 
-                        const response = await fetch(pfad);
-                        if (response.ok) {
-                            standardTemplates = await response.json();
+                    if (globalDoc.exists) {
+                        baseVorlagen = globalDoc.data().vorlagen || {};
+                        basePrompts = globalDoc.data().prompts || {};
+                        console.log("Standardvorlagen erfolgreich aus Firestore globalSettings bezogen.");
+                    } else {
+                        console.log("globalSettings leer. Initialisiere mit lokaler templates.json...");
+                        try {
+                            const pfad = window.location.pathname.includes('/RetterProtokoll') 
+                                ? '/RetterProtokoll/templates.json' 
+                                : 'templates.json';
+
+                            const response = await fetch(pfad);
+                            if (response.ok) {
+                                const daten = await response.json();
+                                baseVorlagen = daten.vorlagen || {};
+                                basePrompts = daten.prompts || {};
+                                
+                                await globalDefaultsRef.set({ vorlagen: baseVorlagen, prompts: basePrompts });
+                            }
+                        } catch (e) {
+                            console.error("Absicherung fehlgeschlagen: ", e);
                         }
-                    } catch (e) {
-                        console.warn("Fehler beim Abrufen der templates.json vom Server:", e);
                     }
-
-                    const vorlagenBasis = (standardTemplates && standardTemplates.vorlagen) ? standardTemplates.vorlagen : {};
-                    const promptsBasis = (standardTemplates && standardTemplates.prompts) ? standardTemplates.prompts : {};
 
                     // Anzeigenamen bestimmen (E-Mail-Präfix)
                     let displayName = "Retter";
@@ -912,8 +910,8 @@
                     const neuesProfil = {
                         id: uid,
                         name: displayName,
-                        vorlagen: vorlagenBasis,
-                        prompts: promptsBasis
+                        vorlagen: baseVorlagen,
+                        prompts: basePrompts
                     };
 
                     await docRef.set(neuesProfil);
@@ -1016,6 +1014,7 @@
             return key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
         }
 
+        // Befüllt das dynamische, geteilte KI-Dropdown
         function anpassenKiDropdowns() {
             const kiContainer = document.getElementById("ki-selection-container");
             const restoreOptKi = document.getElementById("restore-opt-ki");
@@ -1030,30 +1029,19 @@
             if (hatPrompts) {
                 kiContainer.style.display = "block";
                 
-                const chatgptSelect = document.getElementById("ki-select");
-                const geminiSelect = document.getElementById("gemini-select");
-
-                const befuellen = (selectEl, prefix) => {
-                    selectEl.innerHTML = '<option value="keine" selected>Keine KI (Text direkt senden)</option>';
-                    Object.keys(prompts).forEach(key => {
-                        if (key.startsWith(prefix)) {
-                            const opt = document.createElement("option");
-                            opt.value = key;
-                            const labelName = key.replace(prefix + "_", "").replace(/^\w/, c => c.toUpperCase());
-                            opt.innerText = `${prefix === 'chatgpt' ? 'ChatGPT' : 'Gemini'}: ${labelName}`;
-                            selectEl.appendChild(opt);
-                        }
-                    });
-                };
-
-                befuellen(chatgptSelect, "chatgpt");
-                befuellen(geminiSelect, "gemini");
+                kiSelect.innerHTML = '<option value="keine" selected>Keine KI (Text direkt senden)</option>';
+                
+                Object.keys(prompts).forEach(key => {
+                    const opt = document.createElement("option");
+                    opt.value = key;
+                    opt.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
+                    kiSelect.appendChild(opt);
+                });
 
                 if (restoreOptKi) restoreOptKi.style.display = "flex";
             } else {
                 kiContainer.style.display = "none";
                 kiSelect.value = "keine";
-                geminiSelect.value = "keine";
                 if (restoreOptKi) restoreOptKi.style.display = "none";
                 if (restoreSourceKi && restoreSourceKi.checked) {
                     if (restoreSourceBt) restoreSourceBt.checked = true;
@@ -1071,7 +1059,6 @@
             ladeEditorDaten();
         }
 
-        // Lädt die Dropdown-Daten basierend auf dem gewählten Tab (Vorlagen oder Prompts)
         function ladeEditorDaten() {
             const isVorlagen = document.getElementById("editor-tab-vorlagen").checked;
             const itemSelect = document.getElementById("editor-item-select");
@@ -1081,7 +1068,6 @@
 
             itemSelect.innerHTML = "";
 
-            // Option zum Hinzufügen erstellen
             const newOpt = document.createElement("option");
             newOpt.value = "__new__";
             
@@ -1098,7 +1084,6 @@
             }
             itemSelect.appendChild(newOpt);
 
-            // Vorhandene Elemente auflisten
             const targetMap = isVorlagen ? ACTIVE_PROFILE.vorlagen : ACTIVE_PROFILE.prompts;
             const keys = Object.keys(targetMap || {});
 
@@ -1109,7 +1094,6 @@
                 itemSelect.appendChild(opt);
             });
 
-            // Standardmäßig das erste Element auswählen, falls vorhanden
             if (keys.length > 0) {
                 itemSelect.value = keys[0];
             } else {
@@ -1159,7 +1143,6 @@
                     return;
                 }
 
-                // Generiert einen sauberen Key im Schlangenformat
                 finalKey = title.toLowerCase()
                                 .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
                                 .replace(/[^a-z0-9]/g, "_")
@@ -1183,11 +1166,8 @@
             }
 
             try {
-                // In Firestore speichern
                 await db.collection("users").doc(auth.currentUser.uid).set(ACTIVE_PROFILE);
                 alert("Erfolgreich in der Cloud gespeichert!");
-                
-                // Editor & Ansichten aktualisieren
                 ladeEditorDaten();
                 befuelleVorlagenButtons();
                 anpassenKiDropdowns();
@@ -1211,7 +1191,6 @@
                 try {
                     await db.collection("users").doc(auth.currentUser.uid).set(ACTIVE_PROFILE);
                     alert("Erfolgreich gelöscht.");
-                    
                     ladeEditorDaten();
                     befuelleVorlagenButtons();
                     anpassenKiDropdowns();
@@ -1346,10 +1325,7 @@
 
         function updateSubmitButtonState() {
             const text = textarea.value.trim();
-            const selectedProvider = document.querySelector('input[name="provider"]:checked');
-            const selectedProviderVal = selectedProvider ? selectedProvider.value : 'chatgpt';
-            const activeSelect = (selectedProviderVal === 'chatgpt') ? kiSelect : geminiSelect;
-            const kiAuswahl = activeSelect.value;
+            const kiAuswahl = kiSelect.value;
 
             if (text === "") {
                 submitBtn.disabled = true;
@@ -1570,7 +1546,6 @@
         function resetForm() {
             textarea.value = "";
             kiSelect.value = "keine";
-            geminiSelect.value = "keine";
             loeschSliderContainer.classList.remove("show");
             localStorage.removeItem("aktueller_entwurf"); 
             clearMesswerte();
@@ -1592,19 +1567,22 @@
             }
         }
 
+        // ==========================================
+        // AUSFUEHREN DES GEWUEHNTEN ABSENDENS
+        // ==========================================
         async function handleFormSubmit(event) {
             if (event) event.preventDefault();
             if (!ACTIVE_PROFILE) return false;
 
             const selectedProvider = document.querySelector('input[name="provider"]:checked');
             const selectedProviderVal = selectedProvider ? selectedProvider.value : 'chatgpt';
-            const activeSelect = (selectedProviderVal === 'chatgpt') ? kiSelect : geminiSelect;
-            const kiAuswahl = activeSelect.value;
+            const kiAuswahl = kiSelect.value;
             
             const basisText = textarea.value;
             const messwerteText = formatMesswerteFuerAusgabe();
             const textMitMesswerten = basisText + messwerteText;
 
+            // KI-Aktion (ChatGPT / Gemini)
             if (kiAuswahl !== "keine") {
                 if (!basisText.trim()) {
                     alert("Bitte schreiben oder wählen Sie zuerst einen Text.");
@@ -1616,18 +1594,21 @@
 
                 localStorage.setItem("letzter_ki_gesendeter_text", basisText);
                 
+                // 1. Text kopieren (Benutzer-Geste bleibt vollkommen intakt)
                 inZwischenablageKopieren(promptString);
 
                 let targetUrl = selectedProviderVal === 'chatgpt' 
                     ? "https://chatgpt.com/?q=" + encodeURIComponent(promptString)
                     : "https://gemini.google.com/";
 
+                // 2. Direktes Öffnen ohne Verzögerungen, um den Pop-up-Blocker zu passieren
                 window.open(targetUrl, "_blank");
                 
                 resetForm();
                 return false; 
             }
 
+            // Bluetooth-Übertragung
             if (!rxCharacteristic) {
                 alert("Bitte verbinden Sie zuerst das Bluetooth-Gerät.");
                 return false;
@@ -1655,32 +1636,9 @@
             localStorage.setItem("aktueller_entwurf", textarea.value);
         });
 
-        kiSelect.addEventListener("change", updateSubmitButtonState);
-        geminiSelect.addEventListener("change", updateSubmitButtonState);
-
         document.querySelectorAll('input[name="gender"]').forEach(radio => {
             radio.addEventListener('change', () => {
                 befuelleVorlagenButtons();
-                updateSubmitButtonState();
-            });
-        });
-
-        document.querySelectorAll('input[name="provider"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const val = e.target.value;
-                localStorage.setItem("saved_provider", val);
-                const kiLabel = document.getElementById("ki-label");
-                if (val === 'chatgpt') {
-                    document.getElementById("chatgpt-dropdown-container").style.display = "block";
-                    document.getElementById("gemini-dropdown-container").style.display = "none";
-                    geminiSelect.value = "keine";
-                    if (kiLabel) kiLabel.innerText = "ChatGPT-Unterstützung wählen (optional):";
-                } else {
-                    document.getElementById("chatgpt-dropdown-container").style.display = "none";
-                    document.getElementById("gemini-dropdown-container").style.display = "block";
-                    kiSelect.value = "keine";
-                    if (kiLabel) kiLabel.innerText = "Gemini-Unterstützung wählen (optional):";
-                }
                 updateSubmitButtonState();
             });
         });
