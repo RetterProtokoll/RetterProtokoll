@@ -583,6 +583,10 @@
             button { padding: 12px; font-size: 14px; }
         }
     </style>
+
+    <!-- FIREBASE SDKs (compat Versionen) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <div id="update-banner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; background: var(--md-color-primary); color: white; padding: 12px; text-align: center; z-index: 2000; font-size: 14px; font-weight: 500; box-shadow: var(--md-elevation-2);">
@@ -600,6 +604,49 @@
         <div id="profile-list" class="profile-list">
             <span style="color: var(--md-color-outline);">Lade Profile...</span>
         </div>
+        
+        <!-- Einstellungen-Button -->
+        <button type="button" class="secondary" style="margin-top: 24px;" onclick="zeigePasswortGate()">⚙️ Vorlagen verwalten</button>
+    </div>
+
+    <!-- Passwort-Schutz Gate -->
+    <div id="password-gate-screen" class="card" style="display: none;">
+        <div class="title-container">
+            <h2>Bereich gesperrt</h2>
+        </div>
+        <p style="color: var(--md-color-on-surface-variant); font-size: 14px;">Bitte Passwort eingeben, um Vorlagen zu bearbeiten:</p>
+        <input type="password" id="admin-pw-input" placeholder="Passwort eingeben..." autocomplete="off">
+        <div style="display: flex; gap: 8px;">
+            <button type="button" class="secondary" onclick="zurueckZurProfilauswahl()">Abbrechen</button>
+            <button type="button" class="btn-ki" onclick="pruefePasswort()">Bestätigen</button>
+        </div>
+    </div>
+
+    <!-- Vorlagen-Editor (Verwaltungsbereich) -->
+    <div id="editor-screen" class="card" style="display: none;">
+        <div class="title-container">
+            <h2>⚙️ Vorlagen verwalten</h2>
+        </div>
+        
+        <label for="editor-profile-select">Profil wählen:</label>
+        <select id="editor-profile-select" onchange="ladeEditorProfildaten()"></select>
+
+        <label for="editor-template-select">Vorlage wählen:</label>
+        <select id="editor-template-select" onchange="ladeEditorVorlagentext()"></select>
+
+        <label for="editor-template-text">Inhalt bearbeiten:</label>
+        <textarea id="editor-template-text" placeholder="Text der Vorlage..."></textarea>
+
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button type="button" class="btn-device" style="background: var(--md-color-success);" onclick="speichereVorlagenAenderung()">💾 In der Cloud speichern</button>
+            <button type="button" class="secondary" onclick="zurueckZurProfilauswahl()">Zurück</button>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--md-color-outline-variant); margin: 24px 0;">
+
+        <label for="new-pw-input">Editor-Passwort ändern:</label>
+        <input type="password" id="new-pw-input" placeholder="Neues Passwort...">
+        <button type="button" class="secondary" onclick="aenderePasswort()">Passwort aktualisieren</button>
     </div>
 
     <!-- 2. HAUPT-ANWENDUNG (Standardmäßig ausgeblendet) -->
@@ -689,7 +736,7 @@
             
             <textarea name="t" id="freitext" placeholder="Wähle eine Vorlage oder tippe hier freien Text..." autocomplete="off"></textarea>
 
-            <button type="submit" id="submit-btn" class="btn-disabled" disabled>Text senden</button>
+            <button type="submit" id="submit-btn" class="btn-disabled" disabled>3. Text senden</button>
 
             <div class="restore-subtle">
                 <div class="restore-selector">
@@ -726,6 +773,34 @@
     </div>
 
     <script>
+        // ==========================================
+        // FIREBASE INITIALISIERUNG (EINGEFÜGTE KREDENTIALS)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqbYce4Rkuk8AwWRWEprjc0lJquD2h1Gg",
+            authDomain: "retter-protokoll.firebaseapp.com",
+            projectId: "retter-protokoll",
+            storageBucket: "retter-protokoll.firebasestorage.app",
+            messagingSenderId: "635653654715",
+            appId: "1:635653654715:web:dc053224fe7b7f4b9d419e"
+        };
+
+        // Firebase starten
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Offline-Persistence (Datencaching) aktivieren
+        db.enablePersistence().catch((err) => {
+            if (err.code == 'failed-precondition') {
+                console.warn("Firestore-Caching nicht möglich (mehrere Tabs offen?)");
+            } else if (err.code == 'unimplemented') {
+                console.warn("Browser unterstützt kein Firestore-Caching");
+            }
+        });
+
+        // ==========================================
+        // Bluetooth- & UI-Konfiguration
+        // ==========================================
         const BLE_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
         const BLE_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
         const BLE_TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
@@ -899,18 +974,30 @@
             }
         }
 
-        // Lade Profile und weise Vorlagen zu
+        // ==========================================
+        // LADE PROFILE AUS FIREBASE CLOUD FIRESTORE
+        // ==========================================
         async function ladeProfile() {
             try {
-                const pfad = window.location.pathname.includes('/RetterProtokoll') 
-                    ? '/RetterProtokoll/templates.json' 
-                    : 'templates.json';
+                const docRef = db.collection("appConfig").doc("templates");
+                const doc = await docRef.get();
 
-                const response = await fetch(pfad);
-                if (!response.ok) throw new Error("Fehler beim Laden.");
-                
-                const data = await response.json();
-                PROFILES_DATA = data.profiles || [];
+                if (doc.exists) {
+                    PROFILES_DATA = doc.data().profiles || [];
+                    console.log("Profile erfolgreich aus der Cloud geladen.");
+                } else {
+                    console.log("Keine Cloud-Daten gefunden. Initialisiere aus templates.json...");
+                    const pfad = window.location.pathname.includes('/RetterProtokoll') 
+                        ? '/RetterProtokoll/templates.json' 
+                        : 'templates.json';
+
+                    const response = await fetch(pfad);
+                    if (!response.ok) throw new Error("Fehler beim Laden der templates.json");
+                    const data = await response.json();
+                    PROFILES_DATA = data.profiles || [];
+                    
+                    await docRef.set({ profiles: PROFILES_DATA });
+                }
                 
                 baueProfilAuswahlliste();
 
@@ -924,7 +1011,7 @@
                 }
                 zeigeProfilauswahl();
             } catch (err) {
-                console.error(err);
+                console.error("Cloud-Ladefehler:", err);
                 document.getElementById("profile-list").innerHTML = '<span style="color: var(--md-color-error)">Fehler beim Laden (Offline?)</span>';
             }
         }
@@ -942,46 +1029,42 @@
             });
         }
 
-function waehleProfil(profil) {
-    ACTIVE_PROFILE = profil;
-    localStorage.setItem("aktives_profil_id", profil.id);
-    document.getElementById("app-title").innerText = `RetterProtokoll (${profil.name})`;
-    
-    befuelleVorlagenButtons();
-    
-    const kiContainer = document.getElementById("ki-selection-container");
-    const restoreOptKi = document.getElementById("restore-opt-ki");
-    const restoreSourceBt = document.getElementById("restore-source-bt");
-    const restoreSourceKi = document.getElementById("restore-source-ki");
-    
-    const hatPrompts = profil.prompts && Object.keys(profil.prompts).length > 0;
+        function waehleProfil(profil) {
+            ACTIVE_PROFILE = profil;
+            localStorage.setItem("aktives_profil_id", profil.id);
+            document.getElementById("app-title").innerText = `RetterProtokoll (${profil.name})`;
+            
+            befuelleVorlagenButtons();
+            
+            const kiContainer = document.getElementById("ki-selection-container");
+            const restoreOptKi = document.getElementById("restore-opt-ki");
+            const restoreSourceBt = document.getElementById("restore-source-bt");
+            const restoreSourceKi = document.getElementById("restore-source-ki");
+            
+            const hatPrompts = profil.prompts && Object.keys(profil.prompts).length > 0;
 
-    if (hatPrompts) {
-        kiContainer.style.display = "block";
-        anpassenKiDropdowns(profil.prompts);
-        
-        // KI-Auswahlfeld anzeigen
-        if (restoreOptKi) restoreOptKi.style.display = "flex";
-    } else {
-        kiContainer.style.display = "none";
-        kiSelect.value = "keine";
-        geminiSelect.value = "keine";
-        
-        // KI-Auswahlfeld ausblenden
-        if (restoreOptKi) restoreOptKi.style.display = "none";
-        
-        // Falls die ausgeblendete Option ausgewählt war, auf Bluetooth umschalten
-        if (restoreSourceKi && restoreSourceKi.checked) {
-            if (restoreSourceBt) restoreSourceBt.checked = true;
+            if (hatPrompts) {
+                kiContainer.style.display = "block";
+                anpassenKiDropdowns(profil.prompts);
+                if (restoreOptKi) restoreOptKi.style.display = "flex";
+            } else {
+                kiContainer.style.display = "none";
+                kiSelect.value = "keine";
+                geminiSelect.value = "keine";
+                if (restoreOptKi) restoreOptKi.style.display = "none";
+                if (restoreSourceKi && restoreSourceKi.checked) {
+                    if (restoreSourceBt) restoreSourceBt.checked = true;
+                }
+            }
+            
+            document.getElementById("profile-selection-screen").style.display = "none";
+            document.getElementById("password-gate-screen").style.display = "none";
+            document.getElementById("editor-screen").style.display = "none";
+            document.getElementById("app-screen").style.display = "block";
+            
+            autoResize();
+            updateSubmitButtonState();
         }
-    }
-    
-    document.getElementById("profile-selection-screen").style.display = "none";
-    document.getElementById("app-screen").style.display = "block";
-    
-    autoResize();
-    updateSubmitButtonState();
-}
 
         function anpassenKiDropdowns(prompts) {
             const chatgptSelect = document.getElementById("ki-select");
@@ -1006,7 +1089,119 @@ function waehleProfil(profil) {
 
         function zeigeProfilauswahl() {
             document.getElementById("profile-selection-screen").style.display = "block";
+            document.getElementById("password-gate-screen").style.display = "none";
+            document.getElementById("editor-screen").style.display = "none";
             document.getElementById("app-screen").style.display = "none";
+        }
+
+        /* Passwort-Gate & Editor Logik */
+        function zeigePasswortGate() {
+            document.getElementById("profile-selection-screen").style.display = "none";
+            document.getElementById("password-gate-screen").style.display = "block";
+            document.getElementById("admin-pw-input").value = "";
+            document.getElementById("admin-pw-input").focus();
+        }
+
+        function pruefePasswort() {
+            const eingegebenesPw = document.getElementById("admin-pw-input").value;
+            const gespeichertesPw = localStorage.getItem("editor_password") || "112";
+
+            if (eingegebenesPw === gespeichertesPw) {
+                zeigeEditor();
+            } else {
+                alert("Falsches Passwort!");
+            }
+        }
+
+        function zurueckZurProfilauswahl() {
+            document.getElementById("password-gate-screen").style.display = "none";
+            document.getElementById("editor-screen").style.display = "none";
+            document.getElementById("profile-selection-screen").style.display = "block";
+        }
+
+        function zeigeEditor() {
+            document.getElementById("password-gate-screen").style.display = "none";
+            document.getElementById("editor-screen").style.display = "block";
+
+            // Profile in das Dropdown laden
+            const profSelect = document.getElementById("editor-profile-select");
+            profSelect.innerHTML = "";
+            PROFILES_DATA.forEach(p => {
+                const opt = document.createElement("option");
+                opt.value = p.id;
+                opt.innerText = p.name;
+                profSelect.appendChild(opt);
+            });
+
+            ladeEditorProfildaten();
+        }
+
+        function ladeEditorProfildaten() {
+            const profId = document.getElementById("editor-profile-select").value;
+            const profil = PROFILES_DATA.find(p => p.id === profId);
+            if (!profil) return;
+
+            const templSelect = document.getElementById("editor-template-select");
+            templSelect.innerHTML = "";
+
+            Object.keys(profil.vorlagen || {}).forEach(key => {
+                const opt = document.createElement("option");
+                opt.value = key;
+                opt.innerText = OPTIONEN_NAMEN[key] || formatiereKey(key);
+                templSelect.appendChild(opt);
+            });
+
+            ladeEditorVorlagentext();
+        }
+
+        function ladeEditorVorlagentext() {
+            const profId = document.getElementById("editor-profile-select").value;
+            const key = document.getElementById("editor-template-select").value;
+            const profil = PROFILES_DATA.find(p => p.id === profId);
+
+            if (profil && profil.vorlagen && key) {
+                document.getElementById("editor-template-text").value = profil.vorlagen[key];
+            } else {
+                document.getElementById("editor-template-text").value = "";
+            }
+        }
+
+        // ==========================================
+        // SPEICHERE VORLAGEN IN CLOUD FIRESTORE
+        // ==========================================
+        async function speichereVorlagenAenderung() {
+            const profId = document.getElementById("editor-profile-select").value;
+            const key = document.getElementById("editor-template-select").value;
+            const text = document.getElementById("editor-template-text").value;
+
+            const index = PROFILES_DATA.findIndex(p => p.id === profId);
+            if (index !== -1 && key) {
+                PROFILES_DATA[index].vorlagen[key] = text;
+                
+                try {
+                    await db.collection("appConfig").doc("templates").set({ profiles: PROFILES_DATA });
+                    alert("Vorlage erfolgreich in der Cloud gespeichert und synchronisiert!");
+                    
+                    if (ACTIVE_PROFILE && ACTIVE_PROFILE.id === profId) {
+                        ACTIVE_PROFILE = PROFILES_DATA[index];
+                        befuelleVorlagenButtons();
+                    }
+                } catch (err) {
+                    console.error("Firestore-Speicherfehler:", err);
+                    alert("Speichern fehlgeschlagen. Überprüfen Sie Ihre Internetverbindung.");
+                }
+            }
+        }
+
+        function aenderePasswort() {
+            const neuesPw = document.getElementById("new-pw-input").value.trim();
+            if (neuesPw.length < 1) {
+                alert("Das Passwort darf nicht leer sein.");
+                return;
+            }
+            localStorage.setItem("editor_password", neuesPw);
+            document.getElementById("new-pw-input").value = "";
+            alert("Passwort erfolgreich geändert!");
         }
 
         function befuelleVorlagenButtons() {
@@ -1037,6 +1232,9 @@ function waehleProfil(profil) {
             });
         }
 
+        // ==========================================
+        // Hilfsfunktionen & Eventlistener
+        // ==========================================
         function formatiereKey(key) {
             return key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
         }
@@ -1111,16 +1309,16 @@ function waehleProfil(profil) {
             if (text === "") {
                 submitBtn.disabled = true;
                 submitBtn.className = "btn-disabled";
-                submitBtn.innerText = "Text senden";
+                submitBtn.innerText = "3. Text senden";
             } else {
                 submitBtn.disabled = false;
                 if (kiAuswahl !== "keine") {
                     submitBtn.className = "btn-ki";
-                    submitBtn.innerText = "An KI senden";
+                    submitBtn.innerText = "3. An KI senden";
                 } else {
                     if (rxCharacteristic) {
                         submitBtn.className = "btn-device";
-                        submitBtn.innerText = "Über Bluetooth senden";
+                        submitBtn.innerText = "3. Über Bluetooth senden";
                     } else {
                         submitBtn.className = "btn-disabled";
                         submitBtn.innerText = "Bitte erst Bluetooth verbinden";
@@ -1395,17 +1593,14 @@ function waehleProfil(profil) {
 
                 localStorage.setItem("letzter_ki_gesendeter_text", basisText);
                 
-                // 1. Sofort in die Zwischenablage kopieren
                 inZwischenablageKopieren(promptString);
 
                 let targetUrl = selectedProvider === 'chatgpt' 
                     ? "https://chatgpt.com/?q=" + encodeURIComponent(promptString)
                     : "https://gemini.google.com/";
 
-                // 2. Direkt öffnen (ohne setTimeout), um Pop-up-Blocker zu umgehen
                 window.open(targetUrl, "_blank");
                 
-                // 3. Formular danach zurücksetzen
                 resetForm();
                 return false; 
             }
