@@ -602,7 +602,7 @@
         <button type="button" id="auth-submit-btn" class="btn-ki" onclick="fuehreAuthAus()">Anmelden</button>
     </div>
 
-      <!-- Vorlagen-, Prompt- & Passwort-Editor (Verwaltungsbereich) -->
+    <!-- 2. VORLAGEN-, PROMPT- & PASSWORT-EDITOR (Verwaltungsbereich) -->
     <div id="editor-screen" class="card" style="display: none;">
         <div class="title-container">
             <h2>⚙️ Einstellungen & Verwaltung</h2>
@@ -669,6 +669,20 @@
         <!-- Zurück-Button für alle Tabs -->
         <button type="button" class="secondary" onclick="zurueckZurHauptseite()">Zurück</button>
     </div>
+
+    <!-- 3. HAUPT-ANWENDUNG (Standardmäßig ausgeblendet) -->
+    <div id="app-screen" class="card" style="display: none;">
+        <div class="title-container" style="justify-content: space-between; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img id="header-logo" class="title-logo" src="/RetterProtokoll/logo.png" alt="Logo">
+                <h2 id="app-title">RetterProtokoll</h2>
+            </div>
+            
+            <div style="display: flex; gap: 8px; margin-top: 10px; width: 100%; justify-content: flex-end;">
+                <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px;" onclick="zeigeEditor()">⚙️ Vorlagen bearbeiten</button>
+                <button type="button" class="secondary" style="width: auto; margin-top: 0; padding: 6px 14px; font-size: 12px; border-color: var(--md-color-error); color: var(--md-color-error);" onclick="logoffUser()">Abmelden 🚪</button>
+            </div>
+        </div>
         
         <form id="protokoll-form" method="POST" action="/" onsubmit="return handleFormSubmit(event)">
             
@@ -1088,7 +1102,7 @@
             }
         }
 
-         // ==========================================
+        // ==========================================
         // ERWEITERTE EDITOR-, PROMPT- & EINSTELLUNGSLOGIK
         // ==========================================
         function zeigeEditor() {
@@ -1308,6 +1322,7 @@
                 errorEl.style.display = "block";
             }
         }
+
         // ==========================================
         // BLUETOOTH & UI SYSTEMLOGIK
         // ==========================================
