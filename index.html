@@ -650,7 +650,11 @@
             <label id="editor-text-label" for="editor-item-text">Inhalt bearbeiten:</label>
             <textarea id="editor-item-text" placeholder="Inhalt der Auswahl..."></textarea>
 
-            <button type="button" class="btn-device" style="background: var(--md-color-success); margin-bottom: 12px;" onclick="speichereEditorAenderung()">💾 In der Cloud speichern</button>
+            <!-- Buttons zum Speichern und Löschen nebeneinander -->
+            <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                <button type="button" class="btn-device" style="background: var(--md-color-success); margin: 0; flex: 1;" onclick="speichereEditorAenderung()">💾 Speichern</button>
+                <button type="button" class="btn-device" style="background: var(--md-color-error); margin: 0; flex: 1;" onclick="loescheEditorElement()">🗑️ Löschen</button>
+            </div>
         </div>
 
         <!-- Sektion für Passwortänderung -->
@@ -1102,7 +1106,7 @@
             }
         }
 
-        // ==========================================
+         // ==========================================
         // ERWEITERTE EDITOR-, PROMPT- & EINSTELLUNGSLOGIK
         // ==========================================
         function zeigeEditor() {
@@ -1273,6 +1277,43 @@
             } catch (err) {
                 console.error("Firestore-Fehler beim Speichern:", err);
                 alert("Speichern fehlgeschlagen. Keine Berechtigung oder offline.");
+            }
+        }
+
+        async function loescheEditorElement() {
+            const selectedTab = document.querySelector('input[name="editortab"]:checked').value;
+            const key = document.getElementById("editor-item-select").value;
+
+            if (!ACTIVE_PROFILE || !key || !currentUser) {
+                alert("Kein Element zum Löschen ausgewählt.");
+                return;
+            }
+
+            const anzeigenName = OPTIONEN_NAMEN[key] || formatiereKey(key);
+            if (!confirm(`Möchten Sie das Element "${anzeigenName}" wirklich unwiderruflich löschen?`)) {
+                return;
+            }
+
+            if (selectedTab === "templates") {
+                if (ACTIVE_PROFILE.vorlagen && ACTIVE_PROFILE.vorlagen[key] !== undefined) {
+                    delete ACTIVE_PROFILE.vorlagen[key];
+                }
+            } else if (selectedTab === "prompts") {
+                if (ACTIVE_PROFILE.prompts && ACTIVE_PROFILE.prompts[key] !== undefined) {
+                    delete ACTIVE_PROFILE.prompts[key];
+                }
+            }
+
+            try {
+                await db.collection("users").doc(currentUser.uid).set(ACTIVE_PROFILE);
+                alert("Element erfolgreich gelöscht!");
+                
+                befuelleVorlagenButtons();
+                anpassenKiDropdowns();
+                switchEditorTab();
+            } catch (err) {
+                console.error("Firestore-Fehler beim Löschen:", err);
+                alert("Löschen fehlgeschlagen. Keine Berechtigung oder offline.");
             }
         }
 
@@ -1513,6 +1554,13 @@
                     }
                 }
             }
+        }
+
+        function zurueckZurHauptseite() {
+            document.getElementById("editor-screen").style.display = "none";
+            document.getElementById("app-screen").style.display = "block";
+            autoResize();
+            updateSubmitButtonState();
         }
 
         function anwendenAusgewaehltenText() {
