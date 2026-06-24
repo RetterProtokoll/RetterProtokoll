@@ -851,7 +851,18 @@
         const successDiv = document.getElementById("overlay-success");
         const countdownEl = document.getElementById("countdown-text");
         const connectBleBtn = document.getElementById("connect-ble-btn");
-        ;
+
+        const OPTIONEN_NAMEN = {
+            "metamizol_w": "Metamizol ♀️",
+            "metamizol_m": "Metamizol ♂️",
+            "mitfahrt_w": "Transportverweigerung ♀️",
+            "mitfahrt_m": "Transportverweigerung ♂️",
+            "hilfe_w": "Hilfeleistung ♀️",
+            "hilfe_m": "Hilfeleistung ♂️",
+            "abcde": "ABCDE",
+            "abcdesampler": "ABCDE SAMPLER",
+            "sampler": "SAMPLER / OPQRST"
+        };
 
         const EKG_RYHTMEN = [
             { id: "ekg-sr", label: "Sinusrhythmus (SR)" },
@@ -1227,12 +1238,12 @@
                 const gender = document.querySelector('input[name="newgender"]:checked').value;
                 
                 // Eventuell bereits eingetippte Endungen entfernen, um Doppelungen zu vermeiden
-                dbKey = dbKey.replace(/_M$/, '').replace(/_W$/, '');
+                dbKey = dbKey.replace(/_m$/, '').replace(/_w$/, '');
 
                 if (gender === "m") {
-                    dbKey += "_M";
+                    dbKey += "_m";
                 } else if (gender === "w") {
-                    dbKey += "_W";
+                    dbKey += "_w";
                 }
 
                 if (!ACTIVE_PROFILE.vorlagen) ACTIVE_PROFILE.vorlagen = {};
@@ -1448,9 +1459,9 @@
             
             let filteredKeys = [];
             if (selectedGender === 'm') {
-                filteredKeys = keys.filter(key => !key.endsWith('_W'));
+                filteredKeys = keys.filter(key => !key.endsWith('_w'));
             } else if (selectedGender === 'w') {
-                filteredKeys = keys.filter(key => !key.endsWith('_M'));
+                filteredKeys = keys.filter(key => !key.endsWith('_m'));
             } else {
                 filteredKeys = keys;
             }
