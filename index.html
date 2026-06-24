@@ -593,7 +593,7 @@
             <input type="text" id="auth-name" placeholder="Rufname oder Funkkennung..." autocomplete="off">
         </div>
 
-        <label for="auth-email">E-Mail (oder z.B.71@sailauf.de):</label>
+        <label for="auth-email">E-Mail (oder z.B. 71@sailauf.de):</label>
         <input type="email" id="auth-email" placeholder="E-Mail-Adresse..." autocomplete="username">
 
         <label for="auth-password">Passwort:</label>
@@ -1029,7 +1029,15 @@
         async function ladeBenutzerProfil(userId) {
             try {
                 const docRef = db.collection("users").doc(userId);
-                const doc = await docRef.get();
+                let doc = await docRef.get();
+
+                // Falls das Benutzerdokument nicht existiert, wird es mit Standardwerten initialisiert
+                if (!doc.exists) {
+                    console.log("Profil nicht gefunden. Initialisiere mit Standardvorlagen...");
+                    const standardName = (currentUser && currentUser.email) ? currentUser.email.split('@')[0] : "Benutzer";
+                    await initialisiereNeuesProfil(userId, standardName);
+                    doc = await docRef.get();
+                }
 
                 if (doc.exists) {
                     ACTIVE_PROFILE = doc.data();
@@ -1037,7 +1045,7 @@
                     befuelleVorlagenButtons();
                     anpassenKiDropdowns();
                 } else {
-                    console.error("Kein Profil für diese ID gefunden.");
+                    console.error("Profil konnte nach Initialisierung nicht geladen werden.");
                 }
             } catch (err) {
                 console.error("Fehler beim Laden des Profils:", err);
@@ -1046,17 +1054,18 @@
 
         async function initialisiereNeuesProfil(userId, name) {
             try {
-                console.log("Lade Standard-Vorlagen aus Firestore (globalSettings/defaultTemplates)...");
+                console.log("Kopiere globale Standard-Vorlagen aus globalSettings/defaultTemplates...");
                 
-                // Holen der Default-Konfiguration direkt aus der Cloud-Datenbank
+                // Standardkonfiguration aus globalSettings abrufen
                 const defaultTemplatesDoc = await db.collection("globalSettings").doc("defaultTemplates").get();
                 
                 if (!defaultTemplatesDoc.exists) {
-                    throw new Error("Standardvorlagen-Dokument existiert nicht in globalSettings.");
+                    throw new Error("Das Standardvorlagen-Dokument (globalSettings/defaultTemplates) existiert nicht.");
                 }
 
                 const defaultData = defaultTemplatesDoc.data();
 
+                // Profil für den Benutzer erstellen
                 const neuesProfil = {
                     id: userId,
                     name: name,
@@ -1064,13 +1073,14 @@
                     prompts: defaultData.prompts || {}
                 };
 
+                // In der Collection "users" speichern
                 await db.collection("users").doc(userId).set(neuesProfil);
-                console.log("Profil wurde erfolgreich initialisiert.");
+                console.log("Neues Benutzerprofil erfolgreich erstellt.");
             } catch (err) {
-                console.error("Fehler beim Initialisieren des Profils aus der Firestore:", err);
-                alert("Fehler beim Abrufen der Standardvorlagen aus der Datenbank: " + err.message + "\nEin leeres Profil wurde angelegt.");
+                console.error("Fehler beim Erstellen des neuen Profils:", err);
+                alert("Fehler beim Erstellen des Profils: " + err.message + "\nEin leeres Profil wurde angelegt.");
                 
-                // Robustheits-Fallback
+                // Fallback im Fehlerfall
                 const leeresProfil = {
                     id: userId,
                     name: name,
@@ -1466,6 +1476,7 @@
             });
         }
 
+        // Formatierung von DB-Schlüsseln zur Anzeige
         function formatiereKey(key) {
             return key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
         }
