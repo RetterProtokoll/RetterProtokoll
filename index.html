@@ -793,6 +793,25 @@
             { id: "temp", label: "Temp", unit: "°C", type: "text", maxLen: 5, placeholder: "36.5", minPlaus: 30.0, maxPlaus: 42.5, isTextAllowed: true }
         ];
 
+        // Standard-Voreinstellungen als Fallback, falls Cloud blockiert ist
+        const LOCAL_DEFAULT_VORLAGEN = {
+            "metamizol_m": "Ausdrückliche und detaillierte Aufklärung des Patienten über das seltene, dosisunabhängige und potenziell lebensbedrohliche Risiko einer Metamizol-induzierten Agranulozytose (akute, schwere Schädigung der Granulozyten im Knochenmark mit konsekutivem Zusammenbruch der Immunabwehr)...",
+            "metamizol_w": "Ausdrückliche und detaillierte Aufklärung der Patientin über das seltene, dosisunabhängige und potenziell lebensbedrohliche Risiko einer Metamizol-induzierten Agranulozytose...",
+            "mitfahrt_w": "Die Patientin verblieb auf eigenen ausdrücklichen Wunsch vor Ort...",
+            "mitfahrt_m": "Der Patient verblieb auf eigenen ausdrücklichen Wunsch vor Ort...",
+            "hilfe_w": "Die Patientin verbleibt nach mehrmaligem, ausdrücklichem Angebot...",
+            "hilfe_m": "Der Patient verbleibt nach mehrmaligem, ausdrücklichem Angebot...",
+            "abcde": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig, kein Stridor, keine Fremdkörper/Obstruktion. kein Zungenbiss...",
+            "abcdesampler": "A: Atemweg frei, Schutzreflexe erhalten. Phonation unauffällig...",
+            "sampler": "S (Symptome): Aktuell beschwerdefrei..."
+        };
+
+        const DEFAULT_PROMPTS = {
+            "korrektur": "Korrigiere und optimiere den folgenden Text für ein Rettungsdienstprotokoll. Achte auf eine fachlich korrekte, präzise und professionelle Formulierung...",
+            "transportverweigerung": "Du bist ein erfahrener, fachlich exzellenter Notfallsanitäter im deutschen Rettungsdienst. Deine Aufgabe ist es, für ein digitales Rettungsdienstprotokoll...",
+            "abcde": "Rolle: Du bist ein erfahrener Notfallsanitäter und Dokumentations-Experte für den Rettungsdienst..."
+        };
+
         const textarea = document.getElementById("freitext");
         const submitBtn = document.getElementById("submit-btn");
         const kiSelect = document.getElementById("ki-select");
@@ -841,7 +860,6 @@
             { id: "ekg-tachy", label: "Tachykardie" }
         ];
 
-        // Synchrones und störungsfreies Kopieren für Mobilgeräte
         function inZwischenablageKopieren(text) {
             const tempTextArea = document.createElement("textarea");
             tempTextArea.value = text;
@@ -868,39 +886,27 @@
                 let doc = await docRef.get();
 
                 if (!doc.exists) {
-                    console.log("Kein Profil dokumentiert. Lade Standard-Einstellungen aus Firebase globalSettings...");
+                    console.log("Kein Profil dokumentiert. Versuche Standard-Einstellungen aus Firebase globalSettings...");
                     
-                    const globalDefaultsRef = db.collection("globalSettings").doc("defaultTemplates");
-                    let globalDoc = await globalDefaultsRef.get();
-                    
-                    let baseVorlagen = {};
-                    let basePrompts = {};
+                    let baseVorlagen = LOCAL_DEFAULT_VORLAGEN;
+                    let basePrompts = DEFAULT_PROMPTS;
 
-                    if (globalDoc.exists) {
-                        baseVorlagen = globalDoc.data().vorlagen || {};
-                        basePrompts = globalDoc.data().prompts || {};
-                        console.log("Standardvorlagen erfolgreich aus Firestore globalSettings bezogen.");
-                    } else {
-                        console.log("globalSettings leer. Initialisiere mit lokaler templates.json...");
-                        try {
-                            const pfad = window.location.pathname.includes('/RetterProtokoll') 
-                                ? '/RetterProtokoll/templates.json' 
-                                : 'templates.json';
-
-                            const response = await fetch(pfad);
-                            if (response.ok) {
-                                const daten = await response.json();
-                                baseVorlagen = daten.vorlagen || {};
-                                basePrompts = daten.prompts || {};
-                                
-                                await globalDefaultsRef.set({ vorlagen: baseVorlagen, prompts: basePrompts });
-                            }
-                        } catch (e) {
-                            console.error("Absicherung fehlgeschlagen: ", e);
+                    try {
+                        const globalDefaultsRef = db.collection("globalSettings").doc("defaultTemplates");
+                        let globalDoc = await globalDefaultsRef.get();
+                        
+                        if (globalDoc.exists) {
+                            baseVorlagen = globalDoc.data().vorlagen || LOCAL_DEFAULT_VORLAGEN;
+                            basePrompts = globalDoc.data().prompts || DEFAULT_PROMPTS;
+                            console.log("Standardvorlagen erfolgreich aus globalSettings bezogen.");
+                        } else {
+                            console.log("globalSettings leer. Versuche, sie mit lokalen Daten zu befüllen...");
+                            await globalDefaultsRef.set({ vorlagen: LOCAL_DEFAULT_VORLAGEN, prompts: DEFAULT_PROMPTS });
                         }
+                    } catch (rulesError) {
+                        console.warn("Firestore blockiert globale Abfrage (oder offline). Nutze lokalen Standard-Fallback:", rulesError);
                     }
 
-                    // Anzeigenamen bestimmen (E-Mail-Präfix)
                     let displayName = "Retter";
                     if (auth.currentUser && auth.currentUser.email) {
                         const nameRaw = auth.currentUser.email.split('@')[0];
@@ -923,8 +929,8 @@
                 befuelleVorlagenButtons();
                 anpassenKiDropdowns();
             } catch (err) {
-                console.error("Fehler beim Laden des Profils:", err);
-                alert("Fehler beim Laden der Vorlagen.");
+                console.error("Schwerer Fehler beim Laden des Profils:", err);
+                alert("Fehler beim Laden des Profils. Verbindung oder Firebase prüfen.");
             }
         }
 
