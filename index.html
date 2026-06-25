@@ -1921,6 +1921,15 @@
                 radio.checked = true;
             }
         });
+               
+        window.addEventListener('beforeunload', (event) => {
+            // Nur warnen, wenn tatsächlich Text im Eingabefeld steht
+            if (textarea && textarea.value.trim() !== "") {
+                event.preventDefault();
+                // Standardkonformität für moderne Browser
+                event.returnValue = 'Es liegen ungespeicherte Daten vor. Möchten Sie die Seite wirklich verlassen?';
+            }
+        });
     </script>
 </body>
 </html>
