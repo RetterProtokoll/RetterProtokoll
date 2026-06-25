@@ -817,10 +817,11 @@
             console.warn("Firestore-Caching nicht möglich:", err.code);
         });
 
-        // Globale Variablen für das aktive Profil des angemeldeten Benutzers
+       // Globale Variablen für das aktive Profil des angemeldeten Benutzers
         let ACTIVE_PROFILE = null;
         let currentUser = null;
-
+        let registrationName = null;
+        
         // Bluetooth-Spezifische UUIDs
         const BLE_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
         const BLE_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
@@ -970,35 +971,38 @@
         }
 
         async function fuehreAuthAus() {
-            const isRegister = document.getElementById("tab-register").checked;
-            const email = document.getElementById("auth-email").value.trim();
-            const password = document.getElementById("auth-password").value;
-            const name = document.getElementById("auth-name").value.trim();
-            const errorEl = document.getElementById("auth-error-msg");
+        const isRegister = document.getElementById("tab-register").checked;
+        const email = document.getElementById("auth-email").value.trim();
+        const password = document.getElementById("auth-password").value;
+        const name = document.getElementById("auth-name").value.trim();
+        const errorEl = document.getElementById("auth-error-msg");
 
-            errorEl.style.display = "none";
+        errorEl.style.display = "none";
 
-            if (!email || !password) {
-                zegeAuthFehler("Bitte füllen Sie alle Felder aus.");
-                return;
-            }
-
-            try {
-                if (isRegister) {
-                    if (!name) {
-                        zegeAuthFehler("Bitte tragen Sie Ihren Namen ein.");
-                        return;
-                    }
-                    const cred = await auth.createUserWithEmailAndPassword(email, password);
-                    await initialisiereNeuesProfil(cred.user.uid, name);
-                } else {
-                    await auth.signInWithEmailAndPassword(email, password);
-                }
-            } catch (err) {
-                console.error(err);
-                zegeAuthFehler(uebersetzeFehlermeldung(err.code));
-            }
+        if (!email || !password) {
+            zegeAuthFehler("Bitte füllen Sie alle Felder aus.");
+            return;
         }
+
+        try {
+            if (isRegister) {
+                if (!name) {
+                    zegeAuthFehler("Bitte tragen Sie Ihren Namen ein.");
+                    return;
+                }
+                // Temporär den Namen für den asynchronen Ablauf zwischenspeichern
+                registrationName = name; 
+            
+                // Registrierung durchführen (löst onAuthStateChanged aus)
+                await auth.createUserWithEmailAndPassword(email, password);
+            } else {
+                await auth.signInWithEmailAndPassword(email, password);
+            }
+        } catch (err) {
+            console.error(err);
+            zegeAuthFehler(uebersetzeFehlermeldung(err.code));
+        }
+    }
 
         function logoffUser() {
             auth.signOut().then(() => {
@@ -1027,30 +1031,37 @@
         // FIRESTORE DATENBANK-OPERATIONEN
         // ==========================================
         async function ladeBenutzerProfil(userId) {
-            try {
-                const docRef = db.collection("users").doc(userId);
-                let doc = await docRef.get();
+          try {
+            const docRef = db.collection("users").doc(userId);
+            let doc = await docRef.get();
 
-                // Falls das Benutzerdokument nicht existiert, wird es mit Standardwerten initialisiert
-                if (!doc.exists) {
-                    console.log("Profil nicht gefunden. Initialisiere mit Standardvorlagen...");
-                    const standardName = (currentUser && currentUser.email) ? currentUser.email.split('@')[0] : "Benutzer";
-                    await initialisiereNeuesProfil(userId, standardName);
-                    doc = await docRef.get();
-                }
-
-                if (doc.exists) {
-                    ACTIVE_PROFILE = doc.data();
-                    document.getElementById("app-title").innerText = `RetterProtokoll (${ACTIVE_PROFILE.name})`;
-                    befuelleVorlagenButtons();
-                    anpassenKiDropdowns();
-                } else {
-                    console.error("Profil konnte nach Initialisierung nicht geladen werden.");
-                }
-            } catch (err) {
-                console.error("Fehler beim Laden des Profils:", err);
+            // Falls das Benutzerdokument nicht existiert, wird es initialisiert
+            if (!doc.exists) {
+                console.log("Profil nicht gefunden. Initialisiere mit Standardvorlagen...");
+            
+                // Bevorzuge den Registrierungsnamen, sonst Fallback auf E-Mail-Teil
+                const standardName = registrationName || ((currentUser && currentUser.email) ? currentUser.email.split('@')[0] : "Benutzer");
+            
+                await initialisiereNeuesProfil(userId, standardName);
+            
+                // Speicher wieder freigeben
+                registrationName = null;
+            
+                doc = await docRef.get();
             }
+
+            if (doc.exists) {
+                ACTIVE_PROFILE = doc.data();
+                document.getElementById("app-title").innerText = `RetterProtokoll (${ACTIVE_PROFILE.name})`;
+                befuelleVorlagenButtons();
+                anpassenKiDropdowns();
+            } else {
+                console.error("Profil konnte nach Initialisierung nicht geladen werden.");
+            }
+        } catch (err) {
+            console.error("Fehler beim Laden des Profils:", err);
         }
+    }
 
         async function initialisiereNeuesProfil(userId, name) {
             try {
