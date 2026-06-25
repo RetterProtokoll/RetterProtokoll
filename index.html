@@ -1070,7 +1070,7 @@
 
             if (doc.exists) {
                 ACTIVE_PROFILE = doc.data();
-                document.getElementById("app-title").innerText = `RetterProtokoll (${ACTIVE_PROFILE.name})`;
+                document.getElementById("app-title").innerText = `RetterProtokoll ${ACTIVE_PROFILE.name}`;
                 befuelleVorlagenButtons();
                 anpassenKiDropdowns();
             } else {
