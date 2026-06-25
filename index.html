@@ -1005,11 +1005,29 @@
     }
 
         function logoffUser() {
+            // 1. Prüfen, ob ungespeicherter Text im Feld steht
+            if (textarea && textarea.value.trim() !== "") {
+                const abmeldungBestaetigen = confirm("Möchten Sie sich wirklich abmelden? Ihr aktueller Entwurf geht verloren.");
+                
+                // Wenn der Nutzer auf "Abbrechen" klickt, die Funktion sofort abbrechen
+                if (!abmeldungBestaetigen) {
+                    return; 
+                }
+            }
+
+            // 2. Falls der Nutzer abmelden möchte (oder kein Text da war):
+            // Textfeld leeren, damit die Browser-Sicherheitsabfrage nicht doppelt anspringt
+            if (textarea) {
+                textarea.value = "";
+            }
+            localStorage.removeItem("aktueller_entwurf");
+
+            // 3. Erst jetzt die eigentliche Abmeldung durchführen
             auth.signOut().then(() => {
                 location.reload();
             });
         }
-
+        
         function zegeAuthFehler(text) {
             const errorEl = document.getElementById("auth-error-msg");
             errorEl.innerText = text;
