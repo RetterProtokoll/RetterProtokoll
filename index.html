@@ -514,12 +514,21 @@
             padding: 4px;
         }
 
-        .messwerte-item input {
+        .messwerte-item input, .messwerte-item select {
             margin-bottom: 0;
             padding: 8px;
             border-radius: 8px;
             font-size: 14px;
             text-align: center;
+            height: 38px;
+            box-sizing: border-box;
+            background: var(--md-color-surface);
+            color: var(--md-color-on-surface);
+            border: 1px solid var(--md-color-outline);
+        }
+        .messwerte-item select {
+            text-align-last: center;
+            cursor: pointer;
         }
 
         .ekg-checklist {
@@ -797,8 +806,130 @@
                 </div>
             </div>
 
-            <button type="button" id="toggle-messwerte-btn" class="secondary" style="margin-top: 8px; margin-bottom: 8px;" onclick="toggleMesswerte()">📊 Messwerte eingeben</button>
+            <!-- BUTTONS AUF GLEICHER HÖHE -->
+            <div style="display: flex; gap: 8px; margin-top: 8px; margin-bottom: 8px;">
+                <button type="button" id="toggle-tia-btn" class="secondary" style="margin: 0; flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;" onclick="toggleTiaApoplex()">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">cognition_2</span>
+                    V.a. TIA/Apoplex
+                </button>
+                <button type="button" id="toggle-messwerte-btn" class="secondary" style="margin: 0; flex: 1;" onclick="toggleMesswerte()"> <span class="material-symbols-outlined" style="font-size: 20px;">monitor_heart</span> Messwerte eingeben</button>
+            </div>
 
+            <!-- TIA/APOPLEX CONTAINER -->
+            <div id="tia-container" class="messwerte-box" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <span style="font-weight: 600; font-size: 14px; color: var(--md-color-on-surface-variant); display: inline-flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">cognition_2</span>
+                        V.a. TIA / Apoplex:
+                    </span>
+                    <button type="button" class="secondary" style="width: auto; padding: 4px 12px; font-size: 12px; border-radius: 100px; margin: 0;" onclick="clearTiaFields()">🗑️ Leeren</button>
+                </div>
+                
+                <!-- FAST4D Sektion -->
+                <div style="margin-bottom: 14px;">
+                    <span style="font-weight: 600; font-size: 13px; color: var(--md-color-primary); display: block; margin-bottom: 8px;">FAST4D</span>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                        <div>
+                            <label style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: var(--md-color-on-surface-variant);" for="tia-fast4d-f">Face:</label>
+                            <input type="text" id="tia-fast4d-f" placeholder="Faziale Parese..." style="margin: 0; padding: 10px; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: var(--md-color-on-surface-variant);" for="tia-fast4d-a">Arm:</label>
+                            <input type="text" id="tia-fast4d-a" placeholder="Arm-/Beinparese..." style="margin: 0; padding: 10px; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: var(--md-color-on-surface-variant);" for="tia-fast4d-s">Speech:</label>
+                            <input type="text" id="tia-fast4d-s" placeholder="Sprach-/Sprechstörung..." style="margin: 0; padding: 10px; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: var(--md-color-on-surface-variant);" for="tia-fast4d-d1">Diplopic images:</label>
+                            <input type="text" id="tia-fast4d-d1" placeholder="Doppelbilder..." style="margin: 0; padding: 10px; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: var(--md-color-on-surface-variant);" for="tia-fast4d-d2">Deficit in field of view:</label>
+                            <input type="text" id="tia-fast4d-d2" placeholder="GesichtsfeldDefekt..." style="margin: 0; padding: 10px; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: var(--md-color-on-surface-variant);" for="tia-fast4d-d3">Dizziness/Vertigo:</label>
+                            <input type="text" id="tia-fast4d-d3" placeholder="Dreh-/Schwankschwindel..." style="margin: 0; padding: 10px; font-size: 14px;">
+                        </div>
+                        <div>
+                            <label style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: var(--md-color-on-surface-variant);" for="tia-fast4d-d4">Dysmetria/Ataxia:</label>
+                            <input type="text" id="tia-fast4d-d4" placeholder="Koordinationsstörung..." style="margin: 0; padding: 10px; font-size: 14px;">
+                        </div>
+
+                        <!-- Symptombeginn Klickstruktur (verschoben unter Dysmetria/Ataxie) -->
+                        <div style="border-top: 1px solid var(--md-color-outline-variant); padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                            <div style="width: 100%;">
+                                <label style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: var(--md-color-on-surface-variant);">Bestimmung Symptombeginn (Time):</label>
+                                <div class="segmented-control" style="width: 100%; height: 36px;">
+                                    <input type="radio" id="tia-status-sicher" name="tia-symptom-status" value="sicher" checked>
+                                    <label for="tia-status-sicher">Sicher</label>
+                                    
+                                    <input type="radio" id="tia-status-unsicher" name="tia-symptom-status" value="unsicher">
+                                    <label for="tia-status-unsicher">Unsicher</label>
+                                </div>
+                            </div>
+                            <div id="tia-zeit-wrapper" style="width: 100%;">
+                                <label id="tia-zeit-label" style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: var(--md-color-on-surface-variant);" for="tia-zeit">Symptombeginn (Uhrzeit):</label>
+                                <input type="time" id="tia-zeit" style="margin: 0; padding: 10px; font-size: 14px; width: 100%;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weitere TIA Felder (orale Antikoagulation bleibt bestehen) -->
+                <div style="border-top: 1px solid var(--md-color-outline-variant); padding-top: 12px;">
+                    <!-- Orale Antikoagulation / Thrombozytenaggregationshemmer -->
+                    <div style="padding-top: 2px; margin-bottom: 8px;">
+                        <label style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: var(--md-color-on-surface-variant);">orale Antikoagulation / Thrombozytenaggregationshemmer:</label>
+                        <div class="ekg-checklist" id="oak-checklist-container" style="max-height: 160px;">
+                            <label class="ekg-item-row">
+                                <input type="checkbox" value="Acetylsalicylsäure (z. B. Aspirin)" class="oak-checkbox">
+                                <span>Acetylsalicylsäure (z. B. Aspirin)</span>
+                            </label>
+                            <label class="ekg-item-row">
+                                <input type="checkbox" value="Clopidogrel (z. B. Plavix)" class="oak-checkbox">
+                                <span>Clopidogrel (z. B. Plavix)</span>
+                            </label>
+                            <label class="ekg-item-row">
+                                <input type="checkbox" value="Prasugrel (z. B. Efient)" class="oak-checkbox">
+                                <span>Prasugrel (z. B. Efient)</span>
+                            </label>
+                            <label class="ekg-item-row">
+                                <input type="checkbox" value="Ticagrelor (z. B. Brilique)" class="oak-checkbox">
+                                <span>Ticagrelor (z. B. Brilique)</span>
+                            </label>
+                            <label class="ekg-item-row">
+                                <input type="checkbox" value="Apixaban (z. B. Eliquis)" class="oak-checkbox">
+                                <span>Apixaban (z. B. Eliquis)</span>
+                            </label>
+                            <label class="ekg-item-row">
+                                <input type="checkbox" value="Rivaroxaban (z. B. Xarelto)" class="oak-checkbox">
+                                <span>Rivaroxaban (z. B. Xarelto)</span>
+                            </label>
+                            <label class="ekg-item-row">
+                                <input type="checkbox" value="Edoxaban (z. B. Lixiana)" class="oak-checkbox">
+                                <span>Edoxaban (z. B. Lixiana)</span>
+                            </label>
+                            <label class="ekg-item-row">
+                                <input type="checkbox" value="Dabigatran (z. B. Pradaxa)" class="oak-checkbox">
+                                <span>Dabigatran (z. B. Pradaxa)</span>
+                            </label>
+                            <label class="ekg-item-row">
+                                <input type="checkbox" value="Phenprocoumon (z. B. Marcumar)" class="oak-checkbox">
+                                <span>Phenprocoumon (z. B. Marcumar)</span>
+                            </label>
+                            <label class="ekg-item-row">
+                                <input type="checkbox" value="Warfarin (z. B. Coumadin)" class="oak-checkbox">
+                                <span>Warfarin (z. B. Coumadin)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MESSWERTE CONTAINER -->
             <div id="messwerte-container" class="messwerte-box" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                     <span style="font-weight: 600; font-size: 14px; color: var(--md-color-on-surface-variant);">Messwerte erfassen:</span>
@@ -955,7 +1086,7 @@
         let rxCharacteristic = null;
         let txCharacteristic = null;
         
-         function toggleEkgStatus() {
+        function toggleEkgStatus() {
             const statusEl = document.getElementById("status-ekg");
             if (!statusEl) return;
             const checkboxes = document.querySelectorAll(".ekg-checkbox");
@@ -970,16 +1101,18 @@
             }
             updateSubmitButtonState();
         }
+
         const PARAMETER_CONFIG = [
             { id: "rr-sys", label: "RR Sys", unit: "mmHg", type: "number", maxLen: 3, placeholder: "120", class: "narrow", minPlaus: 50, maxPlaus: 240 },
             { id: "rr-dia", label: "RR Dia", unit: "mmHg", type: "number", maxLen: 3, placeholder: "80", class: "narrow", minPlaus: 30, maxPlaus: 140 },
             { id: "hf", label: "HF", unit: "/min", type: "number", maxLen: 4, placeholder: "75", minPlaus: 30, maxPlaus: 200 },
             { id: "puls", label: "Puls", unit: "/min", type: "number", maxLen: 4, placeholder: "72", minPlaus: 30, maxPlaus: 200 },
-            { id: "bz", label: "BZ", unit: "mg/dl", type: "text", maxLen: 5, placeholder: "HI", minPlaus: 40, maxPlaus: 450, isTextAllowed: true },
+            { id: "bz", label: "BZ", unit: "mg/dl", type: "text", maxLen: 5, placeholder: "110", minPlaus: 40, maxPlaus: 450, isTextAllowed: true },
             { id: "af", label: "AF", unit: "/min", type: "number", maxLen: 4, placeholder: "14", minPlaus: 6, maxPlaus: 35 },
             { id: "temp", label: "Temp", unit: "°C", type: "text", maxLen: 5, placeholder: "36.5", minPlaus: 30.0, maxPlaus: 42.5, isTextAllowed: true },
             { id: "gcs", label: "GCS", unit: "", type: "number", maxLen: 2, placeholder: "15", minPlaus: 3, maxPlaus: 15 },
-            { id: "nrs", label: "NRS", unit: "/10", type: "number", maxLen: 2, placeholder: "4", minPlaus: 0, maxPlaus: 10 }
+            { id: "nrs", label: "NRS", unit: "/10", type: "number", maxLen: 2, placeholder: "4", minPlaus: 0, maxPlaus: 10 },
+            { id: "rekap", label: "Rekap", type: "select", options: ["", "< 2s", "> 2s"] }
         ];
 
         const textarea = document.getElementById("freitext");
@@ -1015,7 +1148,7 @@
             { id: "ekg-kf", label: "Kammerflimmern (KF)" },
             { id: "ekg-asystolie", label: "Asystolie" },
             { id: "ekg-pea", label: "PEA (Pulslose elektrische Aktivität)" },
-            { id: "ekg-brady", label: "Schrittmacherrhythmus" },
+            { id: "ekg-pacemaker", label: "Schrittmacherrhythmus" },
             { id: "ekg-av1", label: "AV-Block I°" },
             { id: "ekg-av2w", label: "AV-Block II° (Wenckebach)" },
             { id: "ekg-av2m", label: "AV-Block II° (Mobitz)" },
@@ -1023,7 +1156,8 @@
             { id: "ekg-lsb", label: "Linksschenkelblock (LSB / LBBB)" },
             { id: "ekg-rsb", label: "Rechtsschenkelblock (RSB / RBBB)" },
             { id: "ekg-stemi", label: "STEMI (Herzinfarkt)" },
-            { id: "ekg-ves", label: "Extrasystolen (VES)" },
+            { id: "ekg-sves", label: "Supraventrikuläre Extrasystolen (SVES)" },
+            { id: "ekg-ves", label: "Ventrikuläre Extrasystolen (VES)" },
             { id: "ekg-brady", label: "Bradykardie" },
             { id: "ekg-tachy", label: "Tachykardie" }
         ];
@@ -1123,18 +1257,18 @@
             errorEl.style.display = "none";
 
             if (!email || !password) {
-                zegeAuthFehler("Bitte füllen Sie alle Pflichtfelder aus.");
+                zeigeAuthFehler("Bitte füllen Sie alle Pflichtfelder aus.");
                 return;
             }
 
             try {
                 if (isRegister) {
                     if (!name) {
-                        zegeAuthFehler("Bitte tragen Sie Ihren Namen ein.");
+                        zeigeAuthFehler("Bitte tragen Sie Ihren Namen ein.");
                         return;
                     }
                     if (password !== passwordConfirm) {
-                        zegeAuthFehler("Die Passwörter stimmen nicht überein.");
+                        zeigeAuthFehler("Die Passwörter stimmen nicht überein.");
                         return;
                     }
                     // Temporär den Namen für den asynchronen Ablauf zwischenspeichern
@@ -1147,7 +1281,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                zegeAuthFehler(uebersetzeFehlermeldung(err.code));
+                zeigeAuthFehler(uebersetzeFehlermeldung(err.code));
             }
         }
 
@@ -1175,7 +1309,7 @@
             });
         }
         
-        function zegeAuthFehler(text) {
+        function zeigeAuthFehler(text) {
             const errorEl = document.getElementById("auth-error-msg");
             errorEl.innerText = text;
             errorEl.style.display = "block";
@@ -1216,7 +1350,7 @@
             errorEl.style.display = "none";
 
             if (!email) {
-                zegeAuthFehler("Bitte geben Sie Ihre E-Mail-Adresse ein.");
+                zeigeAuthFehler("Bitte geben Sie Ihre E-Mail-Adresse ein.");
                 return;
             }
 
@@ -1226,7 +1360,7 @@
                 zeigePasswortVergessen(false);
             } catch (err) {
                 console.error(err);
-                zegeAuthFehler(uebersetzeFehlermeldung(err.code));
+                zeigeAuthFehler(uebersetzeFehlermeldung(err.code));
             }
         }
         
@@ -1368,13 +1502,13 @@
             newInput.value = "";
             document.getElementById("new-gender-n").checked = true;
 
-        if (selectedTab === "password") {
-            contentSection.style.display = "none";
-            passwordSection.style.display = "block";
-            if (ACTIVE_PROFILE) {
-                document.getElementById("edit-display-name").value = ACTIVE_PROFILE.name || "";
-            }
-        } else {
+            if (selectedTab === "password") {
+                contentSection.style.display = "none";
+                passwordSection.style.display = "block";
+                if (ACTIVE_PROFILE) {
+                    document.getElementById("edit-display-name").value = ACTIVE_PROFILE.name || "";
+                }
+            } else {
                 passwordSection.style.display = "none";
                 contentSection.style.display = "block";
                 itemSelect.innerHTML = "";
@@ -1387,28 +1521,28 @@
                     genderContainer.style.display = "flex"; // Geschlechtsfilter anzeigen
                     
                     Object.keys(ACTIVE_PROFILE.vorlagen || {}).forEach(key => {
-    const opt = document.createElement("option");
-    opt.value = key;
-    
-    let label = OPTIONEN_NAMEN[key];
-    if (!label) {
-        if (key.endsWith('_m')) {
-            label = formatiereKey(key.slice(0, -2)) + " ♂️";
-        } else if (key.endsWith('_w')) {
-            label = formatiereKey(key.slice(0, -2)) + " ♀️";
-        } else {
-            label = formatiereKey(key);
-        }
-    }
-    
-    opt.innerText = label;
-    itemSelect.appendChild(opt);
-});
+                        const opt = document.createElement("option");
+                        opt.value = key;
+                        
+                        let label = OPTIONEN_NAMEN[key];
+                        if (!label) {
+                            if (key.endsWith('_m')) {
+                                label = formatiereKey(key.slice(0, -2)) + " ♂️";
+                            } else if (key.endsWith('_w')) {
+                                label = formatiereKey(key.slice(0, -2)) + " ♀️";
+                            } else {
+                                label = formatiereKey(key);
+                            }
+                        }
+                        
+                        opt.innerText = label;
+                        itemSelect.appendChild(opt);
+                    });
                 } else if (selectedTab === "prompts") {
                     selectLabel.innerText = "Prompt wählen:";
                     textLabel.innerText = "Prompt-Text bearbeiten:";
                     newLabel.innerText = "Neuen Prompt erstellen:";
-                    newInput.placeholder = "Name des Prompts (z.B. rechtschreibung)...";
+                    newInput.placeholder = "Name des Prompts (z.B. Rechtschreibung)...";
                     genderContainer.style.display = "none"; // Geschlechtsfilter ausblenden
                     
                     Object.keys(ACTIVE_PROFILE.prompts || {}).forEach(key => {
@@ -1449,10 +1583,13 @@
                 return;
             }
 
-            // Normalisierung der Eingabe für die Datenbank
-            let dbKey = nameRaw.toLowerCase()
-                .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
-                .replace(/[^a-z0-9_]/g, '_')
+            // Normalisierung der Eingabe für die Datenbank (Groß- und Kleinschreibung beibehalten)
+            let dbKey = nameRaw
+                .replace(/ä/g, 'ae').replace(/Ä/g, 'Ae')
+                .replace(/ö/g, 'oe').replace(/Ö/g, 'Oe')
+                .replace(/ü/g, 'ue').replace(/Ü/g, 'Ue')
+                .replace(/ß/g, 'ss')
+                .replace(/[^a-zA-Z0-9_]/g, '_')
                 .replace(/_+/g, '_');
 
             if (dbKey.startsWith('_')) dbKey = dbKey.substring(1);
@@ -1466,8 +1603,8 @@
             if (selectedTab === "templates") {
                 const gender = document.querySelector('input[name="newgender"]:checked').value;
                 
-                // Eventuell bereits eingetippte Endungen entfernen, um Doppelungen zu vermeiden
-                dbKey = dbKey.replace(/_m$/, '').replace(/_w$/, '');
+                // Eventuell bereits eingetippte Endungen case-insensitiv entfernen, um Doppelungen zu vermeiden
+                dbKey = dbKey.replace(/_m$/i, '').replace(/_w$/i, '');
 
                 if (gender === "m") {
                     dbKey += "_m";
@@ -1790,63 +1927,63 @@
         // ==========================================
         // BLUETOOTH & UI SYSTEMLOGIK
         // ==========================================
-async function connectBluetooth() {
-    if (!navigator.bluetooth) {
-        alert("Web Bluetooth wird von diesem Browser nicht unterstützt.");
-        return;
-    }
-    const iconEl = document.getElementById("connect-icon");
-    const textEl = document.getElementById("connect-text");
-    try {
-        if (iconEl && textEl) {
-            iconEl.innerText = "bluetooth_searching";
-            textEl.innerText = "Suche...";
-        }
-        bleDevice = await navigator.bluetooth.requestDevice({
-            filters: [{ services: [BLE_SERVICE_UUID] }]
-        });
-        if (iconEl && textEl) {
-            iconEl.innerText = "bluetooth_searching";
-            textEl.innerText = "Verbinde...";
-        }
-        const server = await bleDevice.gatt.connect();
-        const service = await server.getPrimaryService(BLE_SERVICE_UUID);
-        rxCharacteristic = await service.getCharacteristic(BLE_RX_UUID);
-        txCharacteristic = await service.getCharacteristic(BLE_TX_UUID);
-        await txCharacteristic.startNotifications();
-        txCharacteristic.addEventListener('characteristicvaluechanged', handleBleNotification);
+        async function connectBluetooth() {
+            if (!navigator.bluetooth) {
+                alert("Web Bluetooth wird von diesem Browser nicht unterstützt.");
+                return;
+            }
+            const iconEl = document.getElementById("connect-icon");
+            const textEl = document.getElementById("connect-text");
+            try {
+                if (iconEl && textEl) {
+                    iconEl.innerText = "bluetooth_searching";
+                    textEl.innerText = "Suche...";
+                }
+                bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [BLE_SERVICE_UUID] }]
+                });
+                if (iconEl && textEl) {
+                    iconEl.innerText = "bluetooth_searching";
+                    textEl.innerText = "Verbinde...";
+                }
+                const server = await bleDevice.gatt.connect();
+                const service = await server.getPrimaryService(BLE_SERVICE_UUID);
+                rxCharacteristic = await service.getCharacteristic(BLE_RX_UUID);
+                txCharacteristic = await service.getCharacteristic(BLE_TX_UUID);
+                await txCharacteristic.startNotifications();
+                txCharacteristic.addEventListener('characteristicvaluechanged', handleBleNotification);
 
-        if (iconEl && textEl) {
-            iconEl.innerText = "bluetooth_connected"; // Das offizielle Verbunden-Symbol mit Punkten
-            textEl.innerText = bleDevice.name ? bleDevice.name.substring(0, 10) : "Verbunden";
+                if (iconEl && textEl) {
+                    iconEl.innerText = "bluetooth_connected"; // Das offizielle Verbunden-Symbol mit Punkten
+                    textEl.innerText = bleDevice.name ? bleDevice.name.substring(0, 10) : "Verbunden";
+                }
+                connectBleBtn.style.background = "#2563eb";
+                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+                updateSubmitButtonState();
+            } catch (error) {
+                console.error("Bluetooth Fehler: ", error);
+                if (iconEl && textEl) {
+                    iconEl.innerText = "bluetooth_disabled";
+                    textEl.innerText = "Fehler";
+                }
+                connectBleBtn.style.background = "#dc2626";
+                onDisconnected();
+            }
         }
-        connectBleBtn.style.background = "#2563eb";
-        bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
-        updateSubmitButtonState();
-    } catch (error) {
-        console.error("Bluetooth Fehler: ", error);
-        if (iconEl && textEl) {
-            iconEl.innerText = "bluetooth_disabled";
-            textEl.innerText = "Fehler";
-        }
-        connectBleBtn.style.background = "#dc2626";
-        onDisconnected();
-    }
-}
 
-function onDisconnected() {
-    const iconEl = document.getElementById("connect-icon");
-    const textEl = document.getElementById("connect-text");
-    if (iconEl && textEl) {
-        iconEl.innerText = "bluetooth";
-        textEl.innerText = "Verbinden";
-    }
-    connectBleBtn.style.background = "#dc2626";
-    bleDevice = null;
-    rxCharacteristic = null;
-    txCharacteristic = null;
-    updateSubmitButtonState();
-}
+        function onDisconnected() {
+            const iconEl = document.getElementById("connect-icon");
+            const textEl = document.getElementById("connect-text");
+            if (iconEl && textEl) {
+                iconEl.innerText = "bluetooth";
+                textEl.innerText = "Verbinden";
+            }
+            connectBleBtn.style.background = "#dc2626";
+            bleDevice = null;
+            rxCharacteristic = null;
+            txCharacteristic = null;
+            updateSubmitButtonState();
+        }
 
         function handleBleNotification(event) {
             const decoder = new TextDecoder();
@@ -1856,6 +1993,7 @@ function onDisconnected() {
                 successDiv.style.display = "block";
                 localStorage.removeItem("aktueller_entwurf");
                 clearMesswerte();
+                clearTiaFields();
             } else if (value === "STOPPED") {
                 alert("Der Tippvorgang wurde erfolgreich abgebrochen.");
                 resetForm();
@@ -1875,63 +2013,64 @@ function onDisconnected() {
                 console.error(error);
             }
         }
+
         // Generiert den Inhalt für die Vorlagen-Buttons inklusive Material Symbols Icons
-function erzeugeVorlagenButtonInhalt(key) {
-    let baseKey = key;
-    let iconHtml = '';
-    
-    if (key.endsWith('_m')) {
-        baseKey = key.slice(0, -2); // Entfernt das "_m" am Ende
-        iconHtml = '<span class="material-symbols-outlined" style="font-size: 18px; margin-left: 6px; vertical-align: middle;">male</span>';
-    } else if (key.endsWith('_w')) {
-        baseKey = key.slice(0, -2); // Entfernt das "_w" am Ende
-        iconHtml = '<span class="material-symbols-outlined" style="font-size: 18px; margin-left: 6px; vertical-align: middle;">female</span>';
-    }
-    
-    // Holt den Text aus OPTIONEN_NAMEN (falls manuell hinterlegt) oder formatiert den Schlüssel
-    let text = OPTIONEN_NAMEN[key] || OPTIONEN_NAMEN[baseKey] || formatiereKey(baseKey);
-    
-    // Falls im hinterlegten Namen bereits Text-Emojis wie ♂️ oder ♀️ enthalten sind, entfernen wir diese
-    text = text.replace(/[♀️♂️]/g, '').trim();
-    
-    return `<span>${text}</span>${iconHtml}`;
-}
+        function erzeugeVorlagenButtonInhalt(key) {
+            let baseKey = key;
+            let iconHtml = '';
+            
+            if (key.endsWith('_m')) {
+                baseKey = key.slice(0, -2); // Entfernt das "_m" am Ende
+                iconHtml = '<span class="material-symbols-outlined" style="font-size: 18px; margin-left: 6px; vertical-align: middle;">male</span>';
+            } else if (key.endsWith('_w')) {
+                baseKey = key.slice(0, -2); // Entfernt das "_w" am Ende
+                iconHtml = '<span class="material-symbols-outlined" style="font-size: 18px; margin-left: 6px; vertical-align: middle;">female</span>';
+            }
+            
+            // Holt den Text aus OPTIONEN_NAMEN (falls manuell hinterlegt) oder formatiert den Schlüssel
+            let text = OPTIONEN_NAMEN[key] || OPTIONEN_NAMEN[baseKey] || formatiereKey(baseKey);
+            
+            // Falls im hinterlegten Namen bereits Text-Emojis wie ♂️ oder ♀️ enthalten sind, entfernen wir diese
+            text = text.replace(/[♀️♂️]/g, '').trim();
+            
+            return `<span>${text}</span>${iconHtml}`;
+        }
 
         function befuelleVorlagenButtons() {
-    vorlageScrollContainer.innerHTML = '';
-    if (!ACTIVE_PROFILE) return;
+            vorlageScrollContainer.innerHTML = '';
+            if (!ACTIVE_PROFILE) return;
 
-    const selectedGenderElement = document.querySelector('input[name="gender"]:checked');
-    const selectedGender = selectedGenderElement ? selectedGenderElement.value : 'm';
+            const selectedGenderElement = document.querySelector('input[name="gender"]:checked');
+            const selectedGender = selectedGenderElement ? selectedGenderElement.value : 'm';
 
-    const keys = Object.keys(ACTIVE_PROFILE.vorlagen || {});
-    
-    let filteredKeys = [];
-    if (selectedGender === 'm') {
-        filteredKeys = keys.filter(key => !key.endsWith('_w'));
-    } else if (selectedGender === 'w') {
-        filteredKeys = keys.filter(key => !key.endsWith('_m'));
-    } else {
-        filteredKeys = keys;
-    }
+            const keys = Object.keys(ACTIVE_PROFILE.vorlagen || {});
+            
+            let filteredKeys = [];
+            if (selectedGender === 'm') {
+                filteredKeys = keys.filter(key => !key.endsWith('_w'));
+            } else if (selectedGender === 'w') {
+                filteredKeys = keys.filter(key => !key.endsWith('_m'));
+            } else {
+                filteredKeys = keys;
+            }
 
-    filteredKeys.forEach(key => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "scroll-btn";
-        
-        // Sorgt für eine saubere Ausrichtung von Text und Icon nebeneinander
-        btn.style.display = "inline-flex";
-        btn.style.alignItems = "center";
-        btn.style.justifyContent = "center";
-        
-        // Dynamischen HTML-Inhalt mit dem Icon einfügen
-        btn.innerHTML = erzeugeVorlagenButtonInhalt(key);
-        
-        btn.onclick = () => vorlageEinfuegen(key);
-        vorlageScrollContainer.appendChild(btn);
-    });
-}
+            filteredKeys.forEach(key => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "scroll-btn";
+                
+                // Sorgt für eine saubere Ausrichtung von Text und Icon nebeneinander
+                btn.style.display = "inline-flex";
+                btn.style.alignItems = "center";
+                btn.style.justifyContent = "center";
+                
+                // Dynamischen HTML-Inhalt mit dem Icon einfügen
+                btn.innerHTML = erzeugeVorlagenButtonInhalt(key);
+                
+                btn.onclick = () => vorlageEinfuegen(key);
+                vorlageScrollContainer.appendChild(btn);
+            });
+        }
 
         // Formatierung von DB-Schlüsseln zur Anzeige
         function formatiereKey(key) {
@@ -2003,7 +2142,46 @@ function erzeugeVorlagenButtonInhalt(key) {
             const text = textarea.value.trim();
             const kiAuswahl = kiSelect ? kiSelect.value : 'keine';
 
-            if (text === "") {
+            // Überprüfen, ob Eingaben im TIA- oder Messwerte-Bereich vorliegen
+            const hasTiaContent = (() => {
+                const container = document.getElementById("tia-container");
+                if (!container || container.style.display === "none") return false;
+                const tiaIds = ["tia-fast4d-f", "tia-fast4d-a", "tia-fast4d-s", "tia-fast4d-d1", "tia-fast4d-d2", "tia-fast4d-d3", "tia-fast4d-d4", "tia-zeit"];
+                const hasText = tiaIds.some(id => {
+                    const el = document.getElementById(id);
+                    return el && el.value && el.value.trim() !== "";
+                });
+                if (hasText) return true;
+
+                // Prüfen ob mindestens eine OAK-Checkbox gewählt wurde
+                const hasOak = Array.from(document.querySelectorAll(".oak-checkbox")).some(cb => cb.checked);
+                if (hasOak) return true;
+
+                return false;
+            })();
+
+            const hasMesswerteContent = (() => {
+                const container = document.getElementById("messwerte-container");
+                if (!container || container.style.display === "none") return false;
+                
+                const hasParam = PARAMETER_CONFIG.some(cfg => {
+                    const el = document.getElementById(`mw-${cfg.id}`);
+                    return el && el.value && el.value.trim() !== "";
+                });
+                if (hasParam) return true;
+
+                const hasEkg = Array.from(document.querySelectorAll(".ekg-checkbox")).some(cb => cb.checked);
+                if (hasEkg) return true;
+
+                const hasCrossed = Array.from(document.querySelectorAll(".status-indicator")).some(ind => ind.innerText === "❌");
+                if (hasCrossed) return true;
+
+                return false;
+            })();
+
+            const hasAnyContent = text !== "" || hasTiaContent || hasMesswerteContent;
+
+            if (!hasAnyContent) {
                 submitBtn.disabled = true;
                 submitBtn.className = "btn-disabled";
                 submitBtn.innerText = "Text senden";
@@ -2055,13 +2233,31 @@ function erzeugeVorlagenButtonInhalt(key) {
         function toggleMesswerte() {
             const container = document.getElementById("messwerte-container");
             const btn = document.getElementById("toggle-messwerte-btn");
+            const iconHtml = '<span class="material-symbols-outlined" style="font-size: 20px;">monitor_heart</span>';
             if (container.style.display === "none") {
                 container.style.display = "block";
-                btn.innerText = "📊 Messwerte ausblenden";
+                btn.innerHTML = `${iconHtml} Messwerte ausblenden`;
             } else {
                 container.style.display = "none";
-                btn.innerText = "📊 Messwerte eingeben";
+                btn.innerHTML = `${iconHtml} Messwerte eingeben`;
             }
+            updateSubmitButtonState();
+        }
+
+        // TIA/APOPLEX EINBLENDEN ODER AUSBLENDEN
+        function toggleTiaApoplex() {
+            const container = document.getElementById("tia-container");
+            const btn = document.getElementById("toggle-tia-btn");
+            const iconHtml = '<span class="material-symbols-outlined" style="font-size: 20px;">cognition_2</span>';
+            
+            if (container.style.display === "none") {
+                container.style.display = "block";
+                btn.innerHTML = `${iconHtml} TIA/Apoplex ausblenden`;
+            } else {
+                container.style.display = "none";
+                btn.innerHTML = `${iconHtml} V.a. TIA/Apoplex`;
+            }
+            updateSubmitButtonState();
         }
 
         function renderEkgChecklist() {
@@ -2110,6 +2306,7 @@ function erzeugeVorlagenButtonInhalt(key) {
             if (el.value.length > max) el.value = el.value.slice(0, max);
         }
 
+        // Generiert die UI-Eingabefelder für Messwerte
         function renderMesswerteInput() {
             const container = document.getElementById("messwerte-grid-container");
             container.innerHTML = "";
@@ -2117,20 +2314,38 @@ function erzeugeVorlagenButtonInhalt(key) {
                 const div = document.createElement("div");
                 div.className = `messwerte-item ${cfg.class || ""}`;
                 
+                let inputHtml = '';
+                if (cfg.type === 'select') {
+                    inputHtml = `<select id="mw-${cfg.id}">`;
+                    cfg.options.forEach(opt => {
+                        inputHtml += `<option value="${opt}">${opt || "---"}</option>`;
+                    });
+                    inputHtml += `</select>`;
+                } else {
+                    inputHtml = `<input type="${cfg.type === 'number' ? 'number' : 'text'}" id="mw-${cfg.id}" placeholder="${cfg.placeholder}" autocomplete="off">`;
+                }
+
                 div.innerHTML = `
                     <div class="status-container">
                         <label for="mw-${cfg.id}">${cfg.label}</label>
                         <span id="status-${cfg.id}" class="status-indicator" onclick="toggleStatus('${cfg.id}')">❓</span>
                     </div>
-                    <input type="${cfg.type === 'number' ? 'number' : 'text'}" id="mw-${cfg.id}" placeholder="${cfg.placeholder}" autocomplete="off">
+                    ${inputHtml}
                 `;
                 
-                const inputEl = div.querySelector("input");
-                inputEl.addEventListener("input", () => {
-                    limitLength(inputEl, cfg.maxLen);
-                    handleValueInput(inputEl, `status-${cfg.id}`);
-                    checkPlausibility(inputEl, cfg);
-                });
+                if (cfg.type !== 'select') {
+                    const inputEl = div.querySelector("input");
+                    inputEl.addEventListener("input", () => {
+                        limitLength(inputEl, cfg.maxLen);
+                        handleValueInput(inputEl, `status-${cfg.id}`);
+                        checkPlausibility(inputEl, cfg);
+                    });
+                } else {
+                    const selectEl = div.querySelector("select");
+                    selectEl.addEventListener("change", () => {
+                        handleValueInput(selectEl, `status-${cfg.id}`);
+                    });
+                }
                 container.appendChild(div);
             });
         }
@@ -2174,6 +2389,7 @@ function erzeugeVorlagenButtonInhalt(key) {
             updateSubmitButtonState();
         }
 
+        // Steuert die Statussymbole für Messwerte
         function toggleStatus(id) {
             const statusEl = document.getElementById(`status-${id}`);
             const inputEl = document.getElementById(`mw-${id}`);
@@ -2185,6 +2401,7 @@ function erzeugeVorlagenButtonInhalt(key) {
             } else if (statusEl.innerText === "❌") {
                 statusEl.innerText = hasValue ? "✅" : "❓";
             }
+            updateSubmitButtonState();
         }
 
         function clearMesswerte() {
@@ -2192,17 +2409,46 @@ function erzeugeVorlagenButtonInhalt(key) {
                 const inputEl = document.getElementById(`mw-${cfg.id}`);
                 if (inputEl) {
                     inputEl.value = "";
-                    inputEl.style.backgroundColor = "";
-                    inputEl.style.borderColor = "";
+                    if (cfg.type !== "select") {
+                        inputEl.style.backgroundColor = "";
+                        inputEl.style.borderColor = "";
+                    }
                 }
             });
             document.querySelectorAll(".ekg-checkbox").forEach(cb => cb.checked = false);
             document.querySelectorAll(".status-indicator").forEach(ind => {
                 ind.innerText = "❓";
             });
+            updateSubmitButtonState();
+        }
+
+        // TIA/APOPLEX FELDER LEEREN (Aktualisiert auf FAST4D)
+        function clearTiaFields() {
+            document.getElementById("tia-fast4d-f").value = "";
+            document.getElementById("tia-fast4d-a").value = "";
+            document.getElementById("tia-fast4d-s").value = "";
+            document.getElementById("tia-fast4d-d1").value = "";
+            document.getElementById("tia-fast4d-d2").value = "";
+            document.getElementById("tia-fast4d-d3").value = "";
+            document.getElementById("tia-fast4d-d4").value = "";
+            document.getElementById("tia-zeit").value = "";
+            
+            // Alle OAK-Checkboxen demarkieren
+            document.querySelectorAll(".oak-checkbox").forEach(cb => cb.checked = false);
+
+            const statusSicher = document.getElementById("tia-status-sicher");
+            if (statusSicher) statusSicher.checked = true;
+            updateSymptomTimeUI();
+
+            updateSubmitButtonState();
         }
 
         function formatMesswerteFuerAusgabe() {
+            const container = document.getElementById("messwerte-container");
+            if (!container || container.style.display === "none") {
+                return "";
+            }
+
             let eintraege = [];
             const getStatusOf = (id) => {
                 const el = document.getElementById(`status-${id}`);
@@ -2226,16 +2472,25 @@ function erzeugeVorlagenButtonInhalt(key) {
                 if (cfg.id === "rr-sys" || cfg.id === "rr-dia") return;
                 const status = getStatusOf(cfg.id);
                 if (status !== "❓" && status !== null) {
+                    const labelName = cfg.id === "rekap" ? "Rekap-Zeit" : cfg.label;
                     if (status === "❌") {
-                        eintraege.push(`${cfg.label} nicht gemessen`);
+                        eintraege.push(`${labelName} nicht gemessen`);
                     } else {
                         const rawVal = document.getElementById(`mw-${cfg.id}`).value.trim();
-                        eintraege.push(`${cfg.label}: ${rawVal}${cfg.unit ? ' ' + cfg.unit : ''}`);
+                        if (cfg.type === "select") {
+                            if (rawVal) {
+                                eintraege.push(`${labelName}: ${rawVal}`);
+                            } else {
+                                eintraege.push(`${labelName} gemessen`);
+                            }
+                        } else {
+                            eintraege.push(`${labelName}: ${rawVal}${cfg.unit ? ' ' + cfg.unit : ''}`);
+                        }
                     }
                 }
             });
 
-           const ekgStatus = getStatusOf("ekg");
+            const ekgStatus = getStatusOf("ekg");
             if (ekgStatus !== "❓" && ekgStatus !== null) {
                 if (ekgStatus === "❌") {
                     eintraege.push("EKG nicht geschrieben");
@@ -2251,6 +2506,54 @@ function erzeugeVorlagenButtonInhalt(key) {
             }
 
             return eintraege.length > 0 ? "\n\nMesswerte: " + eintraege.join(" | ") : "";
+        }
+
+        // TIA/APOPLEX FORMATIERUNG FÜR AUSGABE - Auf FAST4D aktualisiert
+        function formatTiaFuerAusgabe() {
+            const container = document.getElementById("tia-container");
+            if (!container || container.style.display === "none") {
+                return "";
+            }
+
+            const fVal = document.getElementById("tia-fast4d-f").value.trim();
+            const aVal = document.getElementById("tia-fast4d-a").value.trim();
+            const sVal = document.getElementById("tia-fast4d-s").value.trim();
+            const d1Val = document.getElementById("tia-fast4d-d1").value.trim();
+            const d2Val = document.getElementById("tia-fast4d-d2").value.trim();
+            const d3Val = document.getElementById("tia-fast4d-d3").value.trim();
+            const d4Val = document.getElementById("tia-fast4d-d4").value.trim();
+            const zeitVal = document.getElementById("tia-zeit").value.trim();
+
+            const statusEl = document.querySelector('input[name="tia-symptom-status"]:checked');
+            const statusVal = statusEl ? statusEl.value : "sicher";
+
+            // Ausgewählte OAK sammeln
+            const ausgewaehlteOak = [];
+            document.querySelectorAll(".oak-checkbox:checked").forEach(cb => ausgewaehlteOak.push(cb.value));
+            const antiVal = ausgewaehlteOak.length > 0 ? ausgewaehlteOak.join(", ") : "keine";
+
+            let fast4DParts = [];
+            fast4DParts.push(`Face: ${fVal || 'o.p.B.'}`);
+            fast4DParts.push(`Arm: ${aVal || 'o.p.B.'}`);
+            fast4DParts.push(`Speech: ${sVal || 'o.p.B.'}`);
+            fast4DParts.push(`Diplopic images: ${d1Val || 'o.p.B.'}`);
+            fast4DParts.push(`Deficit in field of view: ${d2Val || 'o.p.B.'}`);
+            fast4DParts.push(`Dizziness/vertigo: ${d3Val || 'o.p.B.'}`);
+            fast4DParts.push(`Dysmetria/ataxia: ${d4Val || 'o.p.B.'}`);
+
+            let parts = [];
+            parts.push(`FAST4D (${fast4DParts.join(", ")})`);
+            parts.push(`Orale Antikoagulation / Thrombozytenaggregationshemmer: ${antiVal}`);
+            
+            let zeitStr = "";
+            if (statusVal === "sicher") {
+                zeitStr = `Symptombeginn: ${zeitVal ? zeitVal + ' Uhr' : 'k.A.'} (sicher)`;
+            } else {
+                zeitStr = `Zuletzt symptomfrei: ${zeitVal ? zeitVal + ' Uhr' : 'k.A.'} (Symptombeginn unsicher)`;
+            }
+            parts.push(zeitStr);
+
+            return "\n\nV.a. TIA/Apoplex: " + parts.join(" | ");
         }
 
         function autoResize() {
@@ -2284,6 +2587,7 @@ function erzeugeVorlagenButtonInhalt(key) {
             loeschSliderContainer.classList.remove("show");
             localStorage.removeItem("aktueller_entwurf"); 
             clearMesswerte();
+            clearTiaFields();
             autoResize();
             updateSubmitButtonState();
             overlay.style.display = "none";
@@ -2311,12 +2615,13 @@ function erzeugeVorlagenButtonInhalt(key) {
             const kiAuswahl = kiSelect.value;
             
             const basisText = textarea.value;
+            const tiaText = formatTiaFuerAusgabe();
             const messwerteText = formatMesswerteFuerAusgabe();
-            const textMitMesswerten = basisText + messwerteText;
+            const textMitMesswerten = basisText + tiaText + messwerteText;
 
             if (kiAuswahl !== "keine") {
-                if (!basisText.trim()) {
-                    alert("Bitte schreiben oder wählen Sie zuerst einen Text.");
+                if (!textMitMesswerten.trim()) {
+                    alert("Bitte schreiben Sie einen Text oder erfassen Sie Messwerte/TIA-Daten.");
                     return false;
                 }
 
@@ -2358,6 +2663,20 @@ function erzeugeVorlagenButtonInhalt(key) {
             return false;
         }
 
+        // Steuert das dynamische Label basierend auf "Sicher" / "Unsicher"
+        function updateSymptomTimeUI() {
+            const isSicher = document.getElementById("tia-status-sicher") && document.getElementById("tia-status-sicher").checked;
+            const label = document.getElementById("tia-zeit-label");
+            if (label) {
+                if (isSicher) {
+                    label.innerText = "Symptombeginn (Uhrzeit):";
+                } else {
+                    label.innerText = "Zuletzt symptomfrei (Uhrzeit):";
+                }
+            }
+            updateSubmitButtonState();
+        }
+
         // Event-Listener
         textarea.addEventListener("input", () => {
             autoResize();
@@ -2386,6 +2705,31 @@ function erzeugeVorlagenButtonInhalt(key) {
             renderMesswerteInput();
             renderEkgChecklist();
             
+            // Event-Listener für TIA-Textfelder (auf FAST4D aktualisiert)
+            const tiaFieldIds = ["tia-fast4d-f", "tia-fast4d-a", "tia-fast4d-s", "tia-fast4d-d1", "tia-fast4d-d2", "tia-fast4d-d3", "tia-fast4d-d4", "tia-zeit"];
+            tiaFieldIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener("input", updateSubmitButtonState);
+                    element.addEventListener("change", updateSubmitButtonState);
+                }
+            });
+
+            // Event-Listener für die OAK-Mehrfachauswahl-Checkboxen
+            document.querySelectorAll(".oak-checkbox").forEach(cb => {
+                cb.addEventListener("change", updateSubmitButtonState);
+            });
+
+            // Event-Listener für Status-Radiobuttons
+            document.querySelectorAll('input[name="tia-symptom-status"]').forEach(radio => {
+                radio.addEventListener("change", () => {
+                    updateSymptomTimeUI();
+                    updateSubmitButtonState();
+                });
+            });
+
+            updateSymptomTimeUI();
+            
             const gespeicherterEntwurf = localStorage.getItem("aktueller_entwurf");
             if (gespeicherterEntwurf) textarea.value = gespeicherterEntwurf;
 
@@ -2397,10 +2741,8 @@ function erzeugeVorlagenButtonInhalt(key) {
         });
                
         window.addEventListener('beforeunload', (event) => {
-            // Nur warnen, wenn tatsächlich Text im Eingabefeld steht
             if (textarea && textarea.value.trim() !== "") {
                 event.preventDefault();
-                // Standardkonformität für moderne Browser
                 event.returnValue = 'Es liegen ungespeicherte Daten vor. Möchten Sie die Seite wirklich verlassen?';
             }
         });
@@ -2411,10 +2753,10 @@ function erzeugeVorlagenButtonInhalt(key) {
             if (!input) return;
             if (input.type === "password") {
                 input.type = "text";
-                iconEl.innerText = "visibility_off"; // Zeigt das durchgestrichene Auge an
+                iconEl.innerText = "visibility_off";
             } else {
                 input.type = "password";
-                iconEl.innerText = "visibility";     // Zeigt das normale Auge an
+                iconEl.innerText = "visibility";
             }
         }
 
